@@ -1,0 +1,67 @@
+﻿@model StudentInformationSystem.Models.Exams
+
+@{
+    ViewBag.Title = "编辑考试信息";
+}
+
+<h2>编辑考试信息</h2>
+
+@* 这个表单会提交到 AdminController 的 EditExam 方法 *@
+@using (Html.BeginForm("EditExam", "Admin", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+        <h4>正在编辑考试安排</h4>
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+        @* 隐藏字段，用于在提交时告诉后台要修改的是哪条记录 *@
+        @Html.HiddenFor(model => model.ExamID)
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.CourseID, "考试科目", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @* 管理员可以为任何课程安排考试，所以这里的下拉列表是包含所有课程的 *@
+                @Html.DropDownList("CourseID", null, htmlAttributes: new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.CourseID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.ExamTime, "考试时间", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @* 使用 datetime-local 类型以显示方便的日期时间选择器 *@
+                @Html.EditorFor(model => model.ExamTime, new { htmlAttributes = new { @class = "form-control", type = "datetime-local" } })
+                @Html.ValidationMessageFor(model => model.ExamTime, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Location, "考试地点", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Location, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Location, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Details, "备注", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Details, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Details, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="保 存" class="btn btn-success" />
+                @Html.ActionLink("返回列表", "ExamList", null, new { @class = "btn btn-default" })
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

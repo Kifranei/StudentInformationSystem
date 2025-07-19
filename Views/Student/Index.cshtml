@@ -1,0 +1,36 @@
+﻿@model IEnumerable<StudentInformationSystem.Models.StudentCourses>
+@{
+    ViewBag.Title = "我的成绩单";
+}
+
+<h2>我的成绩单</h2>
+<p>下面是您已选的所有课程及对应的成绩。</p>
+
+<div class="table-responsive">
+    <table class="table table-hover">
+        <tr style="background-color: #f5f5f5;">
+            <th>课程名称</th>
+            <th>学分</th>
+            <th>授课教师</th>
+            <th>成绩</th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.Courses.CourseName)</td>
+                <td>@Html.DisplayFor(modelItem => item.Courses.Credits)</td>
+                <td>@Html.DisplayFor(modelItem => item.Courses.Teachers.TeacherName)</td>
+                <td>
+                    @if (item.Grade.HasValue)
+                    {
+                        <strong>@Html.DisplayFor(modelItem => item.Grade)</strong>
+                    }
+                    else
+                    {
+                        <span class="text-muted">暂无成绩</span>
+                    }
+                </td>
+            </tr>
+        }
+    </table>
+</div>

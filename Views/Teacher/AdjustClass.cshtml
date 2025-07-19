@@ -1,0 +1,74 @@
+﻿@model StudentInformationSystem.Models.ClassSessions
+
+@{
+    ViewBag.Title = "调整课程时间";
+}
+
+<h2>调整课程时间</h2>
+<hr />
+<h4>正在调整课程：<strong>@Model.Courses.CourseName</strong></h4>
+<p>当前时间：周 @Model.DayOfWeek ，第 @Model.StartPeriod - @Model.EndPeriod 节</p>
+
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        @* 把 SessionID 和 CourseID 作为隐藏字段提交，防止丢失 *@
+        @Html.HiddenFor(model => model.SessionID)
+        @Html.HiddenFor(model => model.CourseID)
+
+        <div class="form-group">
+            <label class="control-label col-md-2">调整到星期</label>
+            <div class="col-md-10">
+                @* 创建一个星期的下拉列表 *@
+                @Html.DropDownListFor(model => model.DayOfWeek, new SelectList(
+                         new[]
+                         {
+                        new { Value = "1", Text = "周一" },
+                        new { Value = "2", Text = "周二" },
+                        new { Value = "3", Text = "周三" },
+                        new { Value = "4", Text = "周四" },
+                        new { Value = "5", Text = "周五" },
+                        new { Value = "6", Text = "周六" },
+                        new { Value = "7", Text = "周日" },
+                         },
+                         "Value", "Text", Model.DayOfWeek), new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.DayOfWeek, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-2">调整到第几节开始</label>
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.StartPeriod, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.StartPeriod, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-2">到第几节结束</label>
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.EndPeriod, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.EndPeriod, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-2">上课教室</label>
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Classroom, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Classroom, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="确认调课" class="btn btn-success" />
+                @Html.ActionLink("返回课表", "Timetable", null, new { @class = "btn btn-default" })
+            </div>
+        </div>
+    </div>
+}

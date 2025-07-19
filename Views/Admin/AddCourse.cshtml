@@ -1,0 +1,49 @@
+﻿@model StudentInformationSystem.Models.Courses
+
+@{
+    ViewBag.Title = "AddCourse";
+}
+
+<h2>添加新课程</h2>
+
+@using (Html.BeginForm()) 
+{
+    @Html.AntiForgeryToken()
+    
+    <div class="form-horizontal">
+        <h4>课程信息</h4>
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.LabelFor(model => model.CourseName, "课程名称", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.CourseName, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.CourseName, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Credits, "学分", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Credits, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Credits, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.TeacherID, "授课教师", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @* 使用 DropDownList 辅助方法，并使用 ViewBag 中的数据 *@
+                @Html.DropDownList("TeacherID", null, "--请选择教师--", htmlAttributes: new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.TeacherID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="创建" class="btn btn-success" />
+                @Html.ActionLink("返回列表", "CourseList", null, new { @class = "btn btn-default" })
+            </div>
+        </div>
+    </div>
+}

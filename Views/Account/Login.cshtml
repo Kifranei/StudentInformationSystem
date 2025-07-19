@@ -1,0 +1,194 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>学生管理系统 - 登录</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        /* --- 基础样式 --- */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: "微软雅黑", "Microsoft YaHei", sans-serif;
+            overflow: hidden; /* 防止出现滚动条 */
+        }
+
+        /* --- 整体布局 --- */
+        .login-wrapper {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column; /* 垂直方向排列 */
+        }
+
+        /* --- 顶部 Logo 区域 --- */
+        .login-header {
+            height: 15%; /* 占屏幕高度的15% */
+            padding: 2% 5%; /* 内边距 */
+            box-sizing: border-box;
+            background-color: #fff;
+        }
+
+            .login-header img {
+                height: 60%;
+                width: auto;
+            }
+
+        /* --- 主内容区域 (背景图 + 登录框) --- */
+        .login-main {
+            height: 85%; /* 占屏幕高度的85% */
+            /* 使用一张免费的高清图片作为背景, 你可以替换成任何你喜欢的图片URL */
+            background-image: url('https://images.unsplash.com/photo-1580582932707-520aed937b7b?q=80&w=1932&auto=format&fit=crop');
+            background-position: center;
+            background-size: cover;
+            background-repeat: no-repeat;
+            position: relative; /* 设为相对定位, 作为内部绝对定位元素的父容器 */
+            display: flex;
+            align-items: center; /* 垂直居中 */
+            justify-content: center; /* 水平居中 */
+        }
+
+        /* --- 登录框 --- */
+        .login-form-box {
+            width: 400px;
+            padding: 40px;
+            /* 模仿原版的半透明玻璃效果 */
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px); /* 增加模糊效果，更有质感 */
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            z-index: 10;
+        }
+
+            /* --- 登录框内的元素样式 --- */
+            .login-form-box h2 {
+                font-size: 28px;
+                color: #00508b; /* 从你提供的代码中提取的颜色 */
+                margin-top: 0;
+                margin-bottom: 35px;
+            }
+
+        .form-input-group {
+            margin-bottom: 25px;
+        }
+
+            .form-input-group input {
+                width: 100%;
+                height: 50px;
+                border: 1px solid #ccc;
+                border-radius: 25px; /* 圆角输入框 */
+                padding: 0 20px;
+                font-size: 16px;
+                box-sizing: border-box;
+                background: rgba(0, 80, 139, 0.1); /* 从你提供的代码中提取的颜色 */
+                color: #333;
+            }
+
+                .form-input-group input:focus {
+                    outline: none;
+                    border-color: #00508b;
+                }
+
+        .login-btn {
+            width: 100%;
+            height: 50px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(to right, #007bff, #00508b); /* 渐变色按钮 */
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+            .login-btn:hover {
+                opacity: 0.9;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            }
+
+        .error-message {
+            margin-top: 15px;
+        }
+
+        /* --- 底部版本号 --- */
+        .footer-version {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+        }
+        /* --- 响应式设计：针对手机等小屏幕设备 --- */
+        @@media screen and (max-width: 768px) {
+            .login-header {
+                height: 12%; /* 手机上头部可以矮一些 */
+                padding: 4% 5%;
+            }
+            .login-main {
+                height: 88%;
+                align-items: flex-start; /* 登录框从顶部开始，而不是垂直居中 */
+                padding-top: 15%;
+            }
+            .login-form-box {
+                width: 90%; /* 登录框宽度占满大部分屏幕 */
+                padding: 30px;
+                backdrop-filter: blur(5px); /* 模糊效果可以弱一点，提升性能 */
+            }
+            .login-form-box h2 {
+                font-size: 24px;
+                margin-bottom: 25px;
+            }
+            .form-input-group input, .login-btn {
+                height: 45px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-wrapper">
+        <header class="login-header">
+            <img src="https://jwgl.hrbzy.edu.cn:9081/login/s04/images/logo-1-1e3b8670d915457caeefaa35d0d83828.png" alt="Logo">
+        </header>
+
+        <main class="login-main">
+            <div class="login-form-box">
+                <h2>用户登录</h2>
+
+                @using (Html.BeginForm("Login", "Account", FormMethod.Post))
+                {
+                    @Html.AntiForgeryToken()
+
+                    <div class="form-input-group">
+                        <input type="text" id="username" name="username" placeholder="用户名" required />
+                    </div>
+
+                    <div class="form-input-group">
+                        <input type="password" id="password" name="password" placeholder="密码" required />
+                    </div>
+
+                    <button type="submit" class="login-btn">登 录</button>
+
+                    if (ViewBag.ErrorMessage != null)
+                    {
+                        <div class="alert alert-danger error-message">
+                            @ViewBag.ErrorMessage
+                        </div>
+                    }
+                }
+            </div>
+            <div class="footer-version">
+                版本号: V1.0
+            </div>
+        </main>
+    </div>
+</body>
+</html>

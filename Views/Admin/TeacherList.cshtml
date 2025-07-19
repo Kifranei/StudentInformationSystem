@@ -1,0 +1,75 @@
+﻿@model IEnumerable<StudentInformationSystem.Models.Teachers>
+
+@{
+    ViewBag.Title = "TeacherList";
+}
+
+<h2>教师列表</h2>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success">@TempData["Message"]</div>
+}
+
+@* --- 搜索表单 --- *@
+@using (Html.BeginForm("TeacherList", "Admin", FormMethod.Get, new { @class = "form-inline" }))
+{
+    <div class="form-group">
+        <label>查找教师:</label>
+        @*
+            创建一个文本输入框，名字叫 "searchString"，这样才能和Controller方法的参数名对应上。
+            value="@ViewBag.CurrentFilter" 的作用是让搜索框里始终显示当前正在使用的搜索词。
+        *@
+        <input type="text" name="searchString" value="@ViewBag.CurrentFilter" class="form-control" placeholder="输入姓名或工号" />
+    </div>
+    <input type="submit" value="搜 索" class="btn btn-default" />
+}
+<br />
+<p>
+    @Html.ActionLink("添加新教师", "AddTeacher", null, new { @class = "btn btn-primary" })
+</p>
+<div class="table-responsive">
+    <table class="table">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.TeacherName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Title)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Users.Username)
+            </th>
+            <th></th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.TeacherName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Title)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Users.Username)
+                </td>
+                <td>
+                    @Html.ActionLink("编辑", "EditTeacher", new { id = item.TeacherID }) |
+                    @Html.ActionLink("详情", "DetailsTeacher", new { id = item.TeacherID }) |
+                    @Html.ActionLink("删除", "DeleteTeacher", new { id = item.TeacherID }) |
+                    @* --- 新增重置密码的表单 --- *@
+                    @using (Html.BeginForm("ResetPassword", "Admin", new { userId = item.UserID }, FormMethod.Post, new { @style = "display:inline;" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-link" onclick="return confirm('您确定要将该用户的密码重置为“Hzd@123456”吗？');" style="padding:0;border:0;vertical-align:baseline;">
+                            重置密码
+                        </button>
+                    }
+                </td>
+            </tr>
+        }
+
+    </table>
+</div>

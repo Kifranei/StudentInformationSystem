@@ -1,0 +1,62 @@
+﻿@* 这个视图接收的是一个 StudentCourses 对象的列表 *@
+@model IEnumerable<StudentInformationSystem.Models.StudentCourses>
+
+@{
+    // 从 ViewBag 获取我们之前存入的课程信息
+    var course = ViewBag.Course as StudentInformationSystem.Models.Courses;
+    ViewBag.Title = "成绩录入 - " + course.CourseName;
+}
+
+<h2>为课程 “@course.CourseName” 录入成绩</h2>
+<hr />
+
+@* 创建一个表单，提交到本控制器的 GradeEntry 方法 *@
+@using (Html.BeginForm("GradeEntry", "Teacher", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+
+    @* 用一个隐藏字段来传递 courseId，这样POST方法才知道是为哪门课保存成绩 *@
+    @Html.Hidden("courseId", (int)course.CourseID)
+    <div class="table-responsive">
+        <table class="table">
+            <tr>
+                <th>学号</th>
+                <th>姓名</th>
+                <th>成绩 (输入0-100的数字)</th>
+            </tr>
+
+            @* 遍历所有选课记录。
+                这里使用 for 循环而不是 foreach，是为了方便使用索引 i 来绑定数组。
+                但为了简单，我们先用 foreach，并用一点技巧来提交数组。
+                更稳妥的方式是用 for 循环，但对初学者来说稍复杂。我们先用简单的方式。
+            *@
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @item.Students.StudentID
+                        @* 为每个学生创建一个隐藏字段来提交他的学号 *@
+                        <input type="hidden" name="studentIds" value="@item.Students.StudentID" />
+                    </td>
+                    <td>
+                        @item.Students.StudentName
+                    </td>
+                    <td>
+                        @* 为每个学生创建一个文本框来输入成绩。
+                            name="grades" 必须和 Controller 里接收的参数名一致。
+                            浏览器会自动把所有同名的输入框组合成一个数组提交。
+                        *@
+                        <input type="number" name="grades" value="@item.Grade" class="form-control" min="0" max="100" step="0.1" />
+                    </td>
+                </tr>
+            }
+        </table>
+    </div>
+
+        <div class="form-group">
+            <div class="">
+                <input type="submit" value="保存全部成绩" class="btn btn-success" />
+                @Html.ActionLink("返回列表", "Index", null, new { @class = "btn btn-default" })
+            </div>
+        </div>
+        }

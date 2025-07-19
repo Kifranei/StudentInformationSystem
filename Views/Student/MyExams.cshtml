@@ -1,0 +1,43 @@
+@model IEnumerable<StudentInformationSystem.Models.Exams>
+
+@{
+    ViewBag.Title = "我的考试安排";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<table class="table">
+    <tr>
+        <th>
+            课程名称
+        </th>
+        <th>
+            考试时间
+        </th>
+        <th>
+            考试地点
+        </th>
+        <th>
+            备注
+        </th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Courses.CourseName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ExamTime)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Location)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Details)
+            </td>
+        </tr>
+    }
+
+</table>

@@ -1,0 +1,210 @@
+﻿@{
+    var currentUser = Session["User"] as StudentInformationSystem.Models.Users;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - 学生管理系统</title>
+    @Styles.Render("~/Content/css")
+    <style>
+        /* --- 基础和桌面端样式 (省略了大部分，只保留关键部分) --- */
+        body, html { margin: 0; padding: 0; height: 100%; font-family: "Microsoft YaHei", "微软雅黑", sans-serif; background-color: #f5f7f9;}
+        .page-wrapper { display: flex; height: 100vh; }
+        .sidebar { width: 240px; background-color: #001529; color: #fff; display: flex; flex-direction: column; transition: left 0.3s ease; position: fixed; height:100%; z-index:1000; }
+        .sidebar-header {
+            padding: 15px; /* 调整内边距 */
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            height: 60px; /* 固定头部高度，和右侧顶部栏对齐 */
+            box-sizing: content-box;
+        }
+
+        /* 校徽图片的样式 */
+        .sidebar-logo-icon {
+            height: 50px; /* 调整校徽高度 */
+            width: auto;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+
+        /* 学校名字图片的样式 */
+        .sidebar-logo-text {
+            height: 35px; /* 调整文字图片高度 */
+            width: auto;
+            vertical-align: middle;
+        }
+        .sidebar-menu { list-style: none; padding: 20px 0; margin: 0; flex-grow: 1; }
+        .sidebar-menu li a { display: block; color: rgba(255, 255, 255, 0.75); padding: 15px 25px; text-decoration: none; transition: background-color 0.2s, color 0.2s; font-size: 16px; }
+        .sidebar-menu li a:hover, .sidebar-menu li.active a { background-color: #007bff; color: #fff; }
+        .sidebar-menu li a .glyphicon { margin-right: 15px; }
+        .main-content { flex-grow: 1; display: flex; flex-direction: column; height: 100vh; margin-left: 240px; transition: margin-left 0.3s ease; }
+        .header-bar { height: 60px; background: #fff; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; border-bottom: 1px solid #e8e8e8; flex-shrink: 0; }
+        .hamburger-menu {
+            display: none; /* 桌面端默认隐藏 */
+            width: 30px; /* 图标的宽度 */
+            height: 22px; /* 图标的高度 */
+            cursor: pointer;
+            /* 使用 flex 布局来排列里面的三条横线 */
+            flex-direction: column;
+            justify-content: space-between;
+        }
+            /* 这是汉堡图标里的每一条横线 */
+        .hamburger-menu span {
+            display: block;
+            height: 3px; /* 横线的高度 */
+            width: 100%;
+            background-color: #555; /* 横线的颜色 */
+            border-radius: 3px;
+        }
+        .user-info a { color: #555; text-decoration: none; font-size: 15px; }
+        .user-info .glyphicon { margin-right: 8px; }
+        .user-info a:hover { color: #007bff; }
+        .content-body { flex-grow: 1; padding: 20px; overflow-y: auto; }
+        .sidebar-overlay { display: none; }
+
+        /* --- 响应式设计：针对手机等小屏幕设备 --- */
+        @@media screen and (max-width: 768px) {
+            .sidebar {
+                left: -240px; /* 默认将菜单栏移出屏幕外 */
+            }
+            .sidebar.visible {
+                left: 0; /* 当有 .visible 类时，菜单滑入 */
+            }
+            .main-content {
+                margin-left: 0; /* 主内容区占满全部宽度 */
+                overflow-x:hidden;
+            }
+            .hamburger-menu {
+                display: flex !important; /* 在手机上强制以 flex 形式显示 */
+            }
+            /* 菜单弹出时的半透明遮罩层 */
+            .sidebar-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                z-index: 999;
+                display: none; /* 默认隐藏 */
+            }
+            .sidebar-overlay.visible {
+                display: block; /* 菜单弹出时显示遮罩 */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <div class="sidebar-overlay"></div>
+        <aside class="sidebar">
+            @* (这里的菜单栏HTML代码和之前一样，无需改动) *@
+            <div class="sidebar-header">
+                <img src="https://jwgl.hrbzy.edu.cn:9081/style04/images/logo.png" alt="校徽" class="sidebar-logo-icon" />
+                <img src="https://jwgl.hrbzy.edu.cn:9081/style04/images/logo_tit.png" alt="教务系统" class="sidebar-logo-text" />
+            </div>
+            <ul class="sidebar-menu">
+                @if (currentUser != null)
+                {
+                    if (currentUser.Role == 0)
+                    {
+                        <li class="@(ViewContext.RouteData.GetRequiredString("action") == "Index" ? "active" : "")">
+                            <a href="@Url.Action("Index", "Admin")"><span class="glyphicon glyphicon-dashboard"></span> 控制台</a>
+                        </li>
+                        <li class="@(ViewContext.RouteData.GetRequiredString("action").StartsWith("Student") ? "active" : "")">
+                            <a href="@Url.Action("StudentList", "Admin")"><span class="glyphicon glyphicon-user"></span> 学生管理</a>
+                        </li>
+                        <li class="@(ViewContext.RouteData.GetRequiredString("action").StartsWith("Teacher") ? "active" : "")">
+                            <a href="@Url.Action("TeacherList", "Admin")"><span class="glyphicon glyphicon-education"></span> 教师管理</a>
+                        </li>
+                        <li class="@(ViewContext.RouteData.GetRequiredString("action").StartsWith("Course") ? "active" : "")">
+                            <a href="@Url.Action("CourseList", "Admin")"><span class="glyphicon glyphicon-list-alt"></span> 课程管理</a>
+                        </li>
+                        <li class="@(ViewContext.RouteData.GetRequiredString("action").StartsWith("Exam") ? "active" : "")">
+                            <a href="@Url.Action("ExamList", "Admin")"><span class="glyphicon glyphicon-pencil"></span> 考试管理</a>
+                        </li>
+                        <li class="@(ViewContext.RouteData.GetRequiredString("action") == "EnrollmentList" ? "active" : "")">
+                            <a href="@Url.Action("EnrollmentList", "Admin")"><span class="glyphicon glyphicon-check"></span> 选课记录</a>
+                        </li>
+                        <li class="@(ViewContext.RouteData.GetRequiredString("action") == "ChangePassword" ? "active" : "")">
+                            <a href="@Url.Action("ChangePassword", "Admin")"><span class="glyphicon glyphicon-lock"></span> 修改密码</a>
+                        </li>
+                    }
+                    else if (currentUser.Role == 1) // 教师菜单
+                    {
+                        <li class="@(ViewContext.RouteData.GetRequiredString("action") == "Timetable" ? "active" : "")">
+                            <a href="@Url.Action("Timetable", "Teacher")"><span class="glyphicon glyphicon-calendar"></span> 我的课表</a>
+                        </li>
+
+                        @* 保留“成绩录入”的入口，但让它指向课程列表页 *@
+                        <li class="@(new[] {"Index", "GradeEntry"}.Contains(ViewContext.RouteData.GetRequiredString("action")) ? "active" : "")">
+                            <a href="@Url.Action("Index", "Teacher")"><span class="glyphicon glyphicon-edit"></span> 成绩录入</a>
+                        </li>
+
+                        <li class="@(ViewContext.RouteData.GetRequiredString("action") == "ChangePassword" ? "active" : "")">
+                            <a href="@Url.Action("ChangePassword", "Teacher")"><span class="glyphicon glyphicon-lock"></span> 修改密码</a>
+                        </li>
+                        <li class="@(ViewContext.RouteData.GetRequiredString("action").StartsWith("Exam") ? "active" : "")">
+                            <a href="@Url.Action("ExamList", "Teacher")"><span class="glyphicon glyphicon-pencil"></span> 考试管理</a>
+                        </li>
+                    }
+                    else if (currentUser.Role == 2)
+                    {
+                        <li class="@(ViewContext.RouteData.GetRequiredString("action") == "Index" ? "active" : "")">
+                            <a href="@Url.Action("Index", "Student")"><span class="glyphicon glyphicon-home"></span> 个人中心</a>
+                        </li>
+                        <li class="@(ViewContext.RouteData.GetRequiredString("action") == "CourseSelection" ? "active" : "")">
+                            <a href="@Url.Action("CourseSelection", "Student")"><span class="glyphicon glyphicon-check"></span> 在线选课</a>
+                        </li>
+                        <li class="@(ViewContext.RouteData.GetRequiredString("action").StartsWith("Exam") ? "active" : "")">
+                            <a href="@Url.Action("MyExams", "Student")"><span class="glyphicon glyphicon-pencil"></span> 考试管理</a>
+                        </li>
+                        <li class="@(ViewContext.RouteData.GetRequiredString("action") == "ChangePassword" ? "active" : "")">
+                            <a href="@Url.Action("ChangePassword", "Student")"><span class="glyphicon glyphicon-lock"></span> 修改密码</a>
+                        </li>
+                        <li class="@(ViewContext.RouteData.GetRequiredString("action") == "Timetable" ? "active" : "")">
+                            <a href="@Url.Action("Timetable", "Student")"><span class="glyphicon glyphicon-calendar"></span> 我的课表</a>
+                        </li>
+                    }
+                }
+            </ul>
+        </aside>
+
+        <div class="main-content">
+            <header class="header-bar">
+                <div class="hamburger-menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <div class="user-info">@if (currentUser != null)
+                {<a href="#"><span class="glyphicon glyphicon-user"></span> 欢迎您, @currentUser.Username</a><span style="margin: 0 10px;">|</span><a href="@Url.Action("Logout", "Account")"><span class="glyphicon glyphicon-log-out"></span> 安全退出</a>}</div>
+            </header>
+            <main class="content-body">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+
+    <script>$(document).ready(function () {
+            // 当点击汉堡菜单按钮时
+            $('.hamburger-menu').on('click', function () {
+                $('.sidebar').addClass('visible');
+                $('.sidebar-overlay').addClass('visible');
+            });
+
+            // 当点击半透明遮罩层时
+            $('.sidebar-overlay').on('click', function () {
+                $('.sidebar').removeClass('visible');
+                $('.sidebar-overlay').removeClass('visible');
+            });
+        });</script>
+</body>
+</html>

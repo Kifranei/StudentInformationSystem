@@ -1,0 +1,69 @@
+﻿@model IEnumerable<StudentInformationSystem.Models.StudentCourses>
+
+@{
+    ViewBag.Title = "全部选课记录";
+}
+
+<h2>全部选课记录</h2>
+
+@* --- 这是新增的搜索表单 --- *@
+@using (Html.BeginForm("EnrollmentList", "Admin", FormMethod.Get, new { @class = "form-inline" }))
+{
+    <div class="form-group">
+        <label>查找记录:</label>
+        <input type="text" name="searchString" value="@ViewBag.CurrentFilter" class="form-control" placeholder="输入学生姓名/学号/课程名" />
+    </div>
+    <input type="submit" value="搜 索" class="btn btn-default" />
+}
+<hr />
+<p>
+    这里展示了系统中所有的学生选课历史记录。
+</p>
+<div class="table-responsive">
+    <table class="table table-striped table-bordered">
+        <tr>
+            <th>
+                课程名称
+            </th>
+            <th>
+                学生姓名
+            </th>
+            <th>
+                学号
+            </th>
+            <th>
+                成绩
+            </th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Courses.CourseName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Students.StudentName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.StudentID)
+                </td>
+                <td>
+                    @if (item.Grade.HasValue)
+                    {
+                        <strong>@Html.DisplayFor(modelItem => item.Grade)</strong>
+                    }
+                    else
+                    {
+                        <span class="text-muted">未录入</span>
+                    }
+                </td>
+            </tr>
+        }
+
+    </table>
+</div>
+
+    <p>
+        @Html.ActionLink("返回管理员主页", "Index", null, new { @class = "btn btn-default" })
+    </p>

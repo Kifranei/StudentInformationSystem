@@ -1,0 +1,61 @@
+﻿@model IEnumerable<StudentInformationSystem.Models.Courses>
+
+@{
+    ViewBag.Title = "在线选课";
+    var enrolledCourseIDs = ViewBag.EnrolledCourseIDs as List<int>;
+
+    // --- 这里是关键的修改 ---
+    // 如果由于某种原因 enrolledCourseIDs 变成了 null，我们就手动创建一个空的列表
+    // 这样可以防止后续的 .Contains() 方法因为 null 值而报错
+    if (enrolledCourseIDs == null)
+    {
+        enrolledCourseIDs = new List<int>();
+    }
+}
+
+<h2>在线选课</h2>
+<p>请选择您要修读的课程。</p>
+<div class="table-responsive">
+    <table class="table table-bordered table-hover">
+        <thead>
+            <tr style="background-color: #f5f5f5;">
+                <th>课程名称</th>
+                <th>授课教师</th>
+                <th>学分</th>
+                <th class="text-center">操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.CourseName</td>
+                    <td>@item.Teachers.TeacherName</td>
+                    <td>@item.Credits</td>
+                    <td class="text-center">
+                        @* 判断当前课程ID是否存在于已选课程ID列表中 *@
+                        @if (enrolledCourseIDs.Contains(item.CourseID))
+                        {
+                            // --- 如果已选，则显示“已选”标签和“退选”按钮 ---
+                            <span class="label label-success">已选</span>
+                            using (Html.BeginForm("WithdrawCourse", "Student", new { courseId = item.CourseID }, FormMethod.Post, new { @style = "display: inline;" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-warning btn-xs" style="margin-left: 10px;">退 选</button>
+                            }
+                        }
+                        else
+                        {
+                            // --- 如果未选，则显示“选课”按钮 ---
+                            using (Html.BeginForm("SelectCourse", "Student", new { courseId = item.CourseID }, FormMethod.Post, new { @style = "display: inline;" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-success btn-xs">选 课</button>
+                            }
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

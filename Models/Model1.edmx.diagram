@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="77ec4d58e2fa4ee9a8bc73ae7e311a85" Name="Diagram1">
+        <EntityTypeShape EntityType="StudentManagementDBModel.Classes" Width="1.5" PointX="0.75" PointY="0.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="StudentManagementDBModel.Courses" Width="1.5" PointX="5.25" PointY="6.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="StudentManagementDBModel.StudentCourses" Width="1.5" PointX="7.5" PointY="5" IsExpanded="true" />
+        <EntityTypeShape EntityType="StudentManagementDBModel.Students" Width="1.5" PointX="3" PointY="3.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="StudentManagementDBModel.Teachers" Width="1.5" PointX="3" PointY="6.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="StudentManagementDBModel.Users" Width="1.5" PointX="0.75" PointY="3.5" IsExpanded="true" />
+        <AssociationConnector Association="StudentManagementDBModel.FK_Students_Classes" ManuallyRouted="false" />
+        <AssociationConnector Association="StudentManagementDBModel.FK_Courses_Teachers" ManuallyRouted="false" />
+        <AssociationConnector Association="StudentManagementDBModel.FK_StudentCourses_Courses" ManuallyRouted="false" />
+        <AssociationConnector Association="StudentManagementDBModel.FK_StudentCourses_Students" ManuallyRouted="false" />
+        <AssociationConnector Association="StudentManagementDBModel.FK_Students_Users" ManuallyRouted="false" />
+        <AssociationConnector Association="StudentManagementDBModel.FK_Teachers_Users" ManuallyRouted="false" />
+        <EntityTypeShape EntityType="StudentManagementDBModel.ClassSessions" Width="1.5" PointX="7.5" PointY="8.75" />
+        <AssociationConnector Association="StudentManagementDBModel.FK_ClassSessions_Courses" />
+        <EntityTypeShape EntityType="StudentManagementDBModel.Exams" Width="1.5" PointX="7.5" PointY="1.875" />
+        <AssociationConnector Association="StudentManagementDBModel.FK_Exams_Courses" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

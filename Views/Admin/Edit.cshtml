@@ -1,0 +1,67 @@
+﻿@model StudentInformationSystem.Models.Students
+
+@{
+    ViewBag.Title = "编辑学生信息";
+}
+
+<h2>编辑学生信息</h2>
+<h4>@Model.StudentName</h4>
+<hr />
+
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        @* 将学生ID作为隐藏字段提交，这是找到要更新记录的关键 *@
+        @Html.HiddenFor(model => model.StudentID)
+        @* UserID 也需要作为隐藏字段，否则保存时会被置空 *@
+        @Html.HiddenFor(model => model.UserID)
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.StudentID, "学号 (不可修改)", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @* 添加 readonly 属性，让学号输入框变为只读 *@
+                @Html.EditorFor(model => model.StudentID, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.StudentName, "姓名", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.StudentName, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.StudentName, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Gender, "性别", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Gender, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Gender, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.ClassID, "班级", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @* 将班级输入框改为下拉列表 *@
+                @Html.DropDownList("ClassID", null, htmlAttributes: new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.ClassID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="保 存" class="btn btn-success" />
+                @Html.ActionLink("返回列表", "StudentList", null, new { @class = "btn btn-default" })
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

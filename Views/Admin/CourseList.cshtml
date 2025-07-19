@@ -1,0 +1,58 @@
+﻿@model IEnumerable<StudentInformationSystem.Models.Courses>
+
+@{
+    ViewBag.Title = "CourseList";
+}
+
+<h2>课程列表</h2>
+
+@* --- 搜索表单 --- *@
+@using (Html.BeginForm("CourseList", "Admin", FormMethod.Get, new { @class = "form-inline" }))
+{
+    <div class="form-group">
+        <label>查找课程:</label>
+        <input type="text" name="searchString" value="@ViewBag.CurrentFilter" class="form-control" placeholder="输入课程名或教师名" />
+    </div>
+    <input type="submit" value="搜 索" class="btn btn-default" />
+}
+<br />
+<p>
+    @Html.ActionLink("添加新课程", "AddCourse", null, new { @class = "btn btn-primary" })
+</p>
+<div class="table-responsive">
+    <table class="table">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.CourseName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Credits)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Teachers.TeacherName)
+            </th>
+            <th></th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CourseName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Credits)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Teachers.TeacherName)
+                </td>
+                <td>
+                    @Html.ActionLink("编辑", "EditCourse", new { id = item.CourseID }) |
+                    @Html.ActionLink("详情", "DetailsCourse", new { id = item.CourseID }) |
+                    @Html.ActionLink("删除", "DeleteCourse", new { id = item.CourseID })
+                </td>
+            </tr>
+        }
+
+    </table>
+</div>
