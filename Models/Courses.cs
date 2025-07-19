@@ -11,7 +11,7 @@ namespace StudentInformationSystem.Models
 {
     using System;
     using System.Collections.Generic;
-    
+    using System.ComponentModel.DataAnnotations;
     public partial class Courses
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
@@ -23,7 +23,10 @@ namespace StudentInformationSystem.Models
         }
     
         public int CourseID { get; set; }
+        [Display(Name = "课程名称")]
         public string CourseName { get; set; }
+
+        [Display(Name = "学分")]
         public double Credits { get; set; }
         public string TeacherID { get; set; }
     
