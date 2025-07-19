@@ -1,0 +1,56 @@
+﻿@model StudentInformationSystem.Models.Classes
+
+@{
+    ViewBag.Title = "DeleteClass";
+}
+
+<h2>删除班级</h2>
+
+<h3>您确定要删除这个班级吗？</h3>
+<div>
+    <h4>班级</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.ClassName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ClassName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Major)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Major)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.AcademicYear)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.AcademicYear)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ClassNumber)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ClassNumber)
+        </dd>
+
+    </dl>
+
+    @using (Html.BeginForm()) {
+        @Html.AntiForgeryToken()
+
+        <div class="form-actions no-color">
+            <input type="submit" value="确认删除" class="btn btn-danger" /> |
+            @Html.ActionLink("返回列表", "StudentList", null, new { @class = "btn btn-default" })
+        </div>
+    }
+</div>

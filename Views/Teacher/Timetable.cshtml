@@ -3,12 +3,8 @@
 @{
     ViewBag.Title = "我的课表";
     int currentWeek = ViewBag.CurrentWeek;
-
-    // 时间数组和表头定义 (和之前一样)
     string[] periodTimes = { "08:40-09:25", "09:30-10:15", "10:35-11:20", "11:25-12:10", "13:20-14:05", "14:10-14:55", "15:15-16:00", "16:05-16:50", "17:30-18:15", "18:20-19:05", "19:10-19:55", "20:00-20:45" };
     string[] days = { "周一", "周二", "周三", "周四", "周五", "周六", "周日" };
-
-    // 将课程数据处理成更容易查找的字典 (和之前一样)
     var timetableData = new Dictionary<string, StudentInformationSystem.Models.ClassSessions>();
     foreach (var session in Model)
     {
@@ -22,14 +18,13 @@
 
 <h2>我的课表</h2>
 
-@* --- 1. 新增的标签页切换按钮 --- *@
 <div class="timetable-tabs">
     <button id="master-view-btn" class="btn btn-primary active">总课表</button>
     <button id="weekly-view-btn" class="btn btn-default">周课表</button>
 </div>
 <hr />
 
-@* --- 2. 周课表容器 (默认隐藏) --- *@
+@* --- 周课表容器 --- *@
 <div id="weekly-view" style="display: none;">
     @using (Html.BeginForm("Timetable", "Teacher", FormMethod.Get, new { @class = "form-inline" }))
     {
@@ -69,6 +64,9 @@
                                         <strong>@session.Courses.CourseName</strong><br />
                                         <small>(@session.StartWeek-@session.EndWeek 周)</small><br />
                                         <small>@session.Classroom</small>
+                                        <hr style="margin: 5px 0;" />
+                                        @* --- 1. 这里加回“调课”按钮 --- *@
+                                        @Html.ActionLink("调课", "AdjustClass", new { sessionId = session.SessionID }, new { @class = "btn btn-warning btn-xs" })
                                     </td>
                                 }
                             }
@@ -84,7 +82,7 @@
     </div>
 </div>
 
-@* --- 3. 总课表容器 (默认显示) --- *@
+@* --- 总课表容器 --- *@
 <div id="master-view">
     <div class="table-responsive">
         <table class="table table-bordered text-center timetable">
@@ -115,6 +113,9 @@
                                         <strong>@session.Courses.CourseName</strong><br />
                                         <small>(@session.StartWeek-@session.EndWeek 周)</small><br />
                                         <small>@session.Classroom</small>
+                                        <hr style="margin: 5px 0;" />
+                                        @* --- 2. 这里也加回“调课”按钮 --- *@
+                                        @Html.ActionLink("调课", "AdjustClass", new { sessionId = session.SessionID }, new { @class = "btn btn-warning btn-xs" })
                                     </td>
                                 }
                             }
@@ -130,40 +131,29 @@
     </div>
 </div>
 
-
-@* --- 4. 添加 CSS 和 JavaScript 脚本 --- *@
 @section Scripts {
-    <script>$(document).ready(function () {
-            // 点击“周课表”按钮
+    <script>
+        $(document).ready(function () {
             $('#weekly-view-btn').on('click', function () {
-                // 隐藏总课表，显示周课表
                 $('#master-view').hide();
                 $('#weekly-view').show();
-                // 切换按钮的激活状态
                 $(this).removeClass('btn-default').addClass('btn-primary active');
                 $('#master-view-btn').removeClass('btn-primary active').addClass('btn-default');
             });
-
-            // 点击“总课表”按钮
             $('#master-view-btn').on('click', function () {
-                // 显示总课表，隐藏周课表
                 $('#weekly-view').hide();
                 $('#master-view').show();
-                // 切换按钮的激活状态
                 $(this).removeClass('btn-default').addClass('btn-primary active');
                 $('#weekly-view-btn').removeClass('btn-primary active').addClass('btn-default');
             });
-
-            // 检查当前URL是否因为选择了周数而包含 "selectedWeek"
-            // 如果是，则自动切换到周课表视图
             var urlParams = new URLSearchParams(window.location.search);
             if (urlParams.has('selectedWeek')) {
                 $('#weekly-view-btn').click();
             }
-        });</script>
+        });
+    </script>
 }
 
-@* (之前为课表添加的 <style> 标签和里面的样式保持不变) *@
 <style>
     .timetable-tabs {
         margin-bottom: 15px;

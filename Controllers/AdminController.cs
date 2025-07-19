@@ -622,5 +622,109 @@ namespace StudentInformationSystem.Controllers
             db.SaveChanges();
             return RedirectToAction("ExamList");
         }
+        // --- 班级管理 (Class Management) ---
+
+        // 1. 显示班级列表 (List)
+        // GET: Admin/ClassList
+        public ActionResult ClassList()
+        {
+            var classes = db.Classes.ToList();
+            return View(classes);
+        }
+
+        // 2. 显示“添加班级”的表单页面 (Add GET)
+        // GET: Admin/AddClass
+        public ActionResult AddClass()
+        {
+            return View();
+        }
+
+        // 3. 处理提交的“添加班级”表单数据 (Add POST)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult AddClass(Classes classModel)
+        {
+            if (ModelState.IsValid)
+            {
+                // 自动根据专业、学年、班号生成完整的班级名称
+                classModel.ClassName = $"{classModel.Major}{classModel.AcademicYear.Value.ToString().Substring(2, 2)}{classModel.ClassNumber.Value.ToString("D2")}班";
+                db.Classes.Add(classModel);
+                db.SaveChanges();
+                return RedirectToAction("ClassList");
+            }
+            return View(classModel);
+        }
+
+        // 4. 显示“编辑班级”的表单页面 (Edit GET)
+        // GET: Admin/EditClass/1
+        public ActionResult EditClass(int? id)
+        {
+            if (id == null) return new HttpStatusCodeResult(System.Net.HttpStatusCode.BadRequest);
+            Classes classModel = db.Classes.Find(id);
+            if (classModel == null) return HttpNotFound();
+            return View(classModel);
+        }
+
+        // 5. 处理提交的“编辑班级”表单数据 (Edit POST)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult EditClass(Classes classModel)
+        {
+            if (ModelState.IsValid)
+            {
+                // 同样，自动更新完整的班级名称
+                classModel.ClassName = $"{classModel.Major}{classModel.AcademicYear.Value.ToString().Substring(2, 2)}{classModel.ClassNumber.Value.ToString("D2")}班";
+                db.Entry(classModel).State = System.Data.Entity.EntityState.Modified;
+                db.SaveChanges();
+                return RedirectToAction("ClassList");
+            }
+            return View(classModel);
+        }
+
+        // 6. 显示“删除班级”的确认页面 (Delete GET)
+        // GET: Admin/DeleteClass/1
+        public ActionResult DeleteClass(int? id)
+        {
+            if (id == null) return new HttpStatusCodeResult(System.Net.HttpStatusCode.BadRequest);
+            Classes classModel = db.Classes.Find(id);
+            if (classModel == null) return HttpNotFound();
+            return View(classModel);
+        }
+
+        // 7. 处理“删除班级”的确认操作 (Delete POST)
+        [HttpPost, ActionName("DeleteClass")]
+        [ValidateAntiForgeryToken]
+        public ActionResult DeleteClassConfirmed(int id)
+        {
+            Classes classModel = db.Classes.Find(id);
+            // 注意：更严谨的删除应先检查该班级下是否还有学生
+            db.Classes.Remove(classModel);
+            db.SaveChanges();
+            return RedirectToAction("ClassList");
+        }
+
+        // 8. 显示班级详情和学生名单 (Details GET)
+        // GET: Admin/ClassDetails/1
+        public ActionResult ClassDetails(int? id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(System.Net.HttpStatusCode.BadRequest);
+            }
+            var viewModel = new ClassDetailsViewModel
+            {
+                ClassInfo = db.Classes.Find(id)
+            };
+            if (viewModel.ClassInfo == null)
+            {
+                return HttpNotFound();
+            }
+            viewModel.StudentsInClass = db.Students
+                                          .Where(s => s.ClassID == id)
+                                          .ToList();
+            return View(viewModel);
+        }
+
+
     }
 }

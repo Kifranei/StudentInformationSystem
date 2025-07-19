@@ -1,0 +1,56 @@
+﻿@model StudentInformationSystem.Models.ClassDetailsViewModel
+
+@{
+    ViewBag.Title = "班级详情";
+}
+
+<h2>班级详情</h2>
+
+@* --- 显示班级基本信息 --- *@
+<div>
+    <h4>@Model.ClassInfo.ClassName</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>专业</dt>
+        <dd>@Model.ClassInfo.Major</dd>
+
+        <dt>学年</dt>
+        <dd>@Model.ClassInfo.AcademicYear</dd>
+
+        <dt>班号</dt>
+        <dd>@Model.ClassInfo.ClassNumber</dd>
+
+        <dt>班级人数</dt>
+        <dd>@Model.StudentsInClass.Count() 人</dd>
+    </dl>
+</div>
+<hr />
+
+@* --- 显示该班级的学生列表 --- *@
+<h4>班级学生名单</h4>
+<div class="table-responsive">
+    <table class="table table-striped">
+        <tr>
+            <th>学号</th>
+            <th>姓名</th>
+            <th>性别</th>
+            <th>操作</th>
+        </tr>
+        @foreach (var student in Model.StudentsInClass)
+        {
+            <tr>
+                <td>@student.StudentID</td>
+                <td>@student.StudentName</td>
+                <td>@student.Gender</td>
+                <td>
+                    @* 添加一些快捷操作链接 *@
+                    @Html.ActionLink("编辑该学生", "Edit", "Admin", new { id = student.StudentID }, null)
+                </td>
+            </tr>
+        }
+    </table>
+</div>
+
+<p>
+    @Html.ActionLink("返回班级列表", "ClassList", null, new { @class = "btn btn-default" })
+</p>

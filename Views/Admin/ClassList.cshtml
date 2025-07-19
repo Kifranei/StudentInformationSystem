@@ -1,0 +1,51 @@
+﻿@model IEnumerable<StudentInformationSystem.Models.Classes>
+
+@{
+    ViewBag.Title = "ClassList";
+}
+
+<h2>班级列表</h2>
+
+<p>
+    @Html.ActionLink("添加新班级", "AddClass", null, new { @class = "btn btn-primary" })
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.ClassName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Major)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.AcademicYear)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ClassNumber)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.ClassName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Major)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.AcademicYear)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ClassNumber)
+        </td>
+        <td>
+            @Html.ActionLink("编辑", "EditClass", new { id=item.ClassID }) |
+            @Html.ActionLink("详情", "ClassDetails", new { id=item.ClassID }) |
+            @Html.ActionLink("删除", "DeleteClass", new { id=item.ClassID })
+        </td>
+    </tr>
+}
+
+</table>

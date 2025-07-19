@@ -130,6 +130,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\ChangePasswordViewModel.cs" />
+    <Compile Include="Models\ClassDetailsViewModel.cs" />
     <Compile Include="Models\Classes.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
@@ -277,6 +278,11 @@
     <Content Include="Views\Teacher\DeleteExam.cshtml" />
     <Content Include="Views\Teacher\EditExam.cshtml" />
     <Content Include="Views\Admin\EditExam.cshtml" />
+    <Content Include="Views\Admin\ClassDetails.cshtml" />
+    <Content Include="Views\Admin\ClassList.cshtml" />
+    <Content Include="Views\Admin\AddClass.cshtml" />
+    <Content Include="Views\Admin\EditClass.cshtml" />
+    <Content Include="Views\Admin\DeleteClass.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
