@@ -261,6 +261,11 @@
         body:not(.dark-mode) .sidebar-logo-img {
             filter: invert(1);
         }
+        /* --- 新增：修复成绩徽章(Badge)的显示样式 --- */
+        .list-group-item .badge {
+            background-color: var(--menu-active-bg); /* 使用我们主题的蓝色作为背景 */
+            color: var(--menu-active-text); /* 使用主题中与蓝色搭配的文字颜色 (白色) */
+        }
     </style>
 </head>
 <body>
@@ -287,8 +292,9 @@
                     }
                     else if (currentUser.Role == 1) // 教师菜单
                     {
+                        <li class="@(ViewContext.RouteData.GetRequiredString("action") == "Index" ? "active" : "")"><a href="@Url.Action("Index", "Teacher")"><span class="glyphicon glyphicon-dashboard"></span> 首页</a></li>
                         <li class="@(ViewContext.RouteData.GetRequiredString("action") == "Timetable" ? "active" : "")"><a href="@Url.Action("Timetable", "Teacher")"><span class="glyphicon glyphicon-calendar"></span> 我的课表</a></li>
-                        <li class="@(new[] {"Index", "GradeEntry"}.Contains(ViewContext.RouteData.GetRequiredString("action")) ? "active" : "")"><a href="@Url.Action("Index", "Teacher")"><span class="glyphicon glyphicon-edit"></span> 成绩录入</a></li>
+                        <li class="@(new[] {"CourseList", "GradeEntry"}.Contains(ViewContext.RouteData.GetRequiredString("action")) ? "active" : "")"><a href="@Url.Action("CourseList", "Teacher")"><span class="glyphicon glyphicon-edit"></span> 成绩录入</a></li>
                         <li class="@(ViewContext.RouteData.GetRequiredString("action").StartsWith("Exam") ? "active" : "")"><a href="@Url.Action("ExamList", "Teacher")"><span class="glyphicon glyphicon-pencil"></span> 考试管理</a></li>
                         <li class="@(ViewContext.RouteData.GetRequiredString("action") == "ChangePassword" ? "active" : "")"><a href="@Url.Action("ChangePassword", "Teacher")"><span class="glyphicon glyphicon-lock"></span> 修改密码</a></li>
                     }

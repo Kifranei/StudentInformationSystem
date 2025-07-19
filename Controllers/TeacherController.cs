@@ -1,4 +1,5 @@
 ﻿using StudentInformationSystem.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
@@ -14,24 +15,24 @@ namespace StudentInformationSystem.Controllers
         // 教师登录后的主页
         public ActionResult Index()
         {
-            // 1. 从 Session 获取当前登录的用户信息
             var currentUser = Session["User"] as Users;
-
-            // 2. 根据用户信息，找到对应的教师ID (TeacherID)
-            // currentUser.UserID 关联的是 Teachers 表的 UserID 字段
             var teacher = db.Teachers.FirstOrDefault(t => t.UserID == currentUser.UserID);
+            if (teacher == null) { return View("Error"); }
 
-            // 如果没找到教师信息，返回一个错误提示或空页面
-            if (teacher == null)
-            {
-                return View("Error"); // 假设你有一个叫Error的视图
-            }
+            var viewModel = new TeacherDashboardViewModel { TeacherName = teacher.TeacherName };
 
-            // 3. 使用教师ID，在 Courses 表中查找这位老师教的所有课程
-            var courses = db.Courses.Where(c => c.TeacherID == teacher.TeacherID).ToList();
+            int dayOfWeek = (int)DateTime.Now.DayOfWeek;
+            int ourDayOfWeek = dayOfWeek == 0 ? 7 : dayOfWeek;
 
-            // 4. 将课程列表传递给视图进行显示
-            return View(courses);
+            var taughtCourseIds = db.Courses.Where(c => c.TeacherID == teacher.TeacherID)
+                                    .Select(c => c.CourseID).ToList();
+
+            viewModel.TodaysClasses = db.ClassSessions.Include("Courses")
+                                        .Where(cs => taughtCourseIds.Contains(cs.CourseID) && cs.DayOfWeek == ourDayOfWeek)
+                                        .OrderBy(cs => cs.StartPeriod)
+                                        .ToList();
+
+            return View(viewModel);
         }
 
         // GET: /Teacher/GradeEntry?courseId=...
@@ -299,6 +300,17 @@ namespace StudentInformationSystem.Controllers
                 db.SaveChanges();
             }
             return RedirectToAction("ExamList");
+        }
+        // GET: Teacher/CourseList
+        public ActionResult CourseList()
+        {
+            var currentUser = Session["User"] as Users;
+            var teacher = db.Teachers.FirstOrDefault(t => t.UserID == currentUser.UserID);
+
+            var courses = db.Courses
+                            .Where(c => c.TeacherID == teacher.TeacherID)
+                            .ToList();
+            return View(courses);
         }
     }
 }

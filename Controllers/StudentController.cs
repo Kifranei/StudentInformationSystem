@@ -1,4 +1,5 @@
 ﻿using StudentInformationSystem.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
@@ -14,25 +15,41 @@ namespace StudentInformationSystem.Controllers
         // 学生登录后的主页，即“我的成绩”页面
         public ActionResult Index()
         {
-            // 1. 从 Session 获取当前登录的用户信息
+            // 1. 获取当前登录的学生信息
             var currentUser = Session["User"] as Users;
-
-            // 2. 根据用户信息，找到对应的学生ID (StudentID)
             var student = db.Students.FirstOrDefault(s => s.UserID == currentUser.UserID);
+            if (student == null) { return View("Error"); }
 
-            if (student == null)
+            // 2. 创建 ViewModel 实例
+            var viewModel = new StudentDashboardViewModel
             {
-                // 如果在学生表中找不到记录，可以返回错误页
-                return View("Error");
-            }
+                StudentName = student.StudentName,
+                TodaysClasses = new List<ClassSessions>(),
+                GradedCourses = new List<StudentCourses>()
+            };
 
-            // 3. 使用学生ID，在 StudentCourses 表中查找该生的所有选课记录
-            //    .Include("Courses") 会同时把每条记录关联的课程信息也加载进来
-            var enrollments = db.StudentCourses.Include("Courses")
-                                .Where(sc => sc.StudentID == student.StudentID).ToList();
+            // 3. 查询今天的课程
+            // 将 .NET 的 DayOfWeek (Sunday = 0) 转换为我们约定的 (Monday = 1)
+            int dayOfWeek = (int)DateTime.Now.DayOfWeek;
+            int ourDayOfWeek = dayOfWeek == 0 ? 7 : dayOfWeek;
 
-            // 4. 将该生的所有选课记录传递给视图
-            return View(enrollments);
+            var enrolledCourseIds = db.StudentCourses
+                                      .Where(sc => sc.StudentID == student.StudentID)
+                                      .Select(sc => sc.CourseID).ToList();
+
+            viewModel.TodaysClasses = db.ClassSessions.Include("Courses")
+                                        .Where(cs => enrolledCourseIds.Contains(cs.CourseID) && cs.DayOfWeek == ourDayOfWeek)
+                                        .OrderBy(cs => cs.StartPeriod)
+                                        .ToList();
+
+            // 4. 查询所有已出成绩的课程
+            viewModel.GradedCourses = db.StudentCourses.Include("Courses")
+                                        .Where(sc => sc.StudentID == student.StudentID && sc.Grade != null)
+                                        .OrderByDescending(sc => sc.SC_ID) // 按最近的选课记录排序
+                                        .ToList();
+
+            // 5. 将打包好的 viewModel 传递给视图
+            return View(viewModel);
         }
         // GET: Student/CourseSelection
         // 显示所有可选课程的列表

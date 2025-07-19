@@ -161,9 +161,11 @@
     <Compile Include="Models\StudentCourses.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\StudentDashboardViewModel.cs" />
     <Compile Include="Models\Students.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\TeacherDashboardViewModel.cs" />
     <Compile Include="Models\Teachers.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
@@ -283,6 +285,7 @@
     <Content Include="Views\Admin\AddClass.cshtml" />
     <Content Include="Views\Admin\EditClass.cshtml" />
     <Content Include="Views\Admin\DeleteClass.cshtml" />
+    <Content Include="Views\Teacher\CourseList.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

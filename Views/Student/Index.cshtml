@@ -1,36 +1,75 @@
-﻿@model IEnumerable<StudentInformationSystem.Models.StudentCourses>
+﻿@model StudentInformationSystem.Models.StudentDashboardViewModel
+
 @{
-    ViewBag.Title = "我的成绩单";
+    ViewBag.Title = "个人中心";
+    string[] periodTimes = { "08:40-09:25", "09:30-10:15", "10:35-11:20", "11:25-12:10", "13:20-14:05", "14:10-14:55", "15:15-16:00", "16:05-16:50", "17:30-18:15", "18:20-19:05", "19:10-19:55", "20:00-20:45" };
 }
 
-<h2>我的成绩单</h2>
-<p>下面是您已选的所有课程及对应的成绩。</p>
+<div class="row">
+    <div class="col-md-12">
+        <h2>欢迎回来, @Model.StudentName!</h2>
+        <p class="lead">今天是 @DateTime.Now.ToString("yyyy年MM月dd日, dddd")</p>
+        <hr />
+    </div>
+</div>
 
-<div class="table-responsive">
-    <table class="table table-hover">
-        <tr style="background-color: #f5f5f5;">
-            <th>课程名称</th>
-            <th>学分</th>
-            <th>授课教师</th>
-            <th>成绩</th>
-        </tr>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>@Html.DisplayFor(modelItem => item.Courses.CourseName)</td>
-                <td>@Html.DisplayFor(modelItem => item.Courses.Credits)</td>
-                <td>@Html.DisplayFor(modelItem => item.Courses.Teachers.TeacherName)</td>
-                <td>
-                    @if (item.Grade.HasValue)
-                    {
-                        <strong>@Html.DisplayFor(modelItem => item.Grade)</strong>
-                    }
-                    else
-                    {
-                        <span class="text-muted">暂无成绩</span>
-                    }
-                </td>
-            </tr>
-        }
-    </table>
+<div class="row">
+    <div class="col-md-6">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h3 class="panel-title"><span class="glyphicon glyphicon-bell"></span> 今日课程提醒</h3>
+            </div>
+            <div class="panel-body" style="min-height: 200px;">
+                @if (Model.TodaysClasses.Any())
+                {
+                    <ul class="list-group">
+                        @foreach (var session in Model.TodaysClasses)
+                        {
+                            <li class="list-group-item">
+                                <strong>@session.Courses.CourseName</strong><br>
+                                <small>
+                                    时间：第 @session.StartPeriod - @session.EndPeriod 节 (@periodTimes[session.StartPeriod - 1] - @periodTimes[session.EndPeriod - 1])<br>
+                                    地点：@session.Classroom
+                                </small>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <div class="text-center" style="padding-top: 60px;">
+                        <h4>今天没课，祝你过得愉快！</h4>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="panel panel-success">
+            <div class="panel-heading">
+                <h3 class="panel-title"><span class="glyphicon glyphicon-ok-circle"></span> 最新成绩公布</h3>
+            </div>
+            <div class="panel-body" style="min-height: 200px;">
+                @if (Model.GradedCourses.Any())
+                {
+                    <ul class="list-group">
+                        @foreach (var gradedCourse in Model.GradedCourses)
+                        {
+                            <li class="list-group-item">
+                                <span class="badge">@gradedCourse.Grade</span>
+                                @gradedCourse.Courses.CourseName
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <div class="text-center" style="padding-top: 60px;">
+                        <h4>暂无已公布的成绩。</h4>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
 </div>

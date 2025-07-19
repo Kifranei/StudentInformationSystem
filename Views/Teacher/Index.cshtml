@@ -1,26 +1,58 @@
-﻿@model IEnumerable<StudentInformationSystem.Models.Courses>
+﻿@model StudentInformationSystem.Models.TeacherDashboardViewModel
 @{
-    ViewBag.Title = "我的课表";
+    ViewBag.Title = "教师工作台";
+    string[] periodTimes = { "08:40-09:25", "09:30-10:15", "10:35-11:20", "11:25-12:10", "13:20-14:05", "14:10-14:55", "15:15-16:00", "16:05-16:50", "17:30-18:15", "18:20-19:05", "19:10-19:55", "20:00-20:45" };
 }
 
-<h2>我的课表</h2>
-<p>以下是您本学期所教授的全部课程。</p>
-<div class="table-responsive">
-    <table class="table table-striped table-bordered">
-        <tr>
-            <th>课程名称</th>
-            <th>学分</th>
-            <th>操作</th>
-        </tr>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>@Html.DisplayFor(modelItem => item.CourseName)</td>
-                <td>@Html.DisplayFor(modelItem => item.Credits)</td>
-                <td>
-                    @Html.ActionLink("录入成绩", "GradeEntry", new { courseId = item.CourseID }, new { @class = "btn btn-info btn-xs" })
-                </td>
-            </tr>
-        }
-    </table>
+<div class="row">
+    <div class="col-md-12">
+        <h2>@Model.TeacherName 老师，欢迎回来!</h2>
+        <p class="lead">今天是 @DateTime.Now.ToString("yyyy年MM月dd日, dddd")</p>
+        <hr />
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title"><span class="glyphicon glyphicon-list-alt"></span> 今日授课安排</h3>
+            </div>
+            <div class="panel-body" style="min-height: 200px;">
+                @if (Model.TodaysClasses.Any())
+                {
+                    <ul class="list-group">
+                        @foreach (var session in Model.TodaysClasses)
+                        {
+                            <li class="list-group-item">
+                                <strong>@session.Courses.CourseName</strong><br>
+                                <small>
+                                    时间：第 @session.StartPeriod - @session.EndPeriod 节 (@periodTimes[session.StartPeriod - 1] - @periodTimes[session.EndPeriod - 1])<br>
+                                    地点：@session.Classroom
+                                </small>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <div class="text-center" style="padding-top: 60px;">
+                        <h4>您今天没有课程安排，祝您工作愉快！</h4>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="list-group">
+            <a href="@Url.Action("Timetable", "Teacher")" class="list-group-item">
+                <h4 class="list-group-item-heading">我的完整课表</h4>
+                <p class="list-group-item-text">查看并管理所有周的课程安排。</p>
+            </a>
+            <a href="@Url.Action("CourseList", "Teacher")" class="list-group-item">
+                <h4 class="list-group-item-heading">进入成绩录入</h4>
+                <p class="list-group-item-text">为您的课程录入和修改学生成绩。</p>
+            </a>
+        </div>
+    </div>
 </div>
