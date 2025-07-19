@@ -322,6 +322,17 @@ namespace StudentInformationSystem.Controllers
         public ActionResult DeleteTeacherConfirmed(string id)
         {
             Teachers teacherToDelete = db.Teachers.Find(id);
+
+            // --- 新增的逻辑 ---
+            // 找到该教师教的所有课程
+            var coursesTaught = db.Courses.Where(c => c.TeacherID == id).ToList();
+            // 将这些课程的 TeacherID 设为 null
+            foreach (var course in coursesTaught)
+            {
+                course.TeacherID = null;
+            }
+            // --- 逻辑结束 ---
+
             Users userToDelete = db.Users.Find(teacherToDelete.UserID);
 
             db.Teachers.Remove(teacherToDelete);
@@ -329,7 +340,8 @@ namespace StudentInformationSystem.Controllers
             {
                 db.Users.Remove(userToDelete);
             }
-            db.SaveChanges();
+
+            db.SaveChanges(); // 一次性保存所有更改
             return RedirectToAction("TeacherList");
         }
         public ActionResult CourseList(string searchString)
