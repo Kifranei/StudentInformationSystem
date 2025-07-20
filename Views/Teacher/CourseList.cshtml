@@ -21,6 +21,7 @@
                 <td>@Html.DisplayFor(modelItem => item.Credits)</td>
                 <td>
                     @Html.ActionLink("进入成绩录入", "GradeEntry", new { courseId = item.CourseID }, new { @class = "btn btn-primary btn-sm" })
+                    @Html.ActionLink("打印名单", "ClassRoster", new { courseId = item.CourseID }, new { @class = "btn btn-default btn-sm", target = "_blank" })
                 </td>
             </tr>
         }

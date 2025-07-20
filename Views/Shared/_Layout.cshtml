@@ -273,7 +273,7 @@
         <div class="sidebar-overlay" style="display:none;"></div>
         <aside class="sidebar">
             <div class="sidebar-header">
-                <img src="https://jwgl.hrbzy.edu.cn:9081/style04/images/logo.png" height="35" alt="校徽" class="sidebar-logo-img"/>
+                <img src="https://jwgl.hrbzy.edu.cn:9081/style04/images/logo.png" height="35" alt="校徽" class="sidebar-logo-img" />
             </div>
 
             <ul class="sidebar-menu">
@@ -349,49 +349,50 @@
 
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/bootstrap")
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     @RenderSection("scripts", required: false)
+    <script>
+        $(document).ready(function () {
+            // --- 主题切换逻辑 (升级版) ---
+            const themeCheckbox = $('#theme-checkbox');
+            const body = $('body');
 
-<script>
-    $(document).ready(function () {
-        // --- 主题切换逻辑 (升级版) ---
-        const themeCheckbox = $('#theme-checkbox');
-        const body = $('body');
-
-        function applyTheme(theme, animate) {
-            if (theme === 'dark') {
-                body.addClass('dark-mode');
-                themeCheckbox.prop('checked', true);
-            } else {
-                body.removeClass('dark-mode');
-                themeCheckbox.prop('checked', false);
+            function applyTheme(theme, animate) {
+                if (theme === 'dark') {
+                    body.addClass('dark-mode');
+                    themeCheckbox.prop('checked', true);
+                } else {
+                    body.removeClass('dark-mode');
+                    themeCheckbox.prop('checked', false);
+                }
             }
-        }
 
-        // 页面加载时，应用保存的主题
-        let currentTheme = localStorage.getItem('theme') || 'light';
-        applyTheme(currentTheme);
-
-        // 当点击开关时，切换主题
-        themeCheckbox.on('change', function () {
-            currentTheme = $(this).is(':checked') ? 'dark' : 'light';
-            localStorage.setItem('theme', currentTheme);
+            // 页面加载时，应用保存的主题
+            let currentTheme = localStorage.getItem('theme') || 'light';
             applyTheme(currentTheme);
-        });
+
+            // 当点击开关时，切换主题
+            themeCheckbox.on('change', function () {
+                currentTheme = $(this).is(':checked') ? 'dark' : 'light';
+                localStorage.setItem('theme', currentTheme);
+                applyTheme(currentTheme);
+            });
 
 
-        // --- 响应式菜单的控制逻辑 (保持不变) ---
-        const hamburger = $('.hamburger-menu');
-        const sidebar = $('.sidebar');
-        const overlay = $('.sidebar-overlay');
-        hamburger.on('click', function () {
-            sidebar.addClass('visible');
-            overlay.show();
+            // --- 响应式菜单的控制逻辑 (保持不变) ---
+            const hamburger = $('.hamburger-menu');
+            const sidebar = $('.sidebar');
+            const overlay = $('.sidebar-overlay');
+            hamburger.on('click', function () {
+                sidebar.addClass('visible');
+                overlay.show();
+            });
+            overlay.on('click', function () {
+                sidebar.removeClass('visible');
+                overlay.hide();
+            });
         });
-        overlay.on('click', function () {
-            sidebar.removeClass('visible');
-            overlay.hide();
-        });
-    });
-</script>
+    </script>
 </body>
 </html>

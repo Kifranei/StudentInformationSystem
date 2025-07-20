@@ -312,5 +312,19 @@ namespace StudentInformationSystem.Controllers
                             .ToList();
             return View(courses);
         }
+        // GET: Teacher/ClassRoster?courseId=5
+        public ActionResult ClassRoster(int courseId)
+        {
+            // 查询这门课的所有选课记录，并加载学生信息
+            var enrollments = db.StudentCourses.Include("Students")
+                                .Where(sc => sc.CourseID == courseId)
+                                .OrderBy(sc => sc.Students.StudentID) // 按学号排序
+                                .ToList();
+
+            // 把课程信息也传递过去，用于显示标题
+            ViewBag.Course = db.Courses.Find(courseId);
+
+            return View(enrollments);
+        }
     }
 }

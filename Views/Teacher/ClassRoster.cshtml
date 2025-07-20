@@ -1,0 +1,73 @@
+﻿@model List<StudentInformationSystem.Models.StudentCourses>
+
+@{
+    // 关键：这个页面不使用任何主布局
+    Layout = null;
+    var course = ViewBag.Course as StudentInformationSystem.Models.Courses;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>班级名单 - @course.CourseName</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            padding: 20px;
+        }
+
+        .print-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .print-button {
+            margin-bottom: 20px;
+        }
+        /* 打印时，隐藏打印按钮 */
+        @@media print {
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="print-header">
+            <h2>@course.CourseName</h2>
+            <h4>班级学生名单</h4>
+            <p>授课教师：@course.Teachers.TeacherName</p>
+        </div>
+
+        <button class="btn btn-primary no-print" onclick="window.print();">
+            <span class="glyphicon glyphicon-print"></span> 打印名单
+        </button>
+
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th class="text-center">序号</th>
+                    <th>学号</th>
+                    <th>姓名</th>
+                    <th>性别</th>
+                    <th>班级</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < Model.Count; i++)
+                {
+                    var item = Model[i];
+                    <tr>
+                        <td class="text-center">@(i + 1)</td>
+                        <td>@item.Students.StudentID</td>
+                        <td>@item.Students.StudentName</td>
+                        <td>@item.Students.Gender</td>
+                        <td>@item.Students.Classes.ClassName</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

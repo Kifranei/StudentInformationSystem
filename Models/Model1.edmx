@@ -36,6 +36,7 @@
           <Property Name="CourseName" Type="nvarchar" MaxLength="100" Nullable="false" />
           <Property Name="Credits" Type="float" Nullable="false" />
           <Property Name="TeacherID" Type="nvarchar" MaxLength="20" />
+          <Property Name="CourseType" Type="int" Nullable="false" />
         </EntityType>
         <EntityType Name="Exams">
           <Key>
@@ -249,6 +250,7 @@
           <NavigationProperty Name="StudentCourses" Relationship="Self.FK_StudentCourses_Courses" FromRole="Courses" ToRole="StudentCourses" />
           <NavigationProperty Name="ClassSessions" Relationship="StudentManagementDBModel.FK_ClassSessions_Courses" FromRole="Courses" ToRole="ClassSessions" />
           <NavigationProperty Name="Exams" Relationship="StudentManagementDBModel.FK_Exams_Courses" FromRole="Courses" ToRole="Exams" />
+          <Property Name="CourseType" Type="Int32" Nullable="false" />
         </EntityType>
         <EntityType Name="StudentCourses">
           <Key>
@@ -479,6 +481,7 @@
           <EntitySetMapping Name="Courses">
             <EntityTypeMapping TypeName="StudentManagementDBModel.Courses">
               <MappingFragment StoreEntitySet="Courses">
+                <ScalarProperty Name="CourseType" ColumnName="CourseType" />
                 <ScalarProperty Name="CourseID" ColumnName="CourseID" />
                 <ScalarProperty Name="CourseName" ColumnName="CourseName" />
                 <ScalarProperty Name="Credits" ColumnName="Credits" />

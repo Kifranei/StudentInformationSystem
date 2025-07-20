@@ -1,61 +1,144 @@
-﻿@model IEnumerable<StudentInformationSystem.Models.Courses>
-
+﻿@model StudentInformationSystem.Models.CourseSelectionViewModel
 @{
     ViewBag.Title = "在线选课";
-    var enrolledCourseIDs = ViewBag.EnrolledCourseIDs as List<int>;
-
-    // --- 这里是关键的修改 ---
-    // 如果由于某种原因 enrolledCourseIDs 变成了 null，我们就手动创建一个空的列表
-    // 这样可以防止后续的 .Contains() 方法因为 null 值而报错
-    if (enrolledCourseIDs == null)
-    {
-        enrolledCourseIDs = new List<int>();
-    }
 }
 
 <h2>在线选课</h2>
-<p>请选择您要修读的课程。</p>
-<div class="table-responsive">
-    <table class="table table-bordered table-hover">
-        <thead>
-            <tr style="background-color: #f5f5f5;">
-                <th>课程名称</th>
-                <th>授课教师</th>
-                <th>学分</th>
-                <th class="text-center">操作</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
-                <tr>
-                    <td>@item.CourseName</td>
-                    <td>@item.Teachers.TeacherName</td>
-                    <td>@item.Credits</td>
-                    <td class="text-center">
-                        @* 判断当前课程ID是否存在于已选课程ID列表中 *@
-                        @if (enrolledCourseIDs.Contains(item.CourseID))
-                        {
-                            // --- 如果已选，则显示“已选”标签和“退选”按钮 ---
-                            <span class="label label-success">已选</span>
-                            using (Html.BeginForm("WithdrawCourse", "Student", new { courseId = item.CourseID }, FormMethod.Post, new { @style = "display: inline;" }))
-                            {
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn-warning btn-xs" style="margin-left: 10px;">退 选</button>
-                            }
-                        }
-                        else
-                        {
-                            // --- 如果未选，则显示“选课”按钮 ---
-                            using (Html.BeginForm("SelectCourse", "Student", new { courseId = item.CourseID }, FormMethod.Post, new { @style = "display: inline;" }))
-                            {
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn-success btn-xs">选 课</button>
-                            }
-                        }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+<p>请根据培养计划要求，完成本学期的课程选择。</p>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="alert alert-info">
+            <strong>体育选修课要求:</strong> 需选够 3 门，您已选 @Model.SportsCoursesTaken 门。
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="alert alert-info">
+            <strong>思政必修课要求:</strong> 需选够 4 门，您已选 @Model.PoliticsCoursesTaken 门。
+        </div>
+    </div>
 </div>
+
+
+<div class="timetable-tabs">
+    <button class="btn btn-primary active" data-target="#my-selected">我的已选课程 <span class="badge">@Model.EnrolledCourses.Count</span></button>
+    <button class="btn btn-default" data-target="#course-market">进入选课市场</button>
+</div>
+<hr />
+
+<div class="tab-content" id="main-tab-content" style="padding-top: 10px;">
+    <div class="tab-pane active" id="my-selected">
+        <h4>已选课程列表</h4>
+        @if (Model.EnrolledCourses.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <tr><th>课程名称</th><th>授课教师</th><th>学分</th><th class="text-center">操作</th></tr>
+                    @foreach (var item in Model.EnrolledCourses)
+                    {
+                        <tr>
+                            <td>@item.Courses.CourseName</td>
+                            <td>@item.Courses.Teachers.TeacherName</td>
+                            <td>@item.Courses.Credits</td>
+                            <td class="text-center">
+                                @using (Html.BeginForm("WithdrawCourse", "Student", new { courseId = item.CourseID }, FormMethod.Post, new { @style = "display: inline;" }))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-warning btn-xs">退 选</button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </table>
+            </div>
+        }
+        else
+        {
+            <p class="text-muted">您当前还未选择任何课程。</p>
+        }
+    </div>
+
+    <div class="tab-pane" id="course-market">
+        <h4>选择课程类别进行选课</h4>
+        <div class="btn-group" id="category-buttons">
+            @if (Model.RetakeCourses.Any())
+            {
+                <button class="btn btn-default" data-target="#retake">重修课程</button>
+            }
+            <button class="btn btn-default" data-target="#major">专业必修</button>
+            <button class="btn btn-default" data-target="#public">公共必修</button>
+            <button class="btn btn-default" data-target="#sports">体育选修</button>
+            <button class="btn btn-default" data-target="#politics">思政必修</button>
+            <button class="btn btn-default" data-target="#other">其他选修</button>
+        </div>
+
+        <div class="tab-content" style="padding-top: 20px;">
+            @if (Model.RetakeCourses.Any())
+            {
+                <div class="tab-pane" id="retake">@Html.Partial("_CourseListPartial", Model.RetakeCourses)</div>
+            }
+            <div class="tab-pane" id="major">@Html.Partial("_CourseListPartial", Model.MajorElectives)</div>
+            <div class="tab-pane" id="public">@Html.Partial("_CourseListPartial", Model.PublicElectives)</div>
+            <div class="tab-pane" id="sports">@Html.Partial("_CourseListPartial", Model.SportsElectives)</div>
+            <div class="tab-pane" id="politics">@Html.Partial("_CourseListPartial", Model.PoliticsElectives)</div>
+            <div class="tab-pane" id="other">@Html.Partial("_CourseListPartial", Model.OtherElectives)</div>
+        </div>
+    </div>
+</div>
+
+@* --- 3. 新增的 CSS 和 JavaScript 脚本 --- *@
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+
+            // --- 脚本1: 控制主标签页切换 ("我的已选课程" 和 "进入选课市场") ---
+            $('.timetable-tabs .btn').on('click', function (e) {
+                e.preventDefault(); // 阻止默认行为
+
+                // 按钮样式切换
+                $('.timetable-tabs .btn').removeClass('btn-primary active').addClass('btn-default');
+                $(this).removeClass('btn-default').addClass('btn-primary active');
+
+                // 内容区切换
+                var targetPaneId = $(this).data('target');
+                $('#main-tab-content > .tab-pane').removeClass('active'); // 隐藏所有顶层tab-pane
+                $(targetPaneId).addClass('active'); // 只显示目标tab-pane
+            });
+
+            // --- 脚本2: 控制“选课市场”内的按钮和其对应的内容 ---
+            $('#category-buttons .btn').on('click', function (e) {
+                e.preventDefault();
+
+                // 按钮样式切换
+                $('#category-buttons .btn').removeClass('btn-primary active').addClass('btn-default');
+                $(this).removeClass('btn-default').addClass('btn-primary active');
+
+                // 内容区切换
+                var targetPaneId = $(this).data('target');
+                $('#course-market .tab-content .tab-pane').removeClass('active');
+                $(targetPaneId).addClass('active');
+            });
+
+            // --- 初始状态：默认激活“选课市场”里的第一个类别 ---
+            var firstCategoryButton = $('#category-buttons .btn').first();
+            if (firstCategoryButton.length > 0) {
+                firstCategoryButton.click();
+            }
+        });
+    </script>
+}
+
+<style>
+    /* --- 新增的CSS，用于解决闪屏问题 --- */
+    .tab-content > .tab-pane {
+        display: none;
+    }
+
+    .tab-content > .active {
+        display: block;
+    }
+
+    .timetable-tabs {
+        margin-bottom: 5px;
+    }
+</style>

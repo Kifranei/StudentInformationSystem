@@ -16,7 +16,12 @@
     }
 }
 
-<h2>我的课表</h2>
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <h2>我的课表</h2>
+    <button id="export-timetable-btn" class="btn btn-success">
+        <span class="glyphicon glyphicon-picture"></span> 导出为图片
+    </button>
+</div>
 
 <div class="timetable-tabs">
     <button id="master-view-btn" class="btn btn-primary active">总课表</button>
@@ -36,14 +41,14 @@
     }
     <br />
     <div class="table-responsive">
-        <table class="table table-bordered text-center timetable">
+        <table class="table table-bordered text-center timetable" id="weekly-timetable-table">
             <thead>
                 <tr>
                     <th style="width: 120px;">时间</th>
                     @foreach (var day in days)
                     {
                         <th>@day</th>
-}
+                    }
                 </tr>
             </thead>
             <tbody>
@@ -85,14 +90,14 @@
 @* --- 总课表容器 --- *@
 <div id="master-view">
     <div class="table-responsive">
-        <table class="table table-bordered text-center timetable">
+        <table class="table table-bordered text-center timetable" id="master-timetable-table">
             <thead>
                 <tr>
                     <th style="width: 120px;">时间</th>
                     @foreach (var day in days)
                     {
                         <th>@day</th>
-}
+                    }
                 </tr>
             </thead>
             <tbody>
@@ -134,23 +139,48 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
+
+            // --- 1. Tab-switching logic ---
             $('#weekly-view-btn').on('click', function () {
                 $('#master-view').hide();
                 $('#weekly-view').show();
                 $(this).removeClass('btn-default').addClass('btn-primary active');
                 $('#master-view-btn').removeClass('btn-primary active').addClass('btn-default');
             });
+
             $('#master-view-btn').on('click', function () {
                 $('#weekly-view').hide();
                 $('#master-view').show();
                 $(this).removeClass('btn-default').addClass('btn-primary active');
                 $('#weekly-view-btn').removeClass('btn-primary active').addClass('btn-default');
             });
+
             var urlParams = new URLSearchParams(window.location.search);
             if (urlParams.has('selectedWeek')) {
                 $('#weekly-view-btn').click();
             }
-        });
+
+            // --- 2. Image export logic ---
+            $('#export-timetable-btn').on('click', function () {
+
+                // Determine which table is currently visible
+                var activeTableId = $('#weekly-view').is(':visible') ? 'weekly-timetable-table' : 'master-timetable-table';
+                var timetableElement = document.getElementById(activeTableId);
+
+                var button = $(this);
+                button.text('正在生成...').prop('disabled', true);
+
+                html2canvas(timetableElement).then(function (canvas) {
+                    var link = document.createElement('a');
+                    link.download = '我的课表.png';
+                    link.href = canvas.toDataURL("image/png");
+                    link.click();
+
+                    button.html('<span class="glyphicon glyphicon-picture"></span> 导出为图片').prop('disabled', false);
+                });
+            });
+
+        }); // The one and only closing tag for .ready()
     </script>
 }
 

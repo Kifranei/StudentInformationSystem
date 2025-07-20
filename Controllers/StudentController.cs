@@ -55,22 +55,47 @@ namespace StudentInformationSystem.Controllers
         // 显示所有可选课程的列表
         public ActionResult CourseSelection()
         {
-            // 1. 获取当前登录的学生信息
             var currentUser = Session["User"] as Users;
             var student = db.Students.FirstOrDefault(s => s.UserID == currentUser.UserID);
+            if (student == null) { return View("Error"); }
 
-            // 2. 获取该生已经选了的所有课程的ID列表
-            var enrolledCourseIds = db.StudentCourses
-                                        .Where(sc => sc.StudentID == student.StudentID)
-                                        .Select(sc => sc.CourseID)
+            var viewModel = new CourseSelectionViewModel();
+
+            // 1. 获取该生所有选课记录 (保持不变)
+            var allEnrollments = db.StudentCourses.Include("Courses.Teachers") // 预加载课程和教师信息
+                                   .Where(sc => sc.StudentID == student.StudentID)
+                                   .ToList();
+
+            // --- 新增的逻辑：将完整的已选课程列表存入ViewModel ---
+            viewModel.EnrolledCourses = allEnrollments;
+
+            viewModel.EnrolledCourseIDs = allEnrollments.Select(sc => sc.CourseID).ToList();
+
+            // 2. 找出需要重修的课程 (保持不变)
+            viewModel.RetakeCourses = allEnrollments
+                                        .Where(sc => sc.Grade < 60)
+                                        .Select(sc => sc.Courses)
                                         .ToList();
 
-            // 3. 将这个ID列表存入 ViewBag，方便视图进行判断
-            ViewBag.EnrolledCourseIDs = enrolledCourseIds;
+            // 3. 计算体育课和思政课已选门数 (保持不变)
+            viewModel.SportsCoursesTaken = allEnrollments.Count(sc => sc.Courses.CourseType == 3);
+            viewModel.PoliticsCoursesTaken = allEnrollments.Count(sc => sc.Courses.CourseType == 4);
 
-            // 4. 获取系统中的所有课程，并传递给视图作为主模型
-            var allCourses = db.Courses.Include("Teachers").ToList();
-            return View(allCourses);
+            // 4. 获取所有可选课程 (保持不变)
+            var allAvailableCourses = db.Courses.Include("Teachers")
+                                        .Where(c => !viewModel.EnrolledCourseIDs.Contains(c.CourseID) &&
+                                                    !viewModel.RetakeCourses.Select(rc => rc.CourseID).Contains(c.CourseID))
+                                        .ToList();
+
+            // 5. 按类别对可选课程进行分组 (保持不变)
+            viewModel.MajorElectives = allAvailableCourses.Where(c => c.CourseType == 1).ToList();
+            viewModel.PublicElectives = allAvailableCourses.Where(c => c.CourseType == 2).ToList();
+            viewModel.SportsElectives = allAvailableCourses.Where(c => c.CourseType == 3).ToList();
+            viewModel.PoliticsElectives = allAvailableCourses.Where(c => c.CourseType == 4).ToList();
+            viewModel.OtherElectives = allAvailableCourses.Where(c => c.CourseType == 5).ToList();
+
+            ViewBag.EnrolledCourseIDs = viewModel.EnrolledCourseIDs;
+            return View(viewModel);
         }
 
         // POST: Student/SelectCourse

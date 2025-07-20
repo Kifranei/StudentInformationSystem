@@ -1,0 +1,52 @@
+﻿@model List<StudentInformationSystem.Models.Courses>
+
+@* 从父视图获取已选课程列表 *@
+@{
+    var enrolledIDs = ViewContext.Controller.ViewBag.EnrolledCourseIDs as List<int>;
+    if (enrolledIDs == null) { enrolledIDs = new List<int>(); }
+}
+
+@if (Model.Any())
+{
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <tr>
+                <th>课程名称</th>
+                <th>授课教师</th>
+                <th>学分</th>
+                <th class="text-center">操作</th>
+            </tr>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.CourseName</td>
+                    <td>@item.Teachers.TeacherName</td>
+                    <td>@item.Credits</td>
+                    <td class="text-center">
+                        @if (enrolledIDs.Contains(item.CourseID))
+                        {
+                            <span class="label label-success">已选</span>
+                            using (Html.BeginForm("WithdrawCourse", "Student", new { courseId = item.CourseID }, FormMethod.Post, new { @style = "display: inline;" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-warning btn-xs" style="margin-left: 10px;">退 选</button>
+                            }
+                        }
+                        else
+                        {
+                            using (Html.BeginForm("SelectCourse", "Student", new { courseId = item.CourseID }, FormMethod.Post, new { @style = "display: inline;" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-success btn-xs">选 课</button>
+                            }
+                        }
+                    </td>
+                </tr>
+            }
+        </table>
+    </div>
+}
+else
+{
+    <p class="text-muted">该分类下暂无可选择的课程。</p>
+}
