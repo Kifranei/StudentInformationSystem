@@ -6,6 +6,17 @@
 
 <h2>考试安排列表</h2>
 
+@* --- 新增的搜索表单 --- *@
+@using (Html.BeginForm("ExamList", "Admin", FormMethod.Get, new { @class = "form-inline" }))
+{
+    <div class="form-group">
+        <label>查找考试:</label>
+        <input type="text" name="searchString" value="@ViewBag.CurrentFilter" class="form-control" placeholder="输入课程名或考试地点" />
+    </div>
+    <input type="submit" value="搜 索" class="btn btn-default" />
+}
+<br />
+
 <p>
     @Html.ActionLink("添加新考试", "AddExam", null, new { @class = "btn btn-primary" })
 </p>
@@ -23,23 +34,24 @@
         <th></th>
     </tr>
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Courses.CourseName)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.ExamTime)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Location)
-        </td>
-        <td>
-            @Html.ActionLink("编辑", "EditExam", new { id=item.ExamID }) |
-            @Html.ActionLink("详情", "DetailsExam", new { id=item.ExamID }) |
-            @Html.ActionLink("删除", "DeleteExam", new { id=item.ExamID })
-        </td>
-    </tr>
-}
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Courses.CourseName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ExamTime)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Location)
+            </td>
+            <td>
+                @Html.ActionLink("编辑", "EditExam", new { id = item.ExamID }) |
+                @Html.ActionLink("详情", "DetailsExam", new { id = item.ExamID }) |
+                @Html.ActionLink("删除", "DeleteExam", new { id = item.ExamID })
+            </td>
+        </tr>
+    }
 
 </table>

@@ -326,5 +326,28 @@ namespace StudentInformationSystem.Controllers
 
             return View(enrollments);
         }
+        // GET: Teacher/DetailsExam/5
+        public ActionResult DetailsExam(int? id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(System.Net.HttpStatusCode.BadRequest);
+            }
+            Exams exam = db.Exams.Find(id);
+            if (exam == null)
+            {
+                return HttpNotFound();
+            }
+
+            // 安全检查：确保要查看的考试属于该教师的课程
+            var taughtCourseIds = GetTaughtCourseIds(); // 使用我们之前创建的辅助方法
+            if (!taughtCourseIds.Contains(exam.CourseID))
+            {
+                // 如果不属于，则返回“禁止访问”错误
+                return new HttpStatusCodeResult(System.Net.HttpStatusCode.Forbidden);
+            }
+
+            return View(exam);
+        }
     }
 }

@@ -266,6 +266,19 @@
             background-color: var(--menu-active-bg); /* 使用我们主题的蓝色作为背景 */
             color: var(--menu-active-text); /* 使用主题中与蓝色搭配的文字颜色 (白色) */
         }
+        /* --- 新增：暗色模式下，修正默认按钮(btn-default)的样式 --- */
+        body.dark-mode .btn-default {
+            color: #ccc; /* 浅灰色文字 */
+            background-color: #333; /* 深灰色背景 */
+            border-color: #555; /* 更深的边框色 */
+        }
+
+            /* 鼠标悬停在按钮上时的样式 */
+            body.dark-mode .btn-default:hover {
+                color: #fff;
+                background-color: #444;
+                border-color: #666;
+            }
     </style>
 </head>
 <body>

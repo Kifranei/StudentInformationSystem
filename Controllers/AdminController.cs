@@ -533,10 +533,23 @@ namespace StudentInformationSystem.Controllers
         // --- 考试管理 ---
 
         // GET: Admin/ExamList
-        public ActionResult ExamList()
+        public ActionResult ExamList(string searchString)
         {
-            var exams = db.Exams.Include("Courses").ToList();
-            return View(exams);
+            ViewBag.CurrentFilter = searchString;
+
+            // 预加载课程信息
+            var exams = from e in db.Exams.Include("Courses")
+                        select e;
+
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                exams = exams.Where(e =>
+                    e.Courses.CourseName.Contains(searchString) || // 按课程名搜索
+                    e.Location.Contains(searchString)             // 按地点搜索
+                );
+            }
+
+            return View(exams.ToList());
         }
 
         // GET: Admin/AddExam
@@ -635,10 +648,23 @@ namespace StudentInformationSystem.Controllers
 
         // 1. 显示班级列表 (List)
         // GET: Admin/ClassList
-        public ActionResult ClassList()
+        public ActionResult ClassList(string searchString)
         {
-            var classes = db.Classes.ToList();
-            return View(classes);
+            ViewBag.CurrentFilter = searchString;
+
+            var classes = from c in db.Classes
+                          select c;
+
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                classes = classes.Where(c =>
+                    c.Major.Contains(searchString) ||
+                    c.ClassName.Contains(searchString) ||
+                    c.AcademicYear.ToString().Contains(searchString)
+                );
+            }
+
+            return View(classes.ToList());
         }
 
         // 2. 显示“添加班级”的表单页面 (Add GET)

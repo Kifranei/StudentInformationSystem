@@ -11,7 +11,8 @@ namespace StudentInformationSystem.Models
 {
     using System;
     using System.Collections.Generic;
-    
+    using System.ComponentModel.DataAnnotations;
+
     public partial class Students
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
@@ -19,9 +20,12 @@ namespace StudentInformationSystem.Models
         {
             this.StudentCourses = new HashSet<StudentCourses>();
         }
-    
+
+        [Display(Name = "学号")]
         public string StudentID { get; set; }
+        [Display(Name = "学生姓名")]
         public string StudentName { get; set; }
+        [Display(Name = "性别")]
         public string Gender { get; set; }
         public Nullable<int> ClassID { get; set; }
         public int UserID { get; set; }

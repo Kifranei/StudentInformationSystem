@@ -11,6 +11,17 @@
 
 <h2>班级列表</h2>
 
+@* --- 新增的搜索表单 --- *@
+@using (Html.BeginForm("ClassList", "Admin", FormMethod.Get, new { @class = "form-inline" }))
+{
+    <div class="form-group">
+        <label>查找班级:</label>
+        <input type="text" name="searchString" value="@ViewBag.CurrentFilter" class="form-control" placeholder="输入专业/学年/班级名" />
+    </div>
+    <input type="submit" value="搜 索" class="btn btn-default" />
+}
+<br />
+
 <p>
     @Html.ActionLink("添加新班级", "AddClass", null, new { @class = "btn btn-primary" })
 </p>

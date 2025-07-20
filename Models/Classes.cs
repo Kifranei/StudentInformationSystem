@@ -21,6 +21,7 @@ namespace StudentInformationSystem.Models
         }
     
         public int ClassID { get; set; }
+        [Display(Name = "班级名称")]
         public string ClassName { get; set; }
         [Display(Name = "专业")]
         public string Major { get; set; }

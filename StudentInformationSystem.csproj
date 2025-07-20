@@ -134,16 +134,19 @@
     <Compile Include="Models\Classes.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\Classes.Metadata.cs" />
     <Compile Include="Models\ClassSessions.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\Courses.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\Courses.Metadata.cs" />
     <Compile Include="Models\CourseSelectionViewModel.cs" />
     <Compile Include="Models\Exams.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\Exams.Metadata.cs" />
     <Compile Include="Models\Model1.Context.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -166,13 +169,16 @@
     <Compile Include="Models\Students.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\Students.Metadata.cs" />
     <Compile Include="Models\TeacherDashboardViewModel.cs" />
     <Compile Include="Models\Teachers.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\Teachers.Metadata.cs" />
     <Compile Include="Models\Users.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\Users.Metadata.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -292,6 +298,7 @@
     <Content Include="Views\Teacher\CourseList.cshtml" />
     <Content Include="Views\Teacher\ClassRoster.cshtml" />
     <Content Include="Views\Student\_CourseListPartial.cshtml" />
+    <Content Include="Views\Teacher\DetailsExam.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
