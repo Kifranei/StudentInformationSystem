@@ -1,5 +1,10 @@
 ﻿@model IEnumerable<StudentInformationSystem.Models.Classes>
 
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
 @{
     ViewBag.Title = "ClassList";
 }
@@ -26,26 +31,27 @@
         <th></th>
     </tr>
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.ClassName)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Major)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.AcademicYear)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.ClassNumber)
-        </td>
-        <td>
-            @Html.ActionLink("编辑", "EditClass", new { id=item.ClassID }) |
-            @Html.ActionLink("详情", "ClassDetails", new { id=item.ClassID }) |
-            @Html.ActionLink("删除", "DeleteClass", new { id=item.ClassID })
-        </td>
-    </tr>
-}
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.ClassName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Major)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AcademicYear)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ClassNumber)
+            </td>
+            <td>
+                @Html.ActionLink("编辑", "EditClass", new { id = item.ClassID }) |
+                @Html.ActionLink("详情", "ClassDetails", new { id = item.ClassID }) |
+                @Html.ActionLink("删除", "DeleteClass", new { id = item.ClassID })
+            </td>
+        </tr>
+    }
 
 </table>

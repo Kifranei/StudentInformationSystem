@@ -433,10 +433,19 @@ namespace StudentInformationSystem.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteCourseConfirmed(int id)
         {
+            // --- 新增：检查课程是否已被选择 ---
+            bool isEnrolled = db.StudentCourses.Any(sc => sc.CourseID == id);
+            if (isEnrolled)
+            {
+                TempData["ErrorMessage"] = "删除失败！该课程已被学生选择，无法删除。";
+                return RedirectToAction("CourseList");
+            }
+            // --- 检查结束 ---
+
             Courses course = db.Courses.Find(id);
-            // 注意：更严谨的删除应先检查是否有学生已选此课
             db.Courses.Remove(course);
             db.SaveChanges();
+            TempData["Message"] = "课程删除成功！";
             return RedirectToAction("CourseList");
         }
         // GET: Admin/EnrollmentList
@@ -696,10 +705,20 @@ namespace StudentInformationSystem.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteClassConfirmed(int id)
         {
+            // --- 新增：检查班级下是否有学生 ---
+            bool hasStudents = db.Students.Any(s => s.ClassID == id);
+            if (hasStudents)
+            {
+                // 如果有学生，则不允许删除，并给出提示
+                TempData["ErrorMessage"] = "删除失败！该班级下仍有学生，请先转移或删除学生。";
+                return RedirectToAction("ClassList");
+            }
+            // --- 检查结束 ---
+
             Classes classModel = db.Classes.Find(id);
-            // 注意：更严谨的删除应先检查该班级下是否还有学生
             db.Classes.Remove(classModel);
             db.SaveChanges();
+            TempData["Message"] = "班级删除成功！";
             return RedirectToAction("ClassList");
         }
 
