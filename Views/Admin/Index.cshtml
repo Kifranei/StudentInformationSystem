@@ -99,6 +99,40 @@
     </div>
 </div>
 
+@* 新增：服务器状态信息面板 *@
+<div class="row">
+    <div class="col-md-12">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h3 class="panel-title"><i class="glyphicon glyphicon-hdd"></i> 服务器状态</h3>
+            </div>
+            <div class="panel-body">
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <strong>服务器名称:</strong> @ViewBag.ServerName
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Web 服务器:</strong> @ViewBag.ServerSoftware
+                    </li>
+                    <li class="list-group-item">
+                        <strong>.NET Framework 版本:</strong> @ViewBag.DotNetVersion
+                    </li>
+                    <li class="list-group-item">
+                        <strong>应用程序内存占用:</strong> @ViewBag.MemoryUsage MB
+                    </li>
+                    <li class="list-group-item">
+                        <strong>启动时间:</strong> @ViewBag.StartTime.ToString("yyyy-MM-dd HH:mm:ss")
+                    </li>
+                    <li class="list-group-item">
+                        <strong>已运行时长:</strong> @(((TimeSpan)ViewBag.RunningTime).ToString(@"d\天\ hh\:mm\:ss"))
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 @* 为了让彩色面板生效，我们需要一些额外的CSS，请把这段也加到文件里 *@
 <style>
     .panel-green {

@@ -18,9 +18,14 @@
 
 <div style="display: flex; justify-content: space-between; align-items: center;">
     <h2>我的课表</h2>
-    <button id="export-timetable-btn" class="btn btn-success">
-        <span class="glyphicon glyphicon-picture"></span> 导出为图片
-    </button>
+    <div>
+        <label class="checkbox-inline" style="margin-right: 15px;">
+            <input type="checkbox" id="toggle-adjust-btn"> 隐藏调课按钮
+        </label>
+        <button id="export-timetable-btn" class="btn btn-success">
+            <span class="glyphicon glyphicon-picture"></span> 导出为图片
+        </button>
+    </div>
 </div>
 
 <div class="timetable-tabs">
@@ -69,9 +74,9 @@
                                         <strong>@session.Courses.CourseName</strong><br />
                                         <small>(@session.StartWeek-@session.EndWeek 周)</small><br />
                                         <small>@session.Classroom</small>
-                                        <hr style="margin: 5px 0;" />
+                                        <hr style="margin: 5px 0;" class="adjust-class-hr" />
                                         @* --- 1. 这里加回“调课”按钮 --- *@
-                                        @Html.ActionLink("调课", "AdjustClass", new { sessionId = session.SessionID }, new { @class = "btn btn-warning btn-xs" })
+                                        @Html.ActionLink("调课", "AdjustClass", new { sessionId = session.SessionID }, new { @class = "btn btn-warning btn-xs adjust-class-btn" })
                                     </td>
                                 }
                             }
@@ -118,9 +123,9 @@
                                         <strong>@session.Courses.CourseName</strong><br />
                                         <small>(@session.StartWeek-@session.EndWeek 周)</small><br />
                                         <small>@session.Classroom</small>
-                                        <hr style="margin: 5px 0;" />
+                                        <hr style="margin: 5px 0;" class="adjust-class-hr" />
                                         @* --- 2. 这里也加回“调课”按钮 --- *@
-                                        @Html.ActionLink("调课", "AdjustClass", new { sessionId = session.SessionID }, new { @class = "btn btn-warning btn-xs" })
+                                        @Html.ActionLink("调课", "AdjustClass", new { sessionId = session.SessionID }, new { @class = "btn btn-warning btn-xs adjust-class-btn" })
                                     </td>
                                 }
                             }
@@ -139,6 +144,15 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
+
+            // --- 新增：切换调课按钮显示/隐藏的逻辑 ---
+            $('#toggle-adjust-btn').on('change', function () {
+                if ($(this).is(':checked')) {
+                    $('.adjust-class-btn, .adjust-class-hr').hide();
+                } else {
+                    $('.adjust-class-btn, .adjust-class-hr').show();
+                }
+            });
 
             // --- 1. Tab-switching logic ---
             $('#weekly-view-btn').on('click', function () {
@@ -170,6 +184,13 @@
                 var button = $(this);
                 button.text('正在生成...').prop('disabled', true);
 
+                // 导出前，暂时隐藏按钮和分隔线
+                var adjustElements = $('.adjust-class-btn, .adjust-class-hr');
+                var wereElementsVisible = adjustElements.is(':visible');
+                if (wereElementsVisible) {
+                    adjustElements.hide();
+                }
+
                 html2canvas(timetableElement).then(function (canvas) {
                     var link = document.createElement('a');
                     link.download = '我的课表.png';
@@ -177,6 +198,11 @@
                     link.click();
 
                     button.html('<span class="glyphicon glyphicon-picture"></span> 导出为图片').prop('disabled', false);
+
+                    // 导出后，恢复按钮和分隔线的显示状态
+                    if (wereElementsVisible) {
+                        adjustElements.show();
+                    }
                 });
             });
 

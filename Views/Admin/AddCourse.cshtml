@@ -40,6 +40,14 @@
         </div>
 
         <div class="form-group">
+            @Html.LabelFor(model => model.CourseType, "课程类别", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.DropDownListFor(model => model.CourseType, (SelectList)ViewBag.CourseTypeList, "--请选择类别--", new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.CourseType, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
                 <input type="submit" value="创建" class="btn btn-success" />
                 @Html.ActionLink("返回列表", "CourseList", null, new { @class = "btn btn-default" })

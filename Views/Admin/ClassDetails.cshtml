@@ -52,5 +52,6 @@
 </div>
 
 <p>
-    @Html.ActionLink("返回班级列表", "ClassList", null, new { @class = "btn btn-default" })
+    @Html.ActionLink("添加新学生", "AddStudent", "Admin", new { classId = Model.ClassInfo.ClassID }, new { @class = "btn btn-primary" })
+    @Html.ActionLink("返回班级列表", "ClassList", null, new { @class = "btn btn-default", style = "margin-left: 5px;" })
 </p>

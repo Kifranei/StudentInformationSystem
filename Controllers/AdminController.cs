@@ -1,8 +1,10 @@
 ﻿using StudentInformationSystem.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Web;
+using System.Web.Hosting;
 using System.Web.Mvc;
 
 namespace StudentInformationSystem.Controllers
@@ -20,6 +22,17 @@ namespace StudentInformationSystem.Controllers
             ViewBag.TeachersCount = db.Teachers.Count();
             ViewBag.CoursesCount = db.Courses.Count();
             ViewBag.EnrollmentsCount = db.StudentCourses.Count(); // 总选课人次
+
+            // --- 新增：获取服务器状态信息 ---
+            var currentProcess = Process.GetCurrentProcess();
+            ViewBag.ServerName = Environment.MachineName;
+            ViewBag.ServerSoftware = Request.ServerVariables["SERVER_SOFTWARE"];
+            ViewBag.DotNetVersion = Environment.Version.ToString();
+            // 将字节转换为MB，并保留两位小数
+            ViewBag.MemoryUsage = Math.Round(currentProcess.WorkingSet64 / 1024.0 / 1024.0, 2);
+            ViewBag.StartTime = currentProcess.StartTime;
+            ViewBag.RunningTime = DateTime.Now - currentProcess.StartTime;
+            // --- 信息获取结束 ---
 
             return View();
         }
@@ -51,12 +64,19 @@ namespace StudentInformationSystem.Controllers
 
         // GET: /Admin/AddStudent
         // 这个方法用于显示“添加新学生”的表单页面
-        public ActionResult AddStudent()
+        public ActionResult AddStudent(int? classId)
         {
-            // 为了让用户能从下拉列表中选择班级，我们需要从数据库获取所有班级信息
-            // 并通过 ViewBag 传递给视图
-            ViewBag.ClassID = new SelectList(db.Classes, "ClassID", "ClassName");
-            return View();
+            // 创建一个新的 view model，并设置默认的 ClassID
+            var model = new Students
+            {
+                ClassID = classId
+            };
+
+            // 将下拉列表数据源存入 ViewBag
+            ViewBag.ClassIDList = new SelectList(db.Classes, "ClassID", "ClassName");
+
+            // 将预设好值的模型传递给视图
+            return View(model);
         }
 
         // POST: /Admin/AddStudent
@@ -365,6 +385,7 @@ namespace StudentInformationSystem.Controllers
         {
             // 准备教师下拉列表数据, "TeacherID"是值, "TeacherName"是显示的文本
             ViewBag.TeacherID = new SelectList(db.Teachers, "TeacherID", "TeacherName");
+            ViewBag.CourseTypeList = GetCourseTypes();
             return View();
         }
 
@@ -382,6 +403,7 @@ namespace StudentInformationSystem.Controllers
 
             // 如果验证失败，需要重新加载教师列表
             ViewBag.TeacherID = new SelectList(db.Teachers, "TeacherID", "TeacherName", course.TeacherID);
+            ViewBag.CourseTypeList = GetCourseTypes(course.CourseType);
             return View(course);
         }
         // GET: Admin/EditCourse/5
@@ -392,6 +414,7 @@ namespace StudentInformationSystem.Controllers
             if (course == null) return HttpNotFound();
             // 准备教师下拉列表，并选中当前课程的教师
             ViewBag.TeacherID = new SelectList(db.Teachers, "TeacherID", "TeacherName", course.TeacherID);
+            ViewBag.CourseTypeList = GetCourseTypes(course.CourseType);
             return View(course);
         }
 
@@ -407,6 +430,7 @@ namespace StudentInformationSystem.Controllers
                 return RedirectToAction("CourseList");
             }
             ViewBag.TeacherID = new SelectList(db.Teachers, "TeacherID", "TeacherName", course.TeacherID);
+            ViewBag.CourseTypeList = GetCourseTypes(course.CourseType);
             return View(course);
         }
 
@@ -768,6 +792,19 @@ namespace StudentInformationSystem.Controllers
                                           .Where(s => s.ClassID == id)
                                           .ToList();
             return View(viewModel);
+        }
+
+        private SelectList GetCourseTypes(int? selectedValue = null)
+        {
+            var courseTypes = new List<SelectListItem>
+            {
+                new SelectListItem { Value = "1", Text = "专业必修" },
+                new SelectListItem { Value = "2", Text = "公共必修" },
+                new SelectListItem { Value = "3", Text = "专业选修" },
+                new SelectListItem { Value = "4", Text = "公共选修" },
+                new SelectListItem { Value = "5", Text = "体育选修" }
+            };
+            return new SelectList(courseTypes, "Value", "Text", selectedValue);
         }
 
 
