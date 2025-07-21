@@ -70,6 +70,7 @@
    <connectionStrings>
   <add name="Entities" connectionString="metadata=res://*/Models.Model1.csdl|res://*/Models.Model1.ssdl|res://*/Models.Model1.msl;provider=System.Data.SqlClient;provider connection string="data source=.;initial catalog=StudentManagementDB;integrated security=True;encrypt=False;MultipleActiveResultSets=True;App=EntityFramework"" providerName="System.Data.EntityClient" />
 </connectionStrings>
+
 #### 4\. 启动项目
 
 1. 用 Visual Studio 打开 `.sln` 项目文件。
