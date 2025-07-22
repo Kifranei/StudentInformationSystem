@@ -9,6 +9,13 @@
     <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
 }
 
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        <strong><span class="glyphicon glyphicon-ok-circle"></span> 成功！</strong> @TempData["SuccessMessage"]
+    </div>
+}
+
 <h2>课程列表</h2>
 
 @* --- 搜索表单 --- *@
@@ -25,39 +32,73 @@
     @Html.ActionLink("添加新课程", "AddCourse", null, new { @class = "btn btn-primary" })
 </p>
 <div class="table-responsive">
-    <table class="table">
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.CourseName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Credits)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Teachers.TeacherName)
-            </th>
-            <th></th>
-        </tr>
-
-        @foreach (var item in Model)
-        {
+    <table class="table table-hover">
+        <thead>
             <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.CourseName)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Credits)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Teachers.TeacherName)
-                </td>
-                <td>
-                    @Html.ActionLink("编辑", "EditCourse", new { id = item.CourseID }) |
-                    @Html.ActionLink("详情", "DetailsCourse", new { id = item.CourseID }) |
-                    @Html.ActionLink("删除", "DeleteCourse", new { id = item.CourseID })
-                </td>
+                <th>课程名称</th>
+                <th>学分</th>
+                <th>任课教师</th>
+                <th>课程类型</th>
+                <th>课程安排</th>
+                <th>操作</th>
             </tr>
-        }
-
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        <strong>@Html.DisplayFor(modelItem => item.CourseName)</strong>
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Credits) 学分
+                    </td>
+                    <td>
+                        @if (item.Teachers != null)
+                        {
+                            @Html.DisplayFor(modelItem => item.Teachers.TeacherName)
+                        }
+                        else
+                        {
+                            <span class="text-muted">未分配教师</span>
+                        }
+                    </td>
+                    <td>
+                        @{
+                            string courseType = "";
+                            switch (item.CourseType)
+                            {
+                                case 1: courseType = "专业必修"; break;
+                                case 2: courseType = "公共必修"; break;
+                                case 3: courseType = "专业选修"; break;
+                                case 4: courseType = "公共选修"; break;
+                                case 5: courseType = "体育选修"; break;
+                                default: courseType = "未知类型"; break;
+                            }
+                        }
+                        <span class="label label-info">@courseType</span>
+                    </td>
+                    <td>
+                        @Html.ActionLink("查看安排", "CourseSchedule", new { courseId = item.CourseID }, new { @class = "btn btn-info btn-sm" })
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            @Html.ActionLink("编辑", "EditCourse", new { id = item.CourseID }, new { @class = "btn btn-warning" })
+                            @Html.ActionLink("详情", "DetailsCourse", new { id = item.CourseID }, new { @class = "btn btn-info" })
+                            @Html.ActionLink("删除", "DeleteCourse", new { id = item.CourseID }, new { @class = "btn btn-danger" })
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
     </table>
 </div>
+
+@if (!Model.Any())
+{
+    <div class="well text-center">
+        <h4><span class="glyphicon glyphicon-info-sign text-muted"></span> 暂无课程</h4>
+        <p class="text-muted">系统中还没有任何课程。点击上方的"添加新课程"按钮来创建第一个课程吧！</p>
+        @Html.ActionLink("立即添加", "AddCourse", null, new { @class = "btn btn-primary btn-lg" })
+    </div>
+}

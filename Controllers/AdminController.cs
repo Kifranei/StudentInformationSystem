@@ -807,6 +807,216 @@ namespace StudentInformationSystem.Controllers
             return new SelectList(courseTypes, "Value", "Text", selectedValue);
         }
 
+        // --- 课程安排管理 (Class Sessions Management) ---
+
+        // GET: Admin/CourseSchedule?courseId=5
+        // 查看指定课程的所有课程安排
+        public ActionResult CourseSchedule(int courseId)
+        {
+            var course = db.Courses.Include("Teachers").FirstOrDefault(c => c.CourseID == courseId);
+            if (course == null)
+            {
+                return HttpNotFound();
+            }
+
+            ViewBag.Course = course;
+
+            // 获取该课程的所有课程安排，并按时间排序
+            var classSessions = db.ClassSessions.Include("Courses")
+                                  .Where(cs => cs.CourseID == courseId)
+                                  .OrderBy(cs => cs.StartWeek)
+                                  .ThenBy(cs => cs.DayOfWeek)
+                                  .ThenBy(cs => cs.StartPeriod)
+                                  .ToList();
+
+            return View(classSessions);
+        }
+
+        // GET: Admin/AddCourseSchedule?courseId=5
+        // 为指定课程添加课程安排
+        public ActionResult AddCourseSchedule(int courseId)
+        {
+            var course = db.Courses.Find(courseId);
+            if (course == null)
+            {
+                return HttpNotFound();
+            }
+
+            ViewBag.Course = course;
+
+            var session = new ClassSessions
+            {
+                CourseID = courseId
+            };
+
+            return View(session);
+        }
+
+        // POST: Admin/AddCourseSchedule
+        // 处理添加课程安排的表单提交
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult AddCourseSchedule(ClassSessions session)
+        {
+            // 验证周次范围
+            if (session.StartWeek > session.EndWeek)
+            {
+                ModelState.AddModelError("EndWeek", "结束周数不能小于开始周数。");
+            }
+
+            // 验证节次范围
+            if (session.StartPeriod > session.EndPeriod)
+            {
+                ModelState.AddModelError("EndPeriod", "结束节次不能小于开始节次。");
+            }
+
+            // 检查该课程是否有教师
+            var course = db.Courses.Find(session.CourseID);
+            if (course?.TeacherID == null)
+            {
+                ModelState.AddModelError("", "该课程尚未分配教师，无法添加课程安排。请先为课程分配教师。");
+            }
+            else
+            {
+                // 检查时间冲突 - 同一教师在相同时间段的其他课程安排
+                var conflictingSessions = db.ClassSessions.Include("Courses")
+                    .Where(cs => cs.Courses.TeacherID == course.TeacherID && // 同一教师
+                               cs.DayOfWeek == session.DayOfWeek && // 同一天
+                               !(session.EndWeek < cs.StartWeek || session.StartWeek > cs.EndWeek) && // 周次有重叠
+                               !(session.EndPeriod < cs.StartPeriod || session.StartPeriod > cs.EndPeriod)) // 节次有重叠
+                    .ToList();
+
+                if (conflictingSessions.Any())
+                {
+                    var conflictDescription = string.Join("; ", conflictingSessions.Select(cs => 
+                        $"{cs.Courses.CourseName}(第{cs.StartWeek}-{cs.EndWeek}周, 第{cs.StartPeriod}-{cs.EndPeriod}节)"));
+                    ModelState.AddModelError("", $"时间冲突！该教师在此时间段已有以下课程安排：{conflictDescription}");
+                }
+            }
+
+            if (ModelState.IsValid)
+            {
+                db.ClassSessions.Add(session);
+                db.SaveChanges();
+                
+                TempData["SuccessMessage"] = $"课程安排添加成功！{course.CourseName} - 第{session.StartWeek}-{session.EndWeek}周，星期{GetDayNameForAdmin(session.DayOfWeek)}第{session.StartPeriod}-{session.EndPeriod}节，{session.Classroom}教室。";
+                return RedirectToAction("CourseSchedule", new { courseId = session.CourseID });
+            }
+
+            // 如果验证失败，重新加载课程信息
+            ViewBag.Course = course;
+            return View(session);
+        }
+
+        // GET: Admin/EditCourseSchedule/5
+        // 编辑课程安排
+        public ActionResult EditCourseSchedule(int sessionId)
+        {
+            var sessionToEdit = db.ClassSessions.Include("Courses").FirstOrDefault(cs => cs.SessionID == sessionId);
+            if (sessionToEdit == null)
+            {
+                return HttpNotFound();
+            }
+
+            ViewBag.Course = sessionToEdit.Courses;
+            return View(sessionToEdit);
+        }
+
+        // POST: Admin/EditCourseSchedule/5
+        // 处理编辑课程安排的表单提交
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult EditCourseSchedule(ClassSessions session)
+        {
+            // 验证周次范围
+            if (session.StartWeek > session.EndWeek)
+            {
+                ModelState.AddModelError("EndWeek", "结束周数不能小于开始周数。");
+            }
+
+            // 验证节次范围
+            if (session.StartPeriod > session.EndPeriod)
+            {
+                ModelState.AddModelError("EndPeriod", "结束节次不能小于开始节次。");
+            }
+
+            var course = db.Courses.Find(session.CourseID);
+            if (course?.TeacherID != null)
+            {
+                // 检查时间冲突 - 排除当前正在编辑的安排
+                var conflictingSessions = db.ClassSessions.Include("Courses")
+                    .Where(cs => cs.SessionID != session.SessionID && // 排除当前编辑的安排
+                               cs.Courses.TeacherID == course.TeacherID && // 同一教师
+                               cs.DayOfWeek == session.DayOfWeek && // 同一天
+                               !(session.EndWeek < cs.StartWeek || session.StartWeek > cs.EndWeek) && // 周次有重叠
+                               !(session.EndPeriod < cs.StartPeriod || session.StartPeriod > cs.EndPeriod)) // 节次有重叠
+                    .ToList();
+
+                if (conflictingSessions.Any())
+                {
+                    var conflictDescription = string.Join("; ", conflictingSessions.Select(cs => 
+                        $"{cs.Courses.CourseName}(第{cs.StartWeek}-{cs.EndWeek}周, 第{cs.StartPeriod}-{cs.EndPeriod}节)"));
+                    ModelState.AddModelError("", $"时间冲突！该教师在此时间段已有以下课程安排：{conflictDescription}");
+                }
+            }
+
+            if (ModelState.IsValid)
+            {
+                db.Entry(session).State = System.Data.Entity.EntityState.Modified;
+                db.SaveChanges();
+                
+                TempData["SuccessMessage"] = $"课程安排修改成功！{course.CourseName} 已调整为：第{session.StartWeek}-{session.EndWeek}周，星期{GetDayNameForAdmin(session.DayOfWeek)}第{session.StartPeriod}-{session.EndPeriod}节，{session.Classroom}教室。";
+                return RedirectToAction("CourseSchedule", new { courseId = session.CourseID });
+            }
+
+            // 如果验证失败，重新加载课程信息
+            ViewBag.Course = course;
+            return View(session);
+        }
+
+        // GET: Admin/DeleteCourseSchedule/5
+        // 删除课程安排确认页面
+        public ActionResult DeleteCourseSchedule(int sessionId)
+        {
+            var sessionToDelete = db.ClassSessions.Include("Courses").FirstOrDefault(cs => cs.SessionID == sessionId);
+            if (sessionToDelete == null)
+            {
+                return HttpNotFound();
+            }
+
+            return View(sessionToDelete);
+        }
+
+        // POST: Admin/DeleteCourseSchedule/5
+        // 确认删除课程安排
+        [HttpPost, ActionName("DeleteCourseSchedule")]
+        [ValidateAntiForgeryToken]
+        public ActionResult DeleteCourseScheduleConfirmed(int sessionId)
+        {
+            var sessionToDelete = db.ClassSessions.Include("Courses").FirstOrDefault(cs => cs.SessionID == sessionId);
+            
+            if (sessionToDelete != null)
+            {
+                var courseId = sessionToDelete.CourseID;
+                var courseName = sessionToDelete.Courses.CourseName;
+                var scheduleInfo = $"第{sessionToDelete.StartWeek}-{sessionToDelete.EndWeek}周，星期{GetDayNameForAdmin(sessionToDelete.DayOfWeek)}第{sessionToDelete.StartPeriod}-{sessionToDelete.EndPeriod}节，{sessionToDelete.Classroom}教室";
+                
+                db.ClassSessions.Remove(sessionToDelete);
+                db.SaveChanges();
+                
+                TempData["SuccessMessage"] = $"课程安排删除成功！已删除 {courseName} 的安排：{scheduleInfo}";
+                return RedirectToAction("CourseSchedule", new { courseId });
+            }
+
+            return RedirectToAction("CourseList");
+        }
+
+        // 辅助方法：将数字转换为星期名称
+        private string GetDayNameForAdmin(int dayOfWeek)
+        {
+            string[] days = { "", "一", "二", "三", "四", "五", "六", "日" };
+            return dayOfWeek >= 1 && dayOfWeek <= 7 ? days[dayOfWeek] : "未知";
+        }
 
     }
 }

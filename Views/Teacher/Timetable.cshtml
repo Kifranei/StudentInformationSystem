@@ -4,7 +4,7 @@
     ViewBag.Title = "我的课表";
     int currentWeek = ViewBag.CurrentWeek;
     string[] periodTimes = { "08:40-09:25", "09:30-10:15", "10:35-11:20", "11:25-12:10", "13:20-14:05", "14:10-14:55", "15:15-16:00", "16:05-16:50", "17:30-18:15", "18:20-19:05", "19:10-19:55", "20:00-20:45" };
-    string[] days = { "周一", "周二", "周三", "周四", "周五", "周六", "周日" };
+    string[] days = { "星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日" };
     var timetableData = new Dictionary<string, StudentInformationSystem.Models.ClassSessions>();
     foreach (var session in Model)
     {
@@ -16,9 +16,19 @@
     }
 }
 
+@* 显示成功操作的消息（移除关闭按钮） *@
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        <strong><span class="glyphicon glyphicon-ok-circle"></span> 成功！</strong> @TempData["SuccessMessage"]
+    </div>
+}
+
 <div style="display: flex; justify-content: space-between; align-items: center;">
     <h2>我的课表</h2>
     <div>
+        @Html.ActionLink("添加课程安排", "AddClassSession", null, new { @class = "btn btn-primary", @style = "margin-right: 5px;" })
+        @Html.ActionLink("管理安排", "ManageClassSessions", null, new { @class = "btn btn-info", @style = "margin-right: 10px;" })
         <label class="checkbox-inline" style="margin-right: 15px;">
             <input type="checkbox" id="toggle-adjust-btn"> 隐藏调课按钮
         </label>
@@ -27,6 +37,24 @@
         </button>
     </div>
 </div>
+
+@* 假日周次提示 *@
+@{
+    var holidayDescriptions = StudentInformationSystem.Helpers.HolidayHelper.GetHolidayWeekDescriptions();
+    if (holidayDescriptions.Any())
+    {
+        <div class="alert alert-info" style="margin-top: 15px;">
+            <h5><span class="glyphicon glyphicon-calendar"></span> 本学期法定假日提醒</h5>
+            <p>
+                @foreach (var holiday in holidayDescriptions)
+                {
+                    <span class="label label-warning" style="margin-right: 8px;">第@(holiday.Key)周：@holiday.Value</span>
+                }
+            </p>
+            <small class="text-muted">假日周次将自动从课表中排除，不会显示课程安排。</small>
+        </div>
+    }
+}
 
 <div class="timetable-tabs">
     <button id="master-view-btn" class="btn btn-primary active">总课表</button>
@@ -44,6 +72,19 @@
         </div>
         <input type="submit" value="查询" class="btn btn-primary" />
     }
+    
+    @* 显示当前周的假日状态 *@
+    @{
+        var isCurrentWeekHoliday = StudentInformationSystem.Helpers.HolidayHelper.IsHolidayWeek(currentWeek);
+        if (isCurrentWeekHoliday)
+        {
+            var holidayInfo = holidayDescriptions.ContainsKey(currentWeek) ? holidayDescriptions[currentWeek] : "法定假日";
+            <div style="margin: 10px 0;">
+                <span class="label label-danger">第@currentWeek周：@holidayInfo（无课）</span>
+            </div>
+        }
+    }
+    
     <br />
     <div class="table-responsive">
         <table class="table table-bordered text-center timetable" id="weekly-timetable-table">
@@ -57,6 +98,9 @@
                 </tr>
             </thead>
             <tbody>
+                @{
+                    var isHolidayWeek = StudentInformationSystem.Helpers.HolidayHelper.IsHolidayWeek(currentWeek);
+                }
                 @for (int period = 1; period <= 12; period++)
                 {
                     <tr>
@@ -64,7 +108,8 @@
                         @for (int day = 1; day <= 7; day++)
                         {
                             var key = $"{day}_{period}";
-                            if (timetableData.ContainsKey(key) && currentWeek >= timetableData[key].StartWeek && currentWeek <= timetableData[key].EndWeek)
+                            
+                            if (timetableData.ContainsKey(key) && currentWeek >= timetableData[key].StartWeek && currentWeek <= timetableData[key].EndWeek && !isHolidayWeek)
                             {
                                 var session = timetableData[key];
                                 if (session.StartPeriod == period)
@@ -75,12 +120,22 @@
                                         <small>(@session.StartWeek-@session.EndWeek 周)</small><br />
                                         <small>@session.Classroom</small>
                                         <hr style="margin: 5px 0;" class="adjust-class-hr" />
-                                        @* --- 1. 这里加回“调课”按钮 --- *@
                                         @Html.ActionLink("调课", "AdjustClass", new { sessionId = session.SessionID }, new { @class = "btn btn-warning btn-xs adjust-class-btn" })
                                     </td>
                                 }
                             }
-                            else
+                            else if (isHolidayWeek && period == 1)
+                            {
+                                @* 在假日周的第一节显示假日提示 *@
+                                <td rowspan="12" class="holiday-week">
+                                    <div class="holiday-notice">
+                                        <span class="glyphicon glyphicon-calendar" style="font-size: 24px; color: #d9534f;"></span><br />
+                                        <strong>法定假日</strong><br />
+                                        <small>本周无课</small>
+                                    </div>
+                                </td>
+                            }
+                            else if (!isHolidayWeek)
                             {
                                 <td></td>
                             }
@@ -124,7 +179,6 @@
                                         <small>(@session.StartWeek-@session.EndWeek 周)</small><br />
                                         <small>@session.Classroom</small>
                                         <hr style="margin: 5px 0;" class="adjust-class-hr" />
-                                        @* --- 2. 这里也加回“调课”按钮 --- *@
                                         @Html.ActionLink("调课", "AdjustClass", new { sessionId = session.SessionID }, new { @class = "btn btn-warning btn-xs adjust-class-btn" })
                                     </td>
                                 }
@@ -140,6 +194,16 @@
         </table>
     </div>
 </div>
+
+@* 如果没有课程安排，显示友好提示 *@
+@if (!Model.Any())
+{
+    <div class="well text-center" style="margin-top: 30px;">
+        <h4><span class="glyphicon glyphicon-info-sign text-muted"></span> 暂无课程安排</h4>
+        <p class="text-muted">您还没有添加任何课程安排。点击上方的"添加课程安排"按钮开始创建您的第一个课程安排吧！</p>
+        @Html.ActionLink("立即添加", "AddClassSession", null, new { @class = "btn btn-primary btn-lg" })
+    </div>
+}
 
 @section Scripts {
     <script>
@@ -232,4 +296,25 @@
             font-size: 13px;
             line-height: 1.5;
         }
+
+    .holiday-week {
+        background-color: #f2dede !important;
+        border: 2px solid #d9534f !important;
+        color: #a94442;
+    }
+
+    .holiday-notice {
+        padding: 20px 10px;
+        text-align: center;
+    }
+
+    .label-warning {
+        background-color: #f0ad4e;
+    }
+
+    .alert-info {
+        border-color: #bce8f1;
+        background-color: #d9edf7;
+        color: #31708f;
+    }
 </style>

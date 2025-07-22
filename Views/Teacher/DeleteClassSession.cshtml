@@ -1,0 +1,139 @@
+@model StudentInformationSystem.Models.ClassSessions
+
+@{
+    ViewBag.Title = "删除课程安排";
+}
+
+<h2>删除课程安排</h2>
+<hr />
+
+<div class="alert alert-danger">
+    <h4><span class="glyphicon glyphicon-warning-sign"></span> 确认删除</h4>
+    <p>您确定要删除以下课程安排吗？此操作无法撤销。</p>
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">课程安排详情</h3>
+    </div>
+    <div class="panel-body">
+        <dl class="dl-horizontal">
+            <dt>课程名称：</dt>
+            <dd><strong>@Model.Courses.CourseName</strong></dd>
+
+            <dt>周次范围：</dt>
+            <dd>第 @Model.StartWeek - @Model.EndWeek 周</dd>
+
+            <dt>上课时间：</dt>
+            <dd>
+                @{
+                    string[] dayNames = { "", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日" };
+                    var dayName = Model.DayOfWeek >= 1 && Model.DayOfWeek <= 7 ? dayNames[Model.DayOfWeek] : "未知";
+                }
+                @dayName 第 @Model.StartPeriod - @Model.EndPeriod 节
+                <br />
+                <small class="text-muted">
+                    @{
+                        string[] periodTimes = { "08:40-09:25", "09:30-10:15", "10:35-11:20", "11:25-12:10", "13:20-14:05", "14:10-14:55", "15:15-16:00", "16:05-16:50", "17:30-18:15", "18:20-19:05", "19:10-19:55", "20:00-20:45" };
+                        var startTime = Model.StartPeriod >= 1 && Model.StartPeriod <= 12 ? periodTimes[Model.StartPeriod - 1].Split('-')[0] : "";
+                        var endTime = Model.EndPeriod >= 1 && Model.EndPeriod <= 12 ? periodTimes[Model.EndPeriod - 1].Split('-')[1] : "";
+                    }
+                    (@startTime - @endTime)
+                </small>
+            </dd>
+
+            <dt>教室：</dt>
+            <dd>@Model.Classroom</dd>
+
+            <dt>假日状态：</dt>
+            <dd>
+                @{
+                    var holidayWeeks = StudentInformationSystem.Helpers.HolidayHelper.GetCurrentSemesterHolidayWeeks();
+                    var conflictingHolidayWeeks = new List<int>();
+                    for (int week = Model.StartWeek; week <= Model.EndWeek; week++)
+                    {
+                        if (holidayWeeks.Contains(week))
+                        {
+                            conflictingHolidayWeeks.Add(week);
+                        }
+                    }
+                }
+                @if (conflictingHolidayWeeks.Any())
+                {
+                    <span class="label label-warning">包含假日周次</span>
+                    <br />
+                    <small class="text-muted">第@(string.Join("、", conflictingHolidayWeeks))周为法定假日，课程不会在这些周次显示</small>
+                }
+                else
+                {
+                    <span class="label label-success">无假日冲突</span>
+                    <br />
+                    <small class="text-muted">所有周次均为正常上课周</small>
+                }
+            </dd>
+        </dl>
+    </div>
+</div>
+
+@using (Html.BeginForm()) {
+    @Html.AntiForgeryToken()
+
+    <div class="form-actions">
+        <input type="submit" value="确认删除" class="btn btn-danger" onclick="return confirm('您确定要删除这个课程安排吗？此操作无法撤销！');" />
+        @Html.ActionLink("取消", "ManageClassSessions", null, new { @class = "btn btn-default" })
+    </div>
+}
+
+<div class="panel panel-info" style="margin-top: 30px;">
+    <div class="panel-heading">
+        <h4><span class="glyphicon glyphicon-info-sign"></span> 删除说明</h4>
+    </div>
+    <div class="panel-body">
+        <ul>
+            <li><strong>影响范围：</strong>删除此课程安排后，它将从您的课表中完全移除。</li>
+            <li><strong>智能检测：</strong>系统已自动检测该安排是否包含法定假日周次。</li>
+            <li><strong>学生选课：</strong>如果学生已经选了这门课程，删除安排不会影响他们的选课记录，但会影响课表显示。</li>
+            <li><strong>替代方案：</strong>如果您只是想调整时间，建议使用"调整"功能而不是删除。</li>
+            <li><strong>重新创建：</strong>删除后，您可以随时重新创建新的课程安排。</li>
+        </ul>
+    </div>
+</div>
+
+<style>
+    .dl-horizontal dt {
+        text-align: left;
+        width: 100px;
+    }
+    
+    .dl-horizontal dd {
+        margin-left: 120px;
+    }
+    
+    .form-actions {
+        padding-top: 20px;
+        border-top: 1px solid #e5e5e5;
+    }
+    
+    .panel-info {
+        border-color: #bee5eb;
+    }
+    
+    .panel-info .panel-heading {
+        background-color: #d1ecf1;
+        border-color: #bee5eb;
+        color: #0c5460;
+    }
+
+    .label {
+        font-size: 85%;
+        padding: 0.3em 0.6em;
+    }
+
+    .label-warning {
+        background-color: #f0ad4e;
+    }
+
+    .label-success {
+        background-color: #5cb85c;
+    }
+</style>

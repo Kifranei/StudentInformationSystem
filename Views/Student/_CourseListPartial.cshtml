@@ -1,48 +1,125 @@
 ﻿@model List<StudentInformationSystem.Models.Courses>
 
-@* 从父视图获取已选课程列表 *@
+@* 从父视图获取已选课程列表和课程安排信息 *@
 @{
     var enrolledIDs = ViewContext.Controller.ViewBag.EnrolledCourseIDs as List<int>;
     if (enrolledIDs == null) { enrolledIDs = new List<int>(); }
+    
+    var courseSchedules = ViewContext.Controller.ViewBag.CourseSchedules as List<StudentInformationSystem.Models.ClassSessions>;
+    if (courseSchedules == null) { courseSchedules = new List<StudentInformationSystem.Models.ClassSessions>(); }
 }
 
 @if (Model.Any())
 {
     <div class="table-responsive">
         <table class="table table-hover">
-            <tr>
-                <th>课程名称</th>
-                <th>授课教师</th>
-                <th>学分</th>
-                <th class="text-center">操作</th>
-            </tr>
-            @foreach (var item in Model)
-            {
+            <thead>
                 <tr>
-                    <td>@item.CourseName</td>
-                    <td>@item.Teachers.TeacherName</td>
-                    <td>@item.Credits</td>
-                    <td class="text-center">
-                        @if (enrolledIDs.Contains(item.CourseID))
-                        {
-                            <span class="label label-success">已选</span>
-                            using (Html.BeginForm("WithdrawCourse", "Student", new { courseId = item.CourseID }, FormMethod.Post, new { @style = "display: inline;" }))
-                            {
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn-warning btn-xs" style="margin-left: 10px;">退 选</button>
-                            }
-                        }
-                        else
-                        {
-                            using (Html.BeginForm("SelectCourse", "Student", new { courseId = item.CourseID }, FormMethod.Post, new { @style = "display: inline;" }))
-                            {
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn-success btn-xs">选 课</button>
-                            }
-                        }
-                    </td>
+                    <th>课程名称</th>
+                    <th>授课教师</th>
+                    <th>学分</th>
+                    <th>上课时间</th>
+                    <th class="text-center">操作</th>
                 </tr>
-            }
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            <strong>@item.CourseName</strong>
+                            @{
+                                string courseType = "";
+                                switch (item.CourseType)
+                                {
+                                    case 1: courseType = "专业必修"; break;
+                                    case 2: courseType = "公共必修"; break;
+                                    case 3: courseType = "专业选修"; break;
+                                    case 4: courseType = "公共选修"; break;
+                                    case 5: courseType = "体育选修"; break;
+                                    default: courseType = "未知"; break;
+                                }
+                            }
+                            <br /><small><span class="label label-info" style="font-size: 9px;">@courseType</span></small>
+                        </td>
+                        <td>
+                            @if (item.Teachers != null)
+                            {
+                                @item.Teachers.TeacherName
+                            }
+                            else
+                            {
+                                <span class="text-muted">待分配</span>
+                            }
+                        </td>
+                        <td>@item.Credits 学分</td>
+                        <td>
+                            @{
+                                var schedules = courseSchedules.Where(cs => cs.CourseID == item.CourseID).ToList();
+                                string[] dayNames = { "", "周一", "周二", "周三", "周四", "周五", "周六", "周日" };
+                                var holidayWeeks = StudentInformationSystem.Helpers.HolidayHelper.GetCurrentSemesterHolidayWeeks();
+                            }
+                            @if (schedules.Any())
+                            {
+                                foreach (var schedule in schedules)
+                                {
+                                    var dayName = schedule.DayOfWeek >= 1 && schedule.DayOfWeek <= 7 ? dayNames[schedule.DayOfWeek] : "未知";
+                                    
+                                    // 检查是否包含假日周次
+                                    var hasHolidays = false;
+                                    for (int week = schedule.StartWeek; week <= schedule.EndWeek; week++)
+                                    {
+                                        if (holidayWeeks.Contains(week))
+                                        {
+                                            hasHolidays = true;
+                                            break;
+                                        }
+                                    }
+                                    
+                                    <div class="schedule-item" style="margin-bottom: 4px;">
+                                        <small>
+                                            <span class="label label-primary" style="font-size: 9px;">第@(schedule.StartWeek)-@(schedule.EndWeek)周</span>
+                                            <span class="label label-default" style="font-size: 9px;">@dayName</span>
+                                            <span class="label label-default" style="font-size: 9px;">第@(schedule.StartPeriod)-@(schedule.EndPeriod)节</span>
+                                            <span class="label label-success" style="font-size: 9px;">@schedule.Classroom</span>
+                                            @if (hasHolidays)
+                                            {
+                                                <span class="label label-warning" style="font-size: 9px;" title="包含法定假日">含假日</span>
+                                            }
+                                        </small>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <small class="text-muted">
+                                    <span class="glyphicon glyphicon-time"></span> 时间待定
+                                </small>
+                            }
+                        </td>
+                        <td class="text-center">
+                            @if (enrolledIDs.Contains(item.CourseID))
+                            {
+                                <span class="label label-success">已选</span>
+                                <br />
+                                using (Html.BeginForm("WithdrawCourse", "Student", new { courseId = item.CourseID }, FormMethod.Post, new { @style = "display: inline; margin-top: 5px;" }))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-warning btn-xs">退 选</button>
+                                }
+                            }
+                            else
+                            {
+                                using (Html.BeginForm("SelectCourse", "Student", new { courseId = item.CourseID }, FormMethod.Post, new { @style = "display: inline;" }))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-success btn-xs">选 课</button>
+                                }
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
         </table>
     </div>
 }
@@ -50,3 +127,25 @@ else
 {
     <p class="text-muted">该分类下暂无可选择的课程。</p>
 }
+
+<style>
+    .schedule-item {
+        line-height: 1.2;
+    }
+    
+    .label {
+        margin-right: 2px;
+        padding: 2px 4px;
+        font-size: 9px !important;
+        font-weight: normal;
+    }
+    
+    .table td {
+        vertical-align: middle;
+    }
+    
+    .table th {
+        background-color: #f5f5f5;
+        font-weight: bold;
+    }
+</style>

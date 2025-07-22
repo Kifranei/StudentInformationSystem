@@ -94,6 +94,21 @@ namespace StudentInformationSystem.Controllers
             viewModel.PoliticsElectives = allAvailableCourses.Where(c => c.CourseType == 4).ToList();
             viewModel.OtherElectives = allAvailableCourses.Where(c => c.CourseType == 5).ToList();
 
+            // --- 新增：获取所有课程的课程安排信息 ---
+            var allCourseIds = allAvailableCourses.Select(c => c.CourseID)
+                                .Union(viewModel.RetakeCourses.Select(rc => rc.CourseID))
+                                .Union(viewModel.EnrolledCourseIDs)
+                                .ToList();
+
+            var courseSchedules = db.ClassSessions
+                                    .Where(cs => allCourseIds.Contains(cs.CourseID))
+                                    .OrderBy(cs => cs.CourseID)
+                                    .ThenBy(cs => cs.StartWeek)
+                                    .ThenBy(cs => cs.DayOfWeek)
+                                    .ThenBy(cs => cs.StartPeriod)
+                                    .ToList();
+
+            ViewBag.CourseSchedules = courseSchedules;
             ViewBag.EnrolledCourseIDs = viewModel.EnrolledCourseIDs;
             return View(viewModel);
         }

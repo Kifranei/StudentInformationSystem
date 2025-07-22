@@ -20,12 +20,37 @@
             overflow: hidden; /* 防止出现滚动条 */
         }
 
+        /* --- 主题变量 --- */
+        :root {
+            --login-bg-color: #f5f7f9;
+            --header-bg-color: #fff;
+            --text-color-primary: #333333;
+            --text-color-secondary: #555555;
+            --form-bg-color: rgba(255, 255, 255, 0.85);
+            --input-bg-color: rgba(0, 80, 139, 0.1);
+            --border-color: #ccc;
+            --footer-text-color: rgba(255, 255, 255, 0.7);
+        }
+
+        body.dark-mode {
+            --login-bg-color: #141414;
+            --header-bg-color: #1f1f1f;
+            --text-color-primary: #e0e0e0;
+            --text-color-secondary: #a0a0a0;
+            --form-bg-color: rgba(31, 31, 31, 0.9);
+            --input-bg-color: rgba(255, 255, 255, 0.1);
+            --border-color: #555;
+            --footer-text-color: rgba(255, 255, 255, 0.6);
+        }
+
         /* --- 整体布局 --- */
         .login-wrapper {
             width: 100%;
             height: 100%;
             display: flex;
             flex-direction: column; /* 垂直方向排列 */
+            background-color: var(--login-bg-color);
+            transition: background-color 0.3s ease;
         }
 
         /* --- 顶部 Logo 区域 --- */
@@ -33,13 +58,81 @@
             height: 15%; /* 占屏幕高度的15% */
             padding: 2% 5%; /* 内边距 */
             box-sizing: border-box;
-            background-color: #fff;
+            background-color: var(--header-bg-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s ease;
         }
 
-            .login-header img {
-                height: 60%;
-                width: auto;
-            }
+        .login-header-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .login-header img {
+            height: 60%;
+            width: auto;
+        }
+
+        .login-header-right {
+            display: flex;
+            align-items: center;
+        }
+
+        /* --- 主题切换开关样式 --- */
+        .theme-switch-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .theme-switch-label {
+            font-size: 14px;
+            color: var(--text-color-secondary);
+            margin-right: 8px;
+        }
+
+        .label34{
+            width: 50px;
+            height: 26px;
+            position: relative;
+            cursor: pointer;
+        }
+        .inp34{
+            display: none;
+        }
+        .check-span34{
+            width: 100%;
+            height: 100%;
+            display: block;
+            background-color: #383838;
+            border: 2px solid #383838;
+            box-sizing: border-box;
+            border-radius: 13px;
+            transition: 0.3s linear;
+        }
+        .check-span34:after{
+            content: '';
+            width: 18px;
+            height: 18px;
+            background-color: #383838;
+            box-shadow: inset -6px -3px 0 #ffffff;
+            border-radius: 9px;
+            position: absolute;
+            top: 4px;
+            left: 5px;
+            box-sizing: border-box;
+            transition: 0.3s ease-in-out;
+        }
+        .inp34:checked + .check-span34{
+            background-color: #ffffff;
+        }
+        .inp34:checked + .check-span34:after{
+            transform: translateX(22px);
+            background-color: orange;
+            box-shadow: none;
+        }
 
         /* --- 主内容区域 (背景图 + 登录框) --- */
         .login-main {
@@ -55,47 +148,66 @@
             justify-content: center; /* 水平居中 */
         }
 
+        /* --- 暗色模式下的背景图片滤镜 --- */
+        body.dark-mode .login-main {
+            filter: brightness(0.6) contrast(1.1);
+        }
+
         /* --- 登录框 --- */
         .login-form-box {
             width: 400px;
             padding: 40px;
             /* 模仿原版的半透明玻璃效果 */
-            background: rgba(255, 255, 255, 0.85);
+            background: var(--form-bg-color);
             backdrop-filter: blur(10px); /* 增加模糊效果，更有质感 */
             border-radius: 10px;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
             text-align: center;
             z-index: 10;
+            transition: background 0.3s ease;
         }
 
-            /* --- 登录框内的元素样式 --- */
-            .login-form-box h2 {
-                font-size: 28px;
-                color: #00508b; /* 从你提供的代码中提取的颜色 */
-                margin-top: 0;
-                margin-bottom: 35px;
-            }
+        /* --- 登录框内的元素样式 --- */
+        .login-form-box h2 {
+            font-size: 28px;
+            color: #00508b; /* 从你提供的代码中提取的颜色 */
+            margin-top: 0;
+            margin-bottom: 35px;
+        }
+
+        body.dark-mode .login-form-box h2 {
+            color: #4a9eff;
+        }
 
         .form-input-group {
             margin-bottom: 25px;
         }
 
-            .form-input-group input {
-                width: 100%;
-                height: 50px;
-                border: 1px solid #ccc;
-                border-radius: 25px; /* 圆角输入框 */
-                padding: 0 20px;
-                font-size: 16px;
-                box-sizing: border-box;
-                background: rgba(0, 80, 139, 0.1); /* 从你提供的代码中提取的颜色 */
-                color: #333;
-            }
+        .form-input-group input {
+            width: 100%;
+            height: 50px;
+            border: 1px solid var(--border-color);
+            border-radius: 25px; /* 圆角输入框 */
+            padding: 0 20px;
+            font-size: 16px;
+            box-sizing: border-box;
+            background: var(--input-bg-color);
+            color: var(--text-color-primary);
+            transition: all 0.3s ease;
+        }
 
-                .form-input-group input:focus {
-                    outline: none;
-                    border-color: #00508b;
-                }
+        .form-input-group input:focus {
+            outline: none;
+            border-color: #00508b;
+        }
+
+        body.dark-mode .form-input-group input:focus {
+            border-color: #4a9eff;
+        }
+
+        .form-input-group input::placeholder {
+            color: var(--text-color-secondary);
+        }
 
         .login-btn {
             width: 100%;
@@ -109,10 +221,10 @@
             transition: all 0.3s ease;
         }
 
-            .login-btn:hover {
-                opacity: 0.9;
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            }
+        .login-btn:hover {
+            opacity: 0.9;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
 
         .error-message {
             margin-top: 15px;
@@ -124,9 +236,11 @@
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            color: rgba(255, 255, 255, 0.7);
+            color: var(--footer-text-color);
             font-size: 14px;
+            transition: color 0.3s ease;
         }
+
         /* --- 响应式设计：针对手机等小屏幕设备 --- */
         @@media screen and (max-width: 768px) {
             .login-header {
@@ -150,13 +264,43 @@
             .form-input-group input, .login-btn {
                 height: 45px;
             }
+            .theme-switch-label {
+                display: none; /* 在移动端隐藏标签文字 */
+            }
+            .label34 {
+                width: 45px;
+                height: 24px;
+            }
+            .check-span34 {
+                border-radius: 12px;
+            }
+            .check-span34:after {
+                width: 16px;
+                height: 16px;
+                border-radius: 8px;
+                top: 3px;
+                left: 4px;
+            }
+            .inp34:checked + .check-span34:after {
+                transform: translateX(19px);
+            }
         }
     </style>
 </head>
 <body>
     <div class="login-wrapper">
         <header class="login-header">
-            <img src="https://jwgl.hrbzy.edu.cn:9081/login/s04/images/logo-1-1e3b8670d915457caeefaa35d0d83828.png" alt="Logo">
+            <div class="login-header-left">
+                <img src="https://jwgl.hrbzy.edu.cn:9081/login/s04/images/logo-1-1e3b8670d915457caeefaa35d0d83828.png" alt="Logo">
+            </div>
+            <div class="login-header-right">
+                <div class="theme-switch-wrapper">
+                    <label class="label34" title="切换亮色/暗色主题">
+                        <input class="inp34" type="checkbox" id="theme-checkbox">
+                        <span class="check-span34"></span>
+                    </label>
+                </div>
+            </div>
         </header>
 
         <main class="login-main">
@@ -190,5 +334,35 @@
             </div>
         </main>
     </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // --- 主题切换逻辑 ---
+            const themeCheckbox = $('#theme-checkbox');
+            const body = $('body');
+
+            function applyTheme(theme) {
+                if (theme === 'dark') {
+                    body.addClass('dark-mode');
+                    themeCheckbox.prop('checked', true);
+                } else {
+                    body.removeClass('dark-mode');
+                    themeCheckbox.prop('checked', false);
+                }
+            }
+
+            // 页面加载时，应用保存的主题
+            let currentTheme = localStorage.getItem('theme') || 'light';
+            applyTheme(currentTheme);
+
+            // 当点击开关时，切换主题
+            themeCheckbox.on('change', function () {
+                currentTheme = $(this).is(':checked') ? 'dark' : 'light';
+                localStorage.setItem('theme', currentTheme);
+                applyTheme(currentTheme);
+            });
+        });
+    </script>
 </body>
 </html>

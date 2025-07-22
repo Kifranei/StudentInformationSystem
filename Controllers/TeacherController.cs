@@ -1,4 +1,5 @@
 ﻿using StudentInformationSystem.Models;
+using StudentInformationSystem.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -151,8 +152,81 @@ namespace StudentInformationSystem.Controllers
             // 4. 将查询到的课表数据传递给视图
             return View(classSessions);
         }
+
+        // GET: Teacher/AddClassSession
+        // 显示添加课程安排的表单
+        public ActionResult AddClassSession()
+        {
+            var taughtCourseIds = GetTaughtCourseIds();
+            // 下拉列表只包含该教师自己的课程
+            ViewBag.CourseID = new SelectList(db.Courses.Where(c => taughtCourseIds.Contains(c.CourseID)), "CourseID", "CourseName");
+            return View();
+        }
+
+        // POST: Teacher/AddClassSession
+        // 处理添加课程安排的表单提交
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult AddClassSession(ClassSessions session)
+        {
+            var taughtCourseIds = GetTaughtCourseIds();
+            
+            // 验证课程是否属于当前教师
+            if (!taughtCourseIds.Contains(session.CourseID))
+            {
+                ModelState.AddModelError("CourseID", "您只能为自己教授的课程添加安排。");
+            }
+
+            // 验证周次范围
+            if (session.StartWeek > session.EndWeek)
+            {
+                ModelState.AddModelError("EndWeek", "结束周数不能小于开始周数。");
+            }
+
+            // 验证节次范围
+            if (session.StartPeriod > session.EndPeriod)
+            {
+                ModelState.AddModelError("EndPeriod", "结束节次不能小于开始节次。");
+            }
+
+            // 检查时间冲突 - 在相同的周次范围内，是否有同一教师在相同时间的其他安排
+            var conflictingSessions = db.ClassSessions.Include("Courses")
+                .Where(cs => taughtCourseIds.Contains(cs.CourseID) && // 同一教师的课程
+                           cs.DayOfWeek == session.DayOfWeek && // 同一天
+                           !(session.EndWeek < cs.StartWeek || session.StartWeek > cs.EndWeek) && // 周次有重叠
+                           !(session.EndPeriod < cs.StartPeriod || session.StartPeriod > cs.EndPeriod)) // 节次有重叠
+                .ToList();
+
+            if (conflictingSessions.Any())
+            {
+                var conflictDescription = string.Join("; ", conflictingSessions.Select(cs => 
+                    $"{cs.Courses.CourseName}(第{cs.StartWeek}-{cs.EndWeek}周, 第{cs.StartPeriod}-{cs.EndPeriod}节)"));
+                ModelState.AddModelError("", $"时间冲突！您在该时间段已有以下课程安排：{conflictDescription}");
+            }
+
+            if (ModelState.IsValid)
+            {
+                db.ClassSessions.Add(session);
+                db.SaveChanges();
+                
+                TempData["SuccessMessage"] = $"课程安排添加成功！{db.Courses.Find(session.CourseID).CourseName} - 第{session.StartWeek}-{session.EndWeek}周，星期{GetDayName(session.DayOfWeek)}第{session.StartPeriod}-{session.EndPeriod}节，{session.Classroom}教室。";
+                return RedirectToAction("Timetable");
+            }
+
+            // 如果验证失败，重新加载课程下拉列表
+            ViewBag.CourseID = new SelectList(db.Courses.Where(c => taughtCourseIds.Contains(c.CourseID)), "CourseID", "CourseName", session.CourseID);
+            return View(session);
+        }
+
+        // 辅助方法：将数字转换为星期名称（更新为完整格式）
+        private string GetDayName(int dayOfWeek)
+        {
+            string[] days = { "", "一", "二", "三", "四", "五", "六", "日" };
+            return dayOfWeek >= 1 && dayOfWeek <= 7 ? days[dayOfWeek] : "未知";
+        }
+
         // GET: Teacher/AdjustClass/5
-        // 当教师点击“调课”按钮时，会带着 SessionID 跳转到这里
+        // 当教师点击"调课"按钮时，会带着 SessionID 跳转到这里
         public ActionResult AdjustClass(int sessionId)
         {
             // 根据 ID 找到要调整的这节课
@@ -166,11 +240,48 @@ namespace StudentInformationSystem.Controllers
         }
 
         // POST: Teacher/AdjustClass/5
-        // 当在调课页面点击“确认”后，表单数据会提交到这里
+        // 当在调课页面点击"确认"后，表单数据会提交到这里
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult AdjustClass(ClassSessions session)
         {
+            var taughtCourseIds = GetTaughtCourseIds();
+            
+            // 验证课程是否属于当前教师
+            if (!taughtCourseIds.Contains(session.CourseID))
+            {
+                ModelState.AddModelError("", "您只能调整自己教授的课程。");
+                return View(session);
+            }
+
+            // 验证周次范围
+            if (session.StartWeek > session.EndWeek)
+            {
+                ModelState.AddModelError("EndWeek", "结束周数不能小于开始周数。");
+            }
+
+            // 验证节次范围
+            if (session.StartPeriod > session.EndPeriod)
+            {
+                ModelState.AddModelError("EndPeriod", "结束节次不能小于开始节次。");
+            }
+
+            // 检查时间冲突 - 排除当前正在编辑的这个安排
+            var conflictingSessions = db.ClassSessions.Include("Courses")
+                .Where(cs => cs.SessionID != session.SessionID && // 排除当前编辑的安排
+                           taughtCourseIds.Contains(cs.CourseID) && // 同一教师的课程
+                           cs.DayOfWeek == session.DayOfWeek && // 同一天
+                           !(session.EndWeek < cs.StartWeek || session.StartWeek > cs.EndWeek) && // 周次有重叠
+                           !(session.EndPeriod < cs.StartPeriod || session.StartPeriod > cs.EndPeriod)) // 节次有重叠
+                .ToList();
+
+            if (conflictingSessions.Any())
+            {
+                var conflictDescription = string.Join("; ", conflictingSessions.Select(cs => 
+                    $"{cs.Courses.CourseName}(第{cs.StartWeek}-{cs.EndWeek}周, 第{cs.StartPeriod}-{cs.EndPeriod}节)"));
+                ModelState.AddModelError("", $"时间冲突！您在该时间段已有以下课程安排：{conflictDescription}");
+            }
+
             // 检查模型状态是否有效
             if (ModelState.IsValid)
             {
@@ -178,6 +289,8 @@ namespace StudentInformationSystem.Controllers
                 db.Entry(session).State = System.Data.Entity.EntityState.Modified;
                 // 保存更改到数据库
                 db.SaveChanges();
+                
+                TempData["SuccessMessage"] = $"课程调整成功！{db.Courses.Find(session.CourseID).CourseName} 已调整为：第{session.StartWeek}-{session.EndWeek}周，星期{GetDayName(session.DayOfWeek)}第{session.StartPeriod}-{session.EndPeriod}节，{session.Classroom}教室。";
                 // 调课成功后，重定向回教师的课表页面
                 return RedirectToAction("Timetable");
             }
@@ -343,11 +456,65 @@ namespace StudentInformationSystem.Controllers
             var taughtCourseIds = GetTaughtCourseIds(); // 使用我们之前创建的辅助方法
             if (!taughtCourseIds.Contains(exam.CourseID))
             {
-                // 如果不属于，则返回“禁止访问”错误
+                // 如果不属于，则返回"禁止访问"错误
                 return new HttpStatusCodeResult(System.Net.HttpStatusCode.Forbidden);
             }
 
             return View(exam);
+        }
+
+        // GET: Teacher/ManageClassSessions
+        // 课程安排管理页面
+        public ActionResult ManageClassSessions()
+        {
+            var taughtCourseIds = GetTaughtCourseIds();
+            var classSessions = db.ClassSessions.Include("Courses")
+                                  .Where(cs => taughtCourseIds.Contains(cs.CourseID))
+                                  .OrderBy(cs => cs.Courses.CourseName)
+                                  .ThenBy(cs => cs.StartWeek)
+                                  .ThenBy(cs => cs.DayOfWeek)
+                                  .ThenBy(cs => cs.StartPeriod)
+                                  .ToList();
+            return View(classSessions);
+        }
+
+        // GET: Teacher/DeleteClassSession/5
+        public ActionResult DeleteClassSession(int? id)
+        {
+            if (id == null) return new HttpStatusCodeResult(System.Net.HttpStatusCode.BadRequest);
+            
+            var session = db.ClassSessions.Include("Courses").FirstOrDefault(cs => cs.SessionID == id);
+            if (session == null) return HttpNotFound();
+
+            // 安全检查：确保要删除的课程安排属于该教师
+            var taughtCourseIds = GetTaughtCourseIds();
+            if (!taughtCourseIds.Contains(session.CourseID))
+            {
+                return new HttpStatusCodeResult(System.Net.HttpStatusCode.Forbidden);
+            }
+
+            return View(session);
+        }
+
+        // POST: Teacher/DeleteClassSession/5
+        [HttpPost, ActionName("DeleteClassSession")]
+        [ValidateAntiForgeryToken]
+        public ActionResult DeleteClassSessionConfirmed(int id)
+        {
+            var session = db.ClassSessions.Include("Courses").FirstOrDefault(cs => cs.SessionID == id);
+            var taughtCourseIds = GetTaughtCourseIds();
+            
+            if (session != null && taughtCourseIds.Contains(session.CourseID))
+            {
+                var courseName = session.Courses.CourseName;
+                var scheduleInfo = $"第{session.StartWeek}-{session.EndWeek}周，星期{GetDayName(session.DayOfWeek)}第{session.StartPeriod}-{session.EndPeriod}节，{session.Classroom}教室";
+                
+                db.ClassSessions.Remove(session);
+                db.SaveChanges();
+                
+                TempData["SuccessMessage"] = $"课程安排删除成功！已删除 {courseName} 的安排：{scheduleInfo}";
+            }
+            return RedirectToAction("ManageClassSessions");
         }
     }
 }

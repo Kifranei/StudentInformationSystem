@@ -1,0 +1,290 @@
+@model StudentInformationSystem.Models.ClassSessions
+
+@{
+    ViewBag.Title = "添加课程安排";
+    var course = ViewBag.Course as StudentInformationSystem.Models.Courses;
+}
+
+<h2>添加课程安排</h2>
+<hr />
+
+<div class="alert alert-info">
+    <h4><span class="glyphicon glyphicon-info-sign"></span> 当前课程信息</h4>
+    <div class="row">
+        <div class="col-md-6">
+            <p><strong>课程名称：</strong>@course.CourseName</p>
+            <p><strong>学分：</strong>@course.Credits 学分</p>
+        </div>
+        <div class="col-md-6">
+            <p><strong>任课教师：</strong>
+                @if (course.Teachers != null)
+                {
+                    @course.Teachers.TeacherName
+                }
+                else
+                {
+                    <span class="text-danger">未分配教师</span>
+                }
+            </p>
+            <p><strong>课程类型：</strong>
+                @{
+                    string courseType = "";
+                    switch (course.CourseType)
+                    {
+                        case 1: courseType = "专业必修"; break;
+                        case 2: courseType = "公共必修"; break;
+                        case 3: courseType = "专业选修"; break;
+                        case 4: courseType = "公共选修"; break;
+                        case 5: courseType = "体育选修"; break;
+                        default: courseType = "未知类型"; break;
+                    }
+                }
+                <span class="label label-info">@courseType</span>
+            </p>
+        </div>
+    </div>
+</div>
+
+@* 显示假日周次信息 *@
+@{
+    var holidayDescriptions = StudentInformationSystem.Helpers.HolidayHelper.GetHolidayWeekDescriptions();
+    if (holidayDescriptions.Any())
+    {
+        <div class="alert alert-warning">
+            <h5><span class="glyphicon glyphicon-calendar"></span> 本学期法定假日提醒</h5>
+            <p>以下周次为法定假日，课程安排将自动跳过这些周次：</p>
+            <p>
+                @foreach (var holiday in holidayDescriptions)
+                {
+                    <span class="label label-warning" style="margin-right: 8px;">第@(holiday.Key)周：@holiday.Value</span>
+                }
+            </p>
+        </div>
+    }
+}
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        @Html.HiddenFor(model => model.CourseID)
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.StartWeek, "开始周数", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.StartWeek, new { htmlAttributes = new { @class = "form-control", @placeholder = "例如：1", @min = "1", @max = "21" } })
+                @Html.ValidationMessageFor(model => model.StartWeek, "", new { @class = "text-danger" })
+                <small class="text-muted">输入这个时间安排的开始周数（1-21）</small>
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.EndWeek, "结束周数", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.EndWeek, new { htmlAttributes = new { @class = "form-control", @placeholder = "例如：4", @min = "1", @max = "21" } })
+                @Html.ValidationMessageFor(model => model.EndWeek, "", new { @class = "text-danger" })
+                <small class="text-muted">输入这个时间安排的结束周数（应该 ≥ 开始周数）</small>
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.DayOfWeek, "星期几", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.DropDownListFor(model => model.DayOfWeek, new SelectList(
+                         new[]
+                         {
+                        new { Value = "1", Text = "星期一" },
+                        new { Value = "2", Text = "星期二" },
+                        new { Value = "3", Text = "星期三" },
+                        new { Value = "4", Text = "星期四" },
+                        new { Value = "5", Text = "星期五" },
+                        new { Value = "6", Text = "星期六" },
+                        new { Value = "7", Text = "星期日" },
+                         },
+                         "Value", "Text"), "-- 请选择星期 --", new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.DayOfWeek, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.StartPeriod, "开始节次", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.DropDownListFor(model => model.StartPeriod, new SelectList(
+                         Enumerable.Range(1, 12).Select(i => new { Value = i, Text = $"第 {i} 节" }),
+                         "Value", "Text"), "-- 请选择开始节次 --", new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.StartPeriod, "", new { @class = "text-danger" })
+                <small class="text-muted">第1节：08:40-09:25，第2节：09:30-10:15，依此类推</small>
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.EndPeriod, "结束节次", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.DropDownListFor(model => model.EndPeriod, new SelectList(
+                         Enumerable.Range(1, 12).Select(i => new { Value = i, Text = $"第 {i} 节" }),
+                         "Value", "Text"), "-- 请选择结束节次 --", new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.EndPeriod, "", new { @class = "text-danger" })
+                <small class="text-muted">结束节次应该 ≥ 开始节次</small>
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Classroom, "教室", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Classroom, new { htmlAttributes = new { @class = "form-control", @placeholder = "例如：310、308、实验室A等" } })
+                @Html.ValidationMessageFor(model => model.Classroom, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="添加课程安排" class="btn btn-primary" />
+                @Html.ActionLink("返回课程安排", "CourseSchedule", new { courseId = course.CourseID }, new { @class = "btn btn-default" })
+            </div>
+        </div>
+    </div>
+}
+
+<div class="panel panel-info" style="margin-top: 30px;">
+    <div class="panel-heading">
+        <h4><span class="glyphicon glyphicon-lightbulb"></span> 管理员排课说明</h4>
+    </div>
+    <div class="panel-body">
+        <p><strong>作为管理员，您可以：</strong></p>
+        <div class="row">
+            <div class="col-md-6">
+                <ul>
+                    <li><strong>灵活安排：</strong>为同一门课程创建多个时间段</li>
+                    <li><strong>冲突检测：</strong>系统会自动检查教师时间冲突</li>
+                    <li><strong>假日智能：</strong>自动跳过法定假日周次</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <ul>
+                    <li><strong>统一管理：</strong>集中管理所有课程的时间安排</li>
+                    <li><strong>权限控制：</strong>管理员可以管理所有课程</li>
+                    <li><strong>即时生效：</strong>安排立即在系统中生效</li>
+                </ul>
+            </div>
+        </div>
+        <p class="text-info">
+            <strong>提示：</strong>系统会根据当前时间自动检测法定假日，无需手动排除假日周次。管理员的排课权限比教师更高，可以管理所有课程的安排。
+        </p>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    
+    <script>
+        $(document).ready(function() {
+            // 假日周次列表（从服务器获取）
+            var holidayWeeks = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(StudentInformationSystem.Helpers.HolidayHelper.GetCurrentSemesterHolidayWeeks()));
+            
+            // 检查周次范围是否包含假日的函数
+            function checkHolidayConflict() {
+                var startWeek = parseInt($('#StartWeek').val());
+                var endWeek = parseInt($('#EndWeek').val());
+                
+                if (startWeek && endWeek) {
+                    var conflictingWeeks = [];
+                    for (var week = startWeek; week <= endWeek; week++) {
+                        if (holidayWeeks.indexOf(week) !== -1) {
+                            conflictingWeeks.push(week);
+                        }
+                    }
+                    
+                    // 移除之前的提示
+                    $('.holiday-info').remove();
+                    
+                    if (conflictingWeeks.length > 0) {
+                        var infoHtml = '<div class="alert alert-info holiday-info" style="margin-top: 10px;">' +
+                            '<small><span class="glyphicon glyphicon-info-sign"></span> ' +
+                            '智能提示：所选周次包含假日周次（第' + conflictingWeeks.join('、') + '周），系统会自动跳过这些假日周次，课程不会在假日周显示。</small></div>';
+                        $('#EndWeek').parent().append(infoHtml);
+                    }
+                }
+            }
+            
+            // 开始节次改变时，自动调整结束节次的最小值
+            $('#StartPeriod').change(function() {
+                var startPeriod = parseInt($(this).val());
+                if (startPeriod) {
+                    var endPeriodSelect = $('#EndPeriod');
+                    var currentEndPeriod = parseInt(endPeriodSelect.val());
+                    
+                    // 如果当前结束节次小于开始节次，则重置
+                    if (currentEndPeriod && currentEndPeriod < startPeriod) {
+                        endPeriodSelect.val(startPeriod);
+                    }
+                    
+                    // 禁用小于开始节次的选项
+                    endPeriodSelect.find('option').each(function() {
+                        var optionValue = parseInt($(this).val());
+                        if (optionValue && optionValue < startPeriod) {
+                            $(this).prop('disabled', true);
+                        } else {
+                            $(this).prop('disabled', false);
+                        }
+                    });
+                }
+            });
+            
+            // 开始周数改变时，自动调整结束周数的最小值并检查假日冲突
+            $('#StartWeek').change(function() {
+                var startWeek = parseInt($(this).val());
+                if (startWeek) {
+                    var endWeekInput = $('#EndWeek');
+                    var currentEndWeek = parseInt(endWeekInput.val());
+                    
+                    // 如果当前结束周数小于开始周数，则设置为开始周数
+                    if (currentEndWeek && currentEndWeek < startWeek) {
+                        endWeekInput.val(startWeek);
+                    }
+                    
+                    // 设置最小值
+                    endWeekInput.attr('min', startWeek);
+                    
+                    // 检查假日冲突
+                    checkHolidayConflict();
+                }
+            });
+            
+            // 结束周数改变时，检查假日冲突
+            $('#EndWeek').change(function() {
+                checkHolidayConflict();
+            });
+        });
+    </script>
+}
+
+<style>
+    .panel-info {
+        border-color: #bee5eb;
+    }
+    
+    .panel-info .panel-heading {
+        background-color: #d1ecf1;
+        border-color: #bee5eb;
+        color: #0c5460;
+    }
+    
+    .alert-info {
+        background-color: #d9edf7;
+        border-color: #bce8f1;
+        color: #31708f;
+    }
+
+    .alert-warning {
+        background-color: #fcf8e3;
+        border-color: #faebcc;
+        color: #8a6d3b;
+    }
+
+    .label {
+        font-size: 85%;
+        padding: 0.3em 0.6em;
+    }
+</style>
