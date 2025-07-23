@@ -345,27 +345,27 @@ namespace StudentInformationSystem.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteTeacherConfirmed(string id)
         {
-            Teachers teacherToDelete = db.Teachers.Find(id);
+            // 使用 .Include() 一次性把教师和他教的课程都从数据库里查出来
+            Teachers teacherToDelete = db.Teachers.Include("Courses").FirstOrDefault(t => t.TeacherID == id);
 
-            // --- 新增的逻辑 ---
-            // 找到该教师教的所有课程
-            var coursesTaught = db.Courses.Where(c => c.TeacherID == id).ToList();
-            // 将这些课程的 TeacherID 设为 null
-            foreach (var course in coursesTaught)
+            if (teacherToDelete != null)
             {
-                course.TeacherID = null;
+                // 直接使用导航属性 teacherToDelete.Courses，不再需要额外查询
+                foreach (var course in teacherToDelete.Courses.ToList()) // 使用 .ToList() 创建副本以安全修改
+                {
+                    course.TeacherID = null;
+                }
+
+                Users userToDelete = db.Users.Find(teacherToDelete.UserID);
+
+                db.Teachers.Remove(teacherToDelete);
+                if (userToDelete != null)
+                {
+                    db.Users.Remove(userToDelete);
+                }
+                db.SaveChanges();
             }
-            // --- 逻辑结束 ---
 
-            Users userToDelete = db.Users.Find(teacherToDelete.UserID);
-
-            db.Teachers.Remove(teacherToDelete);
-            if (userToDelete != null)
-            {
-                db.Users.Remove(userToDelete);
-            }
-
-            db.SaveChanges(); // 一次性保存所有更改
             return RedirectToAction("TeacherList");
         }
         public ActionResult CourseList(string searchString)
