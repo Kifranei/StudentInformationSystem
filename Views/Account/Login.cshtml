@@ -7,7 +7,38 @@
 <head>
     <meta name="viewport" content="width=device-width" />
     <title>学生管理系统 - 登录</title>
+    
+    <!-- 防止暗色模式和主题色闪白的预设脚本 -->
+    <script>
+        (function() {
+            var theme = localStorage.getItem('theme');
+            var selectedTheme = localStorage.getItem('selected-theme') || 'deep-blue';
+            
+            // 应用暗色模式
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark-mode');
+                if (document.body) document.body.classList.add('dark-mode');
+            }
+            
+            // 应用主题色
+            var themeClasses = {
+                'default': 'theme-deep-red',
+                'deep-blue': 'theme-deep-blue', 
+                'light-blue': 'theme-light-blue',
+                'light-green': 'theme-light-green',
+                'ocean-blue': 'theme-ocean-blue',
+                'light-purple': 'theme-light-purple'
+            };
+            
+            if (themeClasses[selectedTheme]) {
+                document.documentElement.classList.add(themeClasses[selectedTheme]);
+                if (document.body) document.body.classList.add(themeClasses[selectedTheme]);
+            }
+        })();
+    </script>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="@Url.Content("~/Content/theme-system.css")" rel="stylesheet" type="text/css" />
 
     <style>
         /* --- 基础样式 --- */
@@ -18,29 +49,6 @@
             height: 100%;
             font-family: "微软雅黑", "Microsoft YaHei", sans-serif;
             overflow: hidden; /* 防止出现滚动条 */
-        }
-
-        /* --- 主题变量 --- */
-        :root {
-            --login-bg-color: #f5f7f9;
-            --header-bg-color: #fff;
-            --text-color-primary: #333333;
-            --text-color-secondary: #555555;
-            --form-bg-color: rgba(255, 255, 255, 0.85);
-            --input-bg-color: rgba(0, 80, 139, 0.1);
-            --border-color: #ccc;
-            --footer-text-color: rgba(255, 255, 255, 0.7);
-        }
-
-        body.dark-mode {
-            --login-bg-color: #141414;
-            --header-bg-color: #1f1f1f;
-            --text-color-primary: #e0e0e0;
-            --text-color-secondary: #a0a0a0;
-            --form-bg-color: rgba(31, 31, 31, 0.9);
-            --input-bg-color: rgba(255, 255, 255, 0.1);
-            --border-color: #555;
-            --footer-text-color: rgba(255, 255, 255, 0.6);
         }
 
         /* --- 整体布局 --- */
@@ -80,60 +88,6 @@
             align-items: center;
         }
 
-        /* --- 主题切换开关样式 --- */
-        .theme-switch-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .theme-switch-label {
-            font-size: 14px;
-            color: var(--text-color-secondary);
-            margin-right: 8px;
-        }
-
-        .label34{
-            width: 50px;
-            height: 26px;
-            position: relative;
-            cursor: pointer;
-        }
-        .inp34{
-            display: none;
-        }
-        .check-span34{
-            width: 100%;
-            height: 100%;
-            display: block;
-            background-color: #383838;
-            border: 2px solid #383838;
-            box-sizing: border-box;
-            border-radius: 13px;
-            transition: 0.3s linear;
-        }
-        .check-span34:after{
-            content: '';
-            width: 18px;
-            height: 18px;
-            background-color: #383838;
-            box-shadow: inset -6px -3px 0 #ffffff;
-            border-radius: 9px;
-            position: absolute;
-            top: 4px;
-            left: 5px;
-            box-sizing: border-box;
-            transition: 0.3s ease-in-out;
-        }
-        .inp34:checked + .check-span34{
-            background-color: #ffffff;
-        }
-        .inp34:checked + .check-span34:after{
-            transform: translateX(22px);
-            background-color: orange;
-            box-shadow: none;
-        }
-
         /* --- 主内容区域 (背景图 + 登录框) --- */
         .login-main {
             height: 85%; /* 占屏幕高度的85% */
@@ -146,11 +100,6 @@
             display: flex;
             align-items: center; /* 垂直居中 */
             justify-content: center; /* 水平居中 */
-        }
-
-        /* --- 暗色模式下的背景图片滤镜 --- */
-        body.dark-mode .login-main {
-            filter: brightness(0.6) contrast(1.1);
         }
 
         /* --- 登录框 --- */
@@ -170,13 +119,9 @@
         /* --- 登录框内的元素样式 --- */
         .login-form-box h2 {
             font-size: 28px;
-            color: #00508b; /* 从你提供的代码中提取的颜色 */
+            color: var(--theme-primary); /* 使用主题色 */
             margin-top: 0;
             margin-bottom: 35px;
-        }
-
-        body.dark-mode .login-form-box h2 {
-            color: #4a9eff;
         }
 
         .form-input-group {
@@ -198,11 +143,7 @@
 
         .form-input-group input:focus {
             outline: none;
-            border-color: #00508b;
-        }
-
-        body.dark-mode .form-input-group input:focus {
-            border-color: #4a9eff;
+            border-color: var(--theme-primary);
         }
 
         .form-input-group input::placeholder {
@@ -214,7 +155,7 @@
             height: 50px;
             border: none;
             border-radius: 25px;
-            background: linear-gradient(to right, #007bff, #00508b); /* 渐变色按钮 */
+            background: linear-gradient(to right, var(--theme-primary), var(--theme-primary-dark)); /* 使用主题色渐变 */
             color: #fff;
             font-size: 20px;
             cursor: pointer;
@@ -287,19 +228,14 @@
         }
     </style>
 </head>
-<body>
+<body class="login-page">
     <div class="login-wrapper">
         <header class="login-header">
             <div class="login-header-left">
                 <img src="https://jwgl.hrbzy.edu.cn:9081/login/s04/images/logo-1-1e3b8670d915457caeefaa35d0d83828.png" alt="Logo">
             </div>
             <div class="login-header-right">
-                <div class="theme-switch-wrapper">
-                    <label class="label34" title="切换亮色/暗色主题">
-                        <input class="inp34" type="checkbox" id="theme-checkbox">
-                        <span class="check-span34"></span>
-                    </label>
-                </div>
+                <!-- 登录页面不提供主题设置功能，登录后才能修改主题 -->
             </div>
         </header>
 
@@ -336,32 +272,30 @@
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="@Url.Content("~/Scripts/theme-system.js")"></script>
     <script>
         $(document).ready(function () {
-            // --- 主题切换逻辑 ---
-            const themeCheckbox = $('#theme-checkbox');
+            // --- 登录页面只应用主题，不提供主题设置功能 ---
             const body = $('body');
 
             function applyTheme(theme) {
                 if (theme === 'dark') {
                     body.addClass('dark-mode');
-                    themeCheckbox.prop('checked', true);
                 } else {
                     body.removeClass('dark-mode');
-                    themeCheckbox.prop('checked', false);
                 }
             }
 
-            // 页面加载时，应用保存的主题
+            // 页面加载时，应用保存的主题（如果有的话）
             let currentTheme = localStorage.getItem('theme') || 'light';
             applyTheme(currentTheme);
 
-            // 当点击开关时，切换主题
-            themeCheckbox.on('change', function () {
-                currentTheme = $(this).is(':checked') ? 'dark' : 'light';
-                localStorage.setItem('theme', currentTheme);
-                applyTheme(currentTheme);
-            });
+            // 确保默认主题被正确设置（但不初始化主题系统）
+            if (window.ThemeSystem) {
+                window.ThemeSystem.ensureDefaultTheme();
+            }
+
+            console.log('Login page loaded, theme applied:', currentTheme);
         });
     </script>
 </body>

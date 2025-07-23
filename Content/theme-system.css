@@ -1,0 +1,453 @@
+/* === 改进的主题系统 CSS === */
+
+/* 主题颜色变量定义 */
+:root {
+    /* 基础主题变量 */
+    --bg-color: #f5f7f9;
+    --sidebar-bg: #ffffff;
+    --header-bg: #ffffff;
+    --text-color-primary: #333333;
+    --text-color-secondary: #555555;
+    --menu-hover-bg: #e6f7ff;
+    --menu-active-bg: #007bff;
+    --menu-active-text: #ffffff;
+    --border-color: #e8e8e8;
+    
+    /* 动态主题色 - 默认深蓝色（使用layout中的蓝色） */
+    --theme-primary: #007bff;
+    --theme-primary-light: #e6f7ff;
+    --theme-primary-dark: #0056b3;
+    
+    /* 登录页面变量 */
+    --login-bg-color: #f5f7f9;
+    --header-bg-color: #fff;
+    --form-bg-color: rgba(255, 255, 255, 0.85);
+    --input-bg-color: rgba(0, 123, 255, 0.1);
+    --footer-text-color: rgba(255, 255, 255, 0.7);
+}
+
+/* 暗色模式 - 支持html和body元素 */
+html.dark-mode,
+body.dark-mode {
+    --bg-color: #141414;
+    --sidebar-bg: #1f1f1f;
+    --header-bg: #1f1f1f;
+    --text-color-primary: #e0e0e0;
+    --text-color-secondary: #a0a0a0;
+    --menu-hover-bg: #2a2a2a;
+    --border-color: #303030;
+    
+    /* 登录页面暗色模式变量 */
+    --login-bg-color: #141414;
+    --header-bg-color: #1f1f1f;
+    --form-bg-color: rgba(31, 31, 31, 0.9);
+    --input-bg-color: rgba(255, 255, 255, 0.1);
+    --footer-text-color: rgba(255, 255, 255, 0.6);
+}
+
+/* 立即应用暗色模式到html元素，防止闪白 */
+html.dark-mode {
+    background-color: var(--bg-color) !important;
+    color: var(--text-color-primary) !important;
+}
+
+/* 其他样式保持不变 */
+
+/* 原浮动按钮样式 - 现在改为头部按钮样式 */
+.theme-settings-btn {
+    /* 隐藏原来的浮动按钮，现在使用头部按钮 */
+    display: none !important;
+}
+
+/* 头部主题设置按钮样式 */
+.theme-settings-header-btn {
+    background: var(--theme-primary);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s ease;
+    font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
+    outline: none;
+    white-space: nowrap;
+}
+
+.theme-settings-header-btn:hover {
+    background: var(--theme-primary-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.theme-settings-header-btn:focus {
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.theme-settings-header-btn i {
+    font-size: 14px;
+}
+
+/* 主题设置浮动菜单 */
+.theme-floating-menu {
+    position: fixed;
+    top: 60px; /* 调整到头部按钮下方 */
+    right: 20px;
+    width: 220px;
+    background: var(--sidebar-bg);
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    z-index: 1998;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease, opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
+}
+
+.theme-floating-menu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* 登录页面中菜单位置 */
+body.login-page .theme-floating-menu {
+    top: 110px; /* 登录页面头部较高，调整位置 */
+    z-index: 1999;
+}
+
+/* 主页面中菜单位置 - 根据头部按钮位置调整 */
+body:not(.login-page) .theme-floating-menu {
+    top: 60px;
+    right: 140px; /* 调整到主题按钮下方 */
+}
+
+.theme-menu-header {
+    padding: 15px;
+    background: var(--theme-primary);
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    font-size: 14px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 隐藏菜单头部可能存在的问号或帮助按钮 */
+.theme-menu-header::after,
+.theme-menu-header::before {
+    display: none !important;
+}
+
+/* 隐藏菜单中的问号元素 */
+.theme-menu-header .help-icon,
+.theme-menu-header .question-mark,
+.theme-floating-menu .help-button,
+.theme-floating-menu [title*="help"],
+.theme-floating-menu [title*="Help"],
+.theme-floating-menu [title*="帮助"],
+.theme-floating-menu [aria-label*="?"],
+.theme-floating-menu [data-toggle="tooltip"] {
+    display: none !important;
+}
+
+/* 强制隐藏任何可能的问号相关元素 */
+.theme-floating-menu *:before,
+.theme-floating-menu *:after {
+    content: none !important;
+}
+
+/* 针对Bootstrap可能添加的帮助按钮 */
+.theme-floating-menu .close,
+.theme-floating-menu .btn-close,
+.theme-floating-menu [data-dismiss],
+.theme-floating-menu .glyphicon-question-sign,
+.theme-floating-menu .fa-question,
+.theme-floating-menu .fa-question-circle {
+    display: none !important;
+}
+
+/* 隐藏菜单中的问号元素 */
+.theme-menu-header .help-icon,
+.theme-menu-header .question-mark,
+.theme-floating-menu .help-button,
+.theme-floating-menu [title*="help"],
+.theme-floating-menu [title*="Help"],
+.theme-floating-menu [title*="帮助"] {
+    display: none !important;
+}
+
+/* 防止任何带有问号的元素显示 */
+.theme-floating-menu *:contains("?"),
+.theme-floating-menu *[data-content*="?"] {
+    display: none !important;
+}
+
+.theme-menu-content {
+    padding: 10px;
+}
+
+.theme-option {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    margin: 4px 0;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    position: relative;
+    min-height: 32px;
+}
+
+.theme-option:hover {
+    background-color: var(--menu-hover-bg);
+    transform: translateX(2px);
+}
+
+.theme-option.active {
+    background-color: var(--theme-primary-light);
+}
+
+.theme-option.active::after {
+    content: '?';
+    position: absolute;
+    right: 10px;
+    color: var(--theme-primary);
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.theme-color-dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    margin-right: 12px;
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
+}
+
+.theme-option-label {
+    font-size: 14px;
+    color: var(--text-color-primary);
+    font-weight: 500;
+}
+
+/* 暗色模式切换器 - 增强样式确保正确显示 */
+.dark-mode-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    margin: 8px 0;
+    border-top: 1px solid var(--border-color);
+}
+
+.dark-mode-label {
+    font-size: 14px;
+    color: var(--text-color-primary);
+    font-weight: 500;
+}
+
+/* 优化的暗色模式开关 - 增强权重和样式 */
+.dark-mode-switch {
+    width: 50px !important;
+    height: 26px !important;
+    position: relative;
+    cursor: pointer;
+    display: inline-block;
+}
+
+.dark-mode-switch input {
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+    position: absolute !important;
+}
+
+.dark-mode-slider {
+    position: absolute !important;
+    cursor: pointer !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background-color: #ccc !important;
+    border-radius: 13px !important;
+    transition: 0.4s !important;
+}
+
+.dark-mode-slider:before {
+    position: absolute !important;
+    content: "" !important;
+    height: 20px !important;
+    width: 20px !important;
+    left: 3px !important;
+    bottom: 3px !important;
+    background-color: white !important;
+    border-radius: 50% !important;
+    transition: 0.4s !important;
+}
+
+.dark-mode-switch input:checked + .dark-mode-slider {
+    background-color: var(--theme-primary) !important;
+}
+
+.dark-mode-switch input:focus + .dark-mode-slider {
+    box-shadow: 0 0 1px var(--theme-primary) !important;
+}
+
+.dark-mode-switch input:checked + .dark-mode-slider:before {
+    transform: translateX(24px) !important;
+}
+
+/* 响应式设计 */
+@media screen and (max-width: 768px) {
+    .theme-settings-btn {
+        top: 70px;
+        right: 15px;
+        width: 45px;
+        height: 45px;
+        font-size: 18px;
+    }
+    
+    body.login-page .theme-settings-btn {
+        top: 15px;
+        right: 15px;
+    }
+    
+    .theme-floating-menu {
+        top: 125px;
+        right: 15px;
+        width: 200px;
+    }
+    
+    body.login-page .theme-floating-menu {
+        top: 70px;
+        right: 15px;
+    }
+}
+
+/* 响应式设计 - 头部按钮适配 */
+@media screen and (max-width: 768px) {
+    .theme-settings-header-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+        border-radius: 15px;
+    }
+    
+    .theme-settings-header-btn span {
+        display: none; /* 在移动端只显示图标 */
+    }
+    
+    .theme-floating-menu {
+        top: 50px;
+        right: 10px;
+        width: 200px;
+    }
+    
+    body.login-page .theme-floating-menu {
+        top: 80px;
+        right: 10px;
+    }
+    
+    body:not(.login-page) .theme-floating-menu {
+        top: 50px;
+        right: 10px;
+    }
+}
+
+/* 点击外部关闭菜单的遮罩 */
+.theme-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1997;
+    display: none;
+}
+
+.theme-menu-overlay.show {
+    display: block;
+}
+
+/* 应用主题色到现有组件 */
+.sidebar-menu li.active a,
+.menu-active-bg,
+.btn-primary,
+.login-btn {
+    background-color: var(--theme-primary) !important;
+    border-color: var(--theme-primary) !important;
+}
+
+.login-form-box h2 {
+    color: var(--theme-primary) !important;
+}
+
+.form-input-group input:focus {
+    border-color: var(--theme-primary) !important;
+}
+
+body.dark-mode .login-form-box h2 {
+    color: var(--theme-primary) !important;
+}
+
+body.dark-mode .form-input-group input:focus {
+    border-color: var(--theme-primary) !important;
+}
+
+/* 主题色彩定义 */
+body.theme-deep-red {
+    --theme-primary: #c73e1d;
+    --theme-primary-light: #fef2f2;
+    --theme-primary-dark: #991b1b;
+    --menu-active-bg: #c73e1d;
+    --input-bg-color: rgba(199, 62, 29, 0.1);
+}
+
+body.theme-light-blue {
+    --theme-primary: #0ea5e9;
+    --theme-primary-light: #f0f9ff;
+    --theme-primary-dark: #0284c7;
+    --menu-active-bg: #0ea5e9;
+    --input-bg-color: rgba(14, 165, 233, 0.1);
+}
+
+body.theme-deep-blue {
+    --theme-primary: #007bff;
+    --theme-primary-light: #e6f7ff;
+    --theme-primary-dark: #0056b3;
+    --menu-active-bg: #007bff;
+    --input-bg-color: rgba(0, 123, 255, 0.1);
+}
+
+body.theme-light-green {
+    --theme-primary: #10b981;
+    --theme-primary-light: #f0fdf4;
+    --theme-primary-dark: #047857;
+    --menu-active-bg: #10b981;
+    --input-bg-color: rgba(16, 185, 129, 0.1);
+}
+
+body.theme-ocean-blue {
+    --theme-primary: #0891b2;
+    --theme-primary-light: #f0fdfa;
+    --theme-primary-dark: #155e75;
+    --menu-active-bg: #0891b2;
+    --input-bg-color: rgba(8, 145, 178, 0.1);
+}
+
+body.theme-light-purple {
+    --theme-primary: #8b5cf6;
+    --theme-primary-light: #faf5ff;
+    --theme-primary-dark: #7c3aed;
+    --menu-active-bg: #8b5cf6;
+    --input-bg-color: rgba(139, 92, 246, 0.1);
+}

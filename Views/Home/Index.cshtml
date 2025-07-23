@@ -1,33 +1,153 @@
 ﻿@{
-    ViewBag.Title = "Home Page";
+    ViewBag.Title = "主题演示页面";
 }
 
-<main>
-    <section class="row" aria-labelledby="aspnetTitle">
-        <h1 id="title">ASP.NET</h1>
-        <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-        <p><a href="https://asp.net" class="btn btn-primary btn-md">Learn more &raquo;</a></p>
-    </section>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="page-header">
+                <h1>主题系统演示</h1>
+                <p class="lead">欢迎使用新的主题系统！点击右上角的设置按钮来体验不同的主题色彩。</p>
+            </div>
+        </div>
+    </div>
 
     <div class="row">
-        <section class="col-md-4" aria-labelledby="gettingStartedTitle">
-            <h2 id="gettingStartedTitle">Getting started</h2>
-            <p>
-                ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-                enables a clean separation of concerns and gives you full control over markup
-                for enjoyable, agile development.
-            </p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
-        </section>
-        <section class="col-md-4" aria-labelledby="librariesTitle">
-            <h2 id="librariesTitle">Get more libraries</h2>
-            <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
-        </section>
-        <section class="col-md-4" aria-labelledby="hostingTitle">
-            <h2 id="hostingTitle">Web Hosting</h2>
-            <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
-        </section>
+        <div class="col-md-4">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">功能特性</h3>
+                </div>
+                <div class="panel-body">
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <span class="badge">6</span>
+                            多种主题色彩
+                        </li>
+                        <li class="list-group-item">
+                            <span class="badge">2</span>
+                            亮色/暗色模式
+                        </li>
+                        <li class="list-group-item">
+                            <span class="badge">✓</span>
+                            响应式设计
+                        </li>
+                        <li class="list-group-item">
+                            <span class="badge">✓</span>
+                            浮动设置菜单
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h3 class="panel-title">使用说明</h3>
+                </div>
+                <div class="panel-body">
+                    <ol>
+                        <li>登录系统后，点击右上角的<strong>"⚙️ 主题设置"</strong>按钮</li>
+                        <li>选择您喜欢的<strong>主题色彩</strong></li>
+                        <li>切换<strong>暗色模式</strong>开关</li>
+                        <li>主题设置会自动保存到本地</li>
+                        <li>登录页面只显示主题效果，需要登录后才能修改主题</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="panel panel-success">
+                <div class="panel-heading">
+                    <h3 class="panel-title">主题预览</h3>
+                </div>
+                <div class="panel-body">
+                    <p>当前选择的主题色彩会应用到：</p>
+                    <ul>
+                        <li>菜单高亮色</li>
+                        <li>按钮背景色</li>
+                        <li>链接色彩</li>
+                        <li>强调色元素</li>
+                        <li>登录页面元素</li>
+                    </ul>
+                    <button type="button" class="btn btn-primary">主题色按钮</button>
+                </div>
+            </div>
+        </div>
     </div>
-</main>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="well">
+                <h4>主题色彩列表</h4>
+                <div class="row">
+                    <div class="col-md-2">
+                        <div style="background-color: #007bff; height: 40px; border-radius: 4px; margin-bottom: 5px;"></div>
+                        <small>深蓝版</small>
+                    </div>
+                    <div class="col-md-2">
+                        <div style="background-color: #c73e1d; height: 40px; border-radius: 4px; margin-bottom: 5px;"></div>
+                        <small>深红版</small>
+                    </div>
+                    <div class="col-md-2">
+                        <div style="background-color: #0ea5e9; height: 40px; border-radius: 4px; margin-bottom: 5px;"></div>
+                        <small>浅蓝版</small>
+                    </div>
+                    <div class="col-md-2">
+                        <div style="background-color: #10b981; height: 40px; border-radius: 4px; margin-bottom: 5px;"></div>
+                        <small>浅绿版</small>
+                    </div>
+                    <div class="col-md-2">
+                        <div style="background-color: #0891b2; height: 40px; border-radius: 4px; margin-bottom: 5px;"></div>
+                        <small>海蓝版</small>
+                    </div>
+                    <div class="col-md-2">
+                        <div style="background-color: #8b5cf6; height: 40px; border-radius: 4px; margin-bottom: 5px;"></div>
+                        <small>浅紫版</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .page-header {
+        border-bottom: 1px solid var(--border-color);
+        color: var(--text-color-primary);
+    }
+    
+    .panel {
+        border-color: var(--border-color);
+        background-color: var(--sidebar-bg);
+    }
+    
+    .panel-heading {
+        background-color: var(--theme-primary) !important;
+        border-color: var(--theme-primary) !important;
+        color: white !important;
+    }
+    
+    .panel-body {
+        color: var(--text-color-primary);
+    }
+    
+    .well {
+        background-color: var(--sidebar-bg);
+        border-color: var(--border-color);
+        color: var(--text-color-primary);
+    }
+    
+    .list-group-item {
+        background-color: var(--sidebar-bg);
+        border-color: var(--border-color);
+        color: var(--text-color-primary);
+    }
+    
+    .btn-primary {
+        background-color: var(--theme-primary) !important;
+        border-color: var(--theme-primary) !important;
+    }
+</style>

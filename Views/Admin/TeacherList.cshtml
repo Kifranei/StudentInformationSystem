@@ -59,11 +59,12 @@
                     @Html.ActionLink("编辑", "EditTeacher", new { id = item.TeacherID }) |
                     @Html.ActionLink("详情", "DetailsTeacher", new { id = item.TeacherID }) |
                     @Html.ActionLink("删除", "DeleteTeacher", new { id = item.TeacherID }) |
-                    @* --- 新增重置密码的表单 --- *@
+
+                    @* --- 重置密码改为JavaScript确认弹窗形式 --- *@
                     @using (Html.BeginForm("ResetPassword", "Admin", new { userId = item.UserID }, FormMethod.Post, new { @style = "display:inline;" }))
                     {
                         @Html.AntiForgeryToken()
-                        <button type="submit" class="btn btn-link" onclick="return confirm('您确定要将该用户的密码重置为“Hzd@123456”吗？');" style="padding:0;border:0;vertical-align:baseline;">
+                        <button type="submit" class="btn btn-link" onclick="return confirmReset('@item.Users.Username');" style="padding:0;border:0;vertical-align:baseline;">
                             重置密码
                         </button>
                     }
@@ -73,3 +74,11 @@
 
     </table>
 </div>
+
+@section Scripts {
+    <script>
+        function confirmReset(username) {
+            return confirm('您确定要将用户 ' + username + ' 的密码重置为 "Hzd@123456" 吗？此操作不可撤销！');
+        }
+    </script>
+}

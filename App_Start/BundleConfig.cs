@@ -22,9 +22,14 @@ namespace StudentInformationSystem
             bundles.Add(new Bundle("~/bundles/bootstrap").Include(
                       "~/Scripts/bootstrap.js"));
 
+            // 主题系统脚本包
+            bundles.Add(new ScriptBundle("~/bundles/theme-system").Include(
+                        "~/Scripts/theme-system.js"));
+
             bundles.Add(new StyleBundle("~/Content/css").Include(
                       "~/Content/bootstrap.css",
-                      "~/Content/site.css"));
+                      "~/Content/site.css",
+                      "~/Content/theme-system.css"));
         }
     }
 }

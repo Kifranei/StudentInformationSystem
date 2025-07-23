@@ -92,11 +92,11 @@ namespace StudentInformationSystem.Controllers
                 // 添加一个新学生，需要同时在 Users 表和 Students 表中创建记录
 
                 // 1. 创建登录用户 (Users)
-                // 我们约定学号就是登录名，初始密码统一为 "123456"
+                // 我们约定学号就是登录名，初始密码统一为 "Hzd@123456"
                 Users newUser = new Users
                 {
                     Username = student.StudentID,
-                    Password = "123456", // 初始密码
+                    Password = "Hzd@123456", // 修改默认密码为统一的 Hzd@123456
                     Role = 2 // 角色为学生
                 };
 
@@ -116,7 +116,8 @@ namespace StudentInformationSystem.Controllers
 
                 // --- 核心逻辑结束 ---
 
-                // 添加成功后，重定向到学生列表页面
+                // 添加成功后，设置成功消息并重定向到学生列表页面
+                TempData["Message"] = $"学生 {student.StudentName} 添加成功！默认密码为：Hzd@123456";
                 return RedirectToAction("StudentList");
             }
 
@@ -263,7 +264,7 @@ namespace StudentInformationSystem.Controllers
                 Users newUser = new Users
                 {
                     Username = teacher.TeacherID,
-                    Password = "123456", // 初始密码
+                    Password = "Hzd@123456", // 修改默认密码为统一的 Hzd@123456
                     Role = 1 // 角色为教师
                 };
                 db.Users.Add(newUser);
@@ -272,6 +273,9 @@ namespace StudentInformationSystem.Controllers
                 db.Teachers.Add(teacher);
 
                 db.SaveChanges();
+                
+                // 添加成功消息
+                TempData["Message"] = $"教师 {teacher.TeacherName} 添加成功！默认密码为：Hzd@123456";
                 return RedirectToAction("TeacherList");
             }
             return View(teacher);
@@ -540,8 +544,8 @@ namespace StudentInformationSystem.Controllers
                 db.Entry(userToReset).State = System.Data.Entity.EntityState.Modified;
                 db.SaveChanges();
 
-                // 使用 TempData 存储成功消息，它可以在重定向后依然存在
-                TempData["Message"] = $"用户 {userToReset.Username} 的密码已成功重置为 “123456”。";
+                // 使用 TempData 存储成功消息
+                TempData["Message"] = $"用户 {userToReset.Username} 的密码已成功重置为 \"Hzd@123456\"。";
             }
 
             // 判断该用户是学生还是教师，以便跳转回对应的列表页面

@@ -8,43 +8,62 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewBag.Title - 教务管理系统</title>
+    
+    <!-- 防止暗色模式和主题色闪白的预设脚本 - 必须在CSS之前 -->
+    <script>
+        (function() {
+            // 立即检查并应用暗色模式，防止闪白
+            var theme = localStorage.getItem('theme');
+            var selectedTheme = localStorage.getItem('selected-theme') || 'deep-blue';
+            
+            // 应用暗色模式
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark-mode');
+                document.body && document.body.classList.add('dark-mode');
+            }
+            
+            // 应用主题色，防止颜色切换闪烁
+            var themeClasses = {
+                'default': 'theme-deep-red',
+                'deep-blue': 'theme-deep-blue', 
+                'light-blue': 'theme-light-blue',
+                'light-green': 'theme-light-green',
+                'ocean-blue': 'theme-ocean-blue',
+                'light-purple': 'theme-light-purple'
+            };
+            
+            if (themeClasses[selectedTheme]) {
+                document.documentElement.classList.add(themeClasses[selectedTheme]);
+                if (document.body) document.body.classList.add(themeClasses[selectedTheme]);
+            }
+        })();
+    </script>
+    
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
+    <link href="@Url.Content("~/Content/theme-system.css")" rel="stylesheet" type="text/css" />
 
     <style>
-        /* --- 1. 颜色变量定义 --- */
-        :root {
-            --bg-color: #f5f7f9;
-            --sidebar-bg: #ffffff;
-            --header-bg: #ffffff;
-            --text-color-primary: #333333;
-            --text-color-secondary: #555555;
-            --menu-hover-bg: #e6f7ff;
-            --menu-active-bg: #007bff;
-            --menu-active-text: #ffffff;
-            --border-color: #e8e8e8;
-        }
-
-        body.dark-mode {
-            --bg-color: #141414;
-            --sidebar-bg: #1f1f1f;
-            --header-bg: #1f1f1f;
-            --text-color-primary: #e0e0e0;
-            --text-color-secondary: #a0a0a0;
-            --menu-hover-bg: #2a2a2a;
-            --border-color: #303030;
-        }
-
-        /* --- 2. 基础和桌面端布局 (稳定版) --- */
+        /* --- 基础和桌面端布局 (稳定版) --- */
         body, html {
             margin: 0;
             padding: 0;
             height: 100%;
-            font-family: "Microsoft YaHei", sans-serif;
+            font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color-primary);
-            transition: background-color 0.3s, color 0.3s;
+            /* 移除过渡动画以减少闪烁 - 只在页面加载后启用 */
             overflow-x: hidden;
+        }
+
+        /* 页面加载完成后启用过渡动画 */
+        body.transitions-enabled, 
+        body.transitions-enabled .sidebar,
+        body.transitions-enabled .main-content,
+        body.transitions-enabled .header-bar,
+        body.transitions-enabled .theme-floating-menu,
+        body.transitions-enabled .sidebar-menu li a {
+            transition: background-color 0.3s, color 0.3s, left 0.3s ease, margin-left 0.3s ease, width 0.3s ease, opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
         }
 
         .sidebar {
@@ -56,9 +75,8 @@
             top: 0;
             height: 100%;
             z-index: 1001;
-            transition: left 0.3s ease, background-color 0.3s;
             display: flex;
-            flex-direction: column; /* 为了底部切换器 */
+            flex-direction: column;
         }
 
         .main-content {
@@ -67,7 +85,6 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
-            transition: margin-left 0.3s ease, width 0.3s ease;
         }
 
         .header-bar {
@@ -79,7 +96,8 @@
             padding: 0 20px;
             border-bottom: 1px solid var(--border-color);
             flex-shrink: 0;
-            transition: background-color 0.3s, border-color 0.3s;
+            position: relative;
+            z-index: 1000;
         }
 
         .content-body {
@@ -96,7 +114,7 @@
             display: none;
         }
 
-        /* --- 3. 移动端响应式布局 (稳定版) --- */
+        /* --- 移动端响应式布局 (稳定版) --- */
         @@media screen and (max-width: 768px) {
             .sidebar {
                 left: -240px;
@@ -129,7 +147,7 @@
             }
         }
 
-        /* --- 4. 组件样式 --- */
+        /* --- 组件样式 --- */
         .sidebar-header {
             display: flex;
             align-items: center;
@@ -151,18 +169,19 @@
             list-style: none;
             padding: 10px 0;
             margin: 0;
-            flex-grow: 1; /* 关键，让菜单占据中间区域 */
+            flex-grow: 1;
         }
 
             .sidebar-menu li a {
-                display: flex;
-                align-items: center;
+                display: block;
                 color: var(--text-color-secondary);
                 padding: 12px 25px;
                 text-decoration: none;
                 font-size: 15px;
                 border-radius: 5px;
                 margin: 5px 10px;
+                text-align: center; /* 恢复居中对齐 */
+                position: relative;
             }
 
                 .sidebar-menu li a:hover {
@@ -170,14 +189,13 @@
                 }
 
             .sidebar-menu li.active a {
-                background-color: var(--menu-active-bg);
+                background-color: var(--theme-primary);
                 color: var(--menu-active-text);
             }
 
             .sidebar-menu li a .glyphicon {
-                margin-right: 15px;
-                width: 20px;
-                text-align: center;
+                margin-right: 8px;
+                font-size: 14px;
             }
 
         .header-left {
@@ -188,98 +206,95 @@
         .header-right {
             display: flex;
             align-items: center;
+            gap: 15px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .user-info a {
             color: var(--text-color-secondary);
             text-decoration: none;
             font-size: 15px;
+            white-space: nowrap;
         }
 
-        /* --- 5. 新增的主题切换器样式 --- */
+        /* --- 主题切换器样式 --- */
         .sidebar-footer {
             padding: 20px;
             border-top: 1px solid var(--border-color);
             text-align: center;
         }
 
-        .theme-toggle {
-            cursor: pointer;
-            font-size: 22px;
-            color: var(--text-color-secondary);
-        }
-        /* --- 新增的主题切换开关样式 --- */
-        .theme-switch-wrapper {
-            display: flex;
-            align-items: center;
-            margin-right: 20px;
-        }
-
-        .label34{
-            width: 60px;
-            height: 32px;
-            position: relative;
-            cursor: pointer;
-        }
-        .inp34{
-            display: none;
-        }
-        .check-span34{
-            width: 100%;
-            height: 100%;
-            display: block;
-            background-color: #383838;
-            border: 2px solid #383838;
-            box-sizing: border-box;
-            border-radius: 16px;
-            transition: 0.3s linear;
-        }
-        .check-span34:after{
-            content: '';
-            width: 22px;
-            height: 22px;
-            background-color: #383838;
-            box-shadow: inset -8px -4px 0 #ffffff;
-            border-radius: 11px;
-            position: absolute;
-            top: 5px;
-            left: 6px;
-            box-sizing: border-box;
-            transition: 0.3s ease-in-out;
-        }
-        .inp34:checked + .check-span34{
-            background-color: #ffffff;
-        }
-        .inp34:checked + .check-span34:after{
-            transform: translateX(26px);
-            background-color: orange;
-            box-shadow: none;
-        }
-        /* --- 新增的 Logo 颜色反转样式 --- */
+        /* 移除了暗色模式切换开关样式，现在使用齿轮图标菜单 */
+        
+        /* --- Logo 颜色反转样式 --- */
         body:not(.dark-mode) .sidebar-logo-img {
             filter: invert(1);
         }
-        /* --- 新增：修复成绩徽章(Badge)的显示样式 --- */
+        
+        /* --- 修复成绩徽章(Badge)的显示样式 --- */
         .list-group-item .badge {
-            background-color: var(--menu-active-bg); /* 使用我们主题的蓝色作为背景 */
-            color: var(--menu-active-text); /* 使用主题中与蓝色搭配的文字颜色 (白色) */
+            background-color: var(--theme-primary);
+            color: var(--menu-active-text);
         }
-        /* --- 新增：暗色模式下，修正默认按钮(btn-default)的样式 --- */
+        
+        /* --- 暗色模式下，修正默认按钮(btn-default)的样式 --- */
         body.dark-mode .btn-default {
-            color: #ccc; /* 浅灰色文字 */
-            background-color: #333; /* 深灰色背景 */
-            border-color: #555; /* 更深的边框色 */
+            color: #ccc;
+            background-color: #333;
+            border-color: #555;
         }
 
-            /* 鼠标悬停在按钮上时的样式 */
             body.dark-mode .btn-default:hover {
                 color: #fff;
                 background-color: #444;
                 border-color: #666;
             }
+
+        .theme-toggle {
+            cursor: pointer;
+            font-size: 22px;
+            color: var(--text-color-secondary);
+        }
+        
+        /* --- 头部主题设置按钮样式 --- */
+        .theme-settings-header-btn {
+            background: var(--theme-primary);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            outline: none;
+            margin-right: 15px;
+        }
+
+        .theme-settings-header-btn:hover {
+            background: var(--theme-primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .theme-settings-header-btn:focus {
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+
+        .theme-settings-header-btn i {
+            font-size: 14px;
+        }
     </style>
 </head>
-<body>
+<body class="@(Request.Cookies["theme"] != null && Request.Cookies["theme"].Value == "dark" ? "dark-mode" : "")">
     <div class="page-wrapper">
         <div class="sidebar-overlay" style="display:none;"></div>
         <aside class="sidebar">
@@ -321,9 +336,6 @@
             </ul>
 
             <div class="sidebar-footer">
-                <div class="theme-toggle" title="切换亮色/暗色主题">
-                    <span class="glyphicon glyphicon-sunglasses" id="theme-icon"></span>
-                </div>
             </div>
         </aside>
 
@@ -335,13 +347,11 @@
                     </div>
                 </div>
                 <div class="header-right">
-                    <div class="theme-switch-wrapper">
-                        <label class="label34" title="切换亮色/暗色主题">
-                            <input class="inp34" type="checkbox" id="theme-checkbox">
-                            <span class="check-span34"></span>
-                        </label>
-                    </div>
-
+                    <!-- 在用户信息左边添加主题设置按钮 -->
+                    <button class="theme-settings-header-btn" id="main-theme-btn" title="主题设置">
+                        <i class="glyphicon glyphicon-cog"></i> 主题设置
+                    </button>
+                    
                     <div class="user-info">
                         @if (currentUser != null)
                         {
@@ -362,20 +372,20 @@
     @Scripts.Render("~/bundles/bootstrap")
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="@Url.Content("~/Scripts/theme-system.js")"></script>
     @RenderSection("scripts", required: false)
     <script>
         $(document).ready(function () {
-            // --- 主题切换逻辑 (升级版) ---
-            const themeCheckbox = $('#theme-checkbox');
+            // --- 改进的主题逻辑 - 防止闪白问题 ---
             const body = $('body');
 
-            function applyTheme(theme, animate) {
+            function applyTheme(theme) {
                 if (theme === 'dark') {
                     body.addClass('dark-mode');
-                    themeCheckbox.prop('checked', true);
+                    document.documentElement.classList.add('dark-mode');
                 } else {
                     body.removeClass('dark-mode');
-                    themeCheckbox.prop('checked', false);
+                    document.documentElement.classList.remove('dark-mode');
                 }
             }
 
@@ -383,13 +393,11 @@
             let currentTheme = localStorage.getItem('theme') || 'light';
             applyTheme(currentTheme);
 
-            // 当点击开关时，切换主题
-            themeCheckbox.on('change', function () {
-                currentTheme = $(this).is(':checked') ? 'dark' : 'light';
-                localStorage.setItem('theme', currentTheme);
-                applyTheme(currentTheme);
-            });
-
+            // 延迟启用过渡动画，避免初始加载时的闪烁
+            setTimeout(function() {
+                body.addClass('transitions-enabled');
+                console.log('Transitions enabled');
+            }, 150); // 稍微延长时间确保所有元素都加载完成
 
             // --- 响应式菜单的控制逻辑 (保持不变) ---
             const hamburger = $('.hamburger-menu');
@@ -403,7 +411,45 @@
                 sidebar.removeClass('visible');
                 overlay.hide();
             });
+
+            // === 主题系统调试和确保正常工作 ===
+            console.log('Main layout loaded');
+            console.log('Current theme:', currentTheme);
+            
+            // 确保主题系统在主页面也能正常工作 - 现在使用头部按钮
+            setTimeout(function() {
+                if (window.ThemeSystem) {
+                    console.log('ThemeSystem available in main layout');
+                    // 确保默认主题被正确设置
+                    window.ThemeSystem.ensureDefaultTheme();
+                    // 初始化主题系统
+                    window.ThemeSystem.init();
+                } else {
+                    console.error('ThemeSystem not available in main layout');
+                }
+
+                // 检查头部按钮是否存在
+                const headerBtn = document.querySelector('#main-theme-btn');
+                if (headerBtn) {
+                    console.log('Header theme button found in main layout');
+                } else {
+                    console.error('Header theme button not found in main layout');
+                }
+            }, 500);
         });
+    </script>
+    <script>
+        // 确保JavaScript和服务端状态同步
+        (function() {
+            var theme = localStorage.getItem('theme');
+            if (theme === 'dark' && !document.body.classList.contains('dark-mode')) {
+                document.body.classList.add('dark-mode');
+                document.documentElement.classList.add('dark-mode');
+            } else if (theme !== 'dark' && document.body.classList.contains('dark-mode')) {
+                document.body.classList.remove('dark-mode');
+                document.documentElement.classList.remove('dark-mode');
+            }
+        })();
     </script>
 </body>
 </html>
