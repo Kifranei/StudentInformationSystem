@@ -69,9 +69,21 @@
 
 开启/关闭暗色模式（开启暗色模式后 退出登录后 登录页也会跟随变化）
 
-### 微信小程序支持
+## 📱 微信小程序 API 支持 (Mini Program API Support)
 
-已经实现对微信小程序的支持，学生可以通过小程序查看课表信息。
+本项目已为配套的微信小程序 (`SIS-WxMiniProgram`) 提供完整的 RESTful API 支持。主要接口位于 `Controllers/MiniProgramApiController.cs`。
+
+### 核心功能接口
+* **用户鉴权 (Auth)**
+    * `POST /api/miniprogram/login`: 用户登录，返回包含真实姓名 (RealName) 和角色 (Role) 的用户信息。
+* **课表查询 (Timetable)**
+    * `GET /api/miniprogram/timetable`: 根据用户 ID 获取个性化课表（支持学生和教师视角）。
+* **学生端功能 (Student Features)**
+    * `GET /api/miniprogram/grades`: 查询学生的选课及成绩信息。
+* **教师端功能 (Teacher Features)**
+    * `GET /api/miniprogram/mycourses`: 查询教师教授的课程列表及学分信息。
+* **管理员功能 (Admin Features)**
+    * `GET /api/miniprogram/stats`: 获取系统运行状态统计（包括用户、学生、教师、课程、班级总数）。
 
 ### 现实场景支持
 
