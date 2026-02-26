@@ -10,7 +10,7 @@ namespace StudentInformationSystem.Controllers
     // 同样继承 BaseController 来确保登录后才能访问
     public class TeacherController : BaseController
     {
-        private Entities db = new Entities(); // 你的数据库上下文
+        private StudentManagementDBEntities db = new StudentManagementDBEntities(); // 你的数据库上下文
 
         // GET: Teacher/Index
         // 教师登录后的主页

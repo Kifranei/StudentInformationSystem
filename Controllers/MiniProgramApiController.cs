@@ -11,7 +11,7 @@ namespace StudentInformationSystem.Controllers
     [RoutePrefix("api/miniprogram")] // 为整个控制器定义路由前缀
     public class MiniProgramApiController : ApiController
     {
-        private Entities db = new Entities();
+        private StudentManagementDBEntities db = new StudentManagementDBEntities();
 
         // POST: api/miniprogram/login
         [HttpPost]

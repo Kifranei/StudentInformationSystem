@@ -11,19 +11,15 @@ namespace StudentInformationSystem.Models
 {
     using System;
     using System.Collections.Generic;
-    using System.ComponentModel.DataAnnotations;
-
+    
     public partial class Exams
     {
         public int ExamID { get; set; }
         public int CourseID { get; set; }
-        [Display(Name = "考试时间")]
         public System.DateTime ExamTime { get; set; }
-        [Display(Name = "考试地点")]
         public string Location { get; set; }
-        [Display(Name = "备注")]
         public string Details { get; set; }
-
+    
         public virtual Courses Courses { get; set; }
     }
 }

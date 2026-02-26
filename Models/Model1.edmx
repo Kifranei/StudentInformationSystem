@@ -4,7 +4,7 @@
   <edmx:Runtime>
     <!-- SSDL content -->
     <edmx:StorageModels>
-    <Schema Namespace="StudentManagementDBModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+      <Schema Namespace="StudentManagementDBModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
         <EntityType Name="Classes">
           <Key>
             <PropertyRef Name="ClassID" />
@@ -48,6 +48,21 @@
           <Property Name="Location" Type="nvarchar" MaxLength="100" />
           <Property Name="Details" Type="nvarchar" MaxLength="200" />
         </EntityType>
+        <EntityType Name="Passkeys">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="UserId" Type="int" Nullable="false" />
+          <Property Name="CredentialId" Type="varbinary(max)" Nullable="false" />
+          <Property Name="PublicKey" Type="varbinary(max)" Nullable="false" />
+          <Property Name="UserHandle" Type="varbinary(max)" Nullable="false" />
+          <Property Name="SignatureCounter" Type="bigint" Nullable="false" />
+          <Property Name="CredType" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="RegDate" Type="datetime" Nullable="false" />
+          <Property Name="AaGuid" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="Name" Type="nvarchar" MaxLength="100" />
+        </EntityType>
         <EntityType Name="StudentCourses">
           <Key>
             <PropertyRef Name="SC_ID" />
@@ -84,6 +99,10 @@
           <Property Name="Username" Type="nvarchar" MaxLength="50" Nullable="false" />
           <Property Name="Password" Type="nvarchar" MaxLength="100" Nullable="false" />
           <Property Name="Role" Type="int" Nullable="false" />
+          <Property Name="PasskeyCredentialId" Type="varbinary(max)" />
+          <Property Name="PasskeyPublicKey" Type="nvarchar(max)" />
+          <Property Name="PasskeySignCount" Type="int" />
+          <Property Name="PasskeyEnabled" Type="bit" Nullable="false" />
         </EntityType>
         <Association Name="FK_ClassSessions_Courses">
           <End Role="Courses" Type="Self.Courses" Multiplicity="1" />
@@ -118,6 +137,20 @@
             </Principal>
             <Dependent Role="Exams">
               <PropertyRef Name="CourseID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Passkeys_Users">
+          <End Role="Users" Type="Self.Users" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="Passkeys" Type="Self.Passkeys" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Users">
+              <PropertyRef Name="UserID" />
+            </Principal>
+            <Dependent Role="Passkeys">
+              <PropertyRef Name="UserId" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -186,6 +219,7 @@
           <EntitySet Name="ClassSessions" EntityType="Self.ClassSessions" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Courses" EntityType="Self.Courses" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Exams" EntityType="Self.Exams" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Passkeys" EntityType="Self.Passkeys" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="StudentCourses" EntityType="Self.StudentCourses" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Students" EntityType="Self.Students" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Teachers" EntityType="Self.Teachers" Schema="dbo" store:Type="Tables" />
@@ -201,6 +235,10 @@
           <AssociationSet Name="FK_Exams_Courses" Association="Self.FK_Exams_Courses">
             <End Role="Courses" EntitySet="Courses" />
             <End Role="Exams" EntitySet="Exams" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Passkeys_Users" Association="Self.FK_Passkeys_Users">
+            <End Role="Users" EntitySet="Users" />
+            <End Role="Passkeys" EntitySet="Passkeys" />
           </AssociationSet>
           <AssociationSet Name="FK_StudentCourses_Courses" Association="Self.FK_StudentCourses_Courses">
             <End Role="Courses" EntitySet="Courses" />
@@ -223,7 +261,8 @@
             <End Role="Teachers" EntitySet="Teachers" />
           </AssociationSet>
         </EntityContainer>
-      </Schema></edmx:StorageModels>
+      </Schema>
+    </edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema Namespace="StudentManagementDBModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
@@ -233,10 +272,24 @@
           </Key>
           <Property Name="ClassID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="ClassName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
-          <NavigationProperty Name="Students" Relationship="Self.FK_Students_Classes" FromRole="Classes" ToRole="Students" />
           <Property Name="Major" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
           <Property Name="AcademicYear" Type="Int32" />
           <Property Name="ClassNumber" Type="Int32" />
+          <NavigationProperty Name="Students" Relationship="Self.FK_Students_Classes" FromRole="Classes" ToRole="Students" />
+        </EntityType>
+        <EntityType Name="ClassSessions">
+          <Key>
+            <PropertyRef Name="SessionID" />
+          </Key>
+          <Property Name="SessionID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="CourseID" Type="Int32" Nullable="false" />
+          <Property Name="DayOfWeek" Type="Int32" Nullable="false" />
+          <Property Name="StartPeriod" Type="Int32" Nullable="false" />
+          <Property Name="EndPeriod" Type="Int32" Nullable="false" />
+          <Property Name="Classroom" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="StartWeek" Type="Int32" Nullable="false" />
+          <Property Name="EndWeek" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="Courses" Relationship="Self.FK_ClassSessions_Courses" FromRole="ClassSessions" ToRole="Courses" />
         </EntityType>
         <EntityType Name="Courses">
           <Key>
@@ -246,11 +299,38 @@
           <Property Name="CourseName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="Credits" Type="Double" Nullable="false" />
           <Property Name="TeacherID" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
-          <NavigationProperty Name="Teachers" Relationship="Self.FK_Courses_Teachers" FromRole="Courses" ToRole="Teachers" />
-          <NavigationProperty Name="StudentCourses" Relationship="Self.FK_StudentCourses_Courses" FromRole="Courses" ToRole="StudentCourses" />
-          <NavigationProperty Name="ClassSessions" Relationship="StudentManagementDBModel.FK_ClassSessions_Courses" FromRole="Courses" ToRole="ClassSessions" />
-          <NavigationProperty Name="Exams" Relationship="StudentManagementDBModel.FK_Exams_Courses" FromRole="Courses" ToRole="Exams" />
           <Property Name="CourseType" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="ClassSessions" Relationship="Self.FK_ClassSessions_Courses" FromRole="Courses" ToRole="ClassSessions" />
+          <NavigationProperty Name="Teachers" Relationship="Self.FK_Courses_Teachers" FromRole="Courses" ToRole="Teachers" />
+          <NavigationProperty Name="Exams" Relationship="Self.FK_Exams_Courses" FromRole="Courses" ToRole="Exams" />
+          <NavigationProperty Name="StudentCourses" Relationship="Self.FK_StudentCourses_Courses" FromRole="Courses" ToRole="StudentCourses" />
+        </EntityType>
+        <EntityType Name="Exams">
+          <Key>
+            <PropertyRef Name="ExamID" />
+          </Key>
+          <Property Name="ExamID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="CourseID" Type="Int32" Nullable="false" />
+          <Property Name="ExamTime" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="Location" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="Details" Type="String" MaxLength="200" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="Courses" Relationship="Self.FK_Exams_Courses" FromRole="Exams" ToRole="Courses" />
+        </EntityType>
+        <EntityType Name="Passkeys">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="UserId" Type="Int32" Nullable="false" />
+          <Property Name="CredentialId" Type="Binary" MaxLength="Max" FixedLength="false" Nullable="false" />
+          <Property Name="PublicKey" Type="Binary" MaxLength="Max" FixedLength="false" Nullable="false" />
+          <Property Name="UserHandle" Type="Binary" MaxLength="Max" FixedLength="false" Nullable="false" />
+          <Property Name="SignatureCounter" Type="Int64" Nullable="false" />
+          <Property Name="CredType" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="RegDate" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="AaGuid" Type="Guid" Nullable="false" />
+          <Property Name="Name" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="Users" Relationship="Self.FK_Passkeys_Users" FromRole="Passkeys" ToRole="Users" />
         </EntityType>
         <EntityType Name="StudentCourses">
           <Key>
@@ -295,6 +375,11 @@
           <Property Name="Username" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="Password" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="Role" Type="Int32" Nullable="false" />
+          <Property Name="PasskeyCredentialId" Type="Binary" MaxLength="Max" FixedLength="false" />
+          <Property Name="PasskeyPublicKey" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="PasskeySignCount" Type="Int32" />
+          <Property Name="PasskeyEnabled" Type="Boolean" Nullable="false" />
+          <NavigationProperty Name="Passkeys" Relationship="Self.FK_Passkeys_Users" FromRole="Users" ToRole="Passkeys" />
           <NavigationProperty Name="Students" Relationship="Self.FK_Students_Users" FromRole="Users" ToRole="Students" />
           <NavigationProperty Name="Teachers" Relationship="Self.FK_Teachers_Users" FromRole="Users" ToRole="Teachers" />
         </EntityType>
@@ -310,6 +395,18 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_ClassSessions_Courses">
+          <End Role="Courses" Type="Self.Courses" Multiplicity="1" />
+          <End Role="ClassSessions" Type="Self.ClassSessions" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Courses">
+              <PropertyRef Name="CourseID" />
+            </Principal>
+            <Dependent Role="ClassSessions">
+              <PropertyRef Name="CourseID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_Courses_Teachers">
           <End Role="Teachers" Type="Self.Teachers" Multiplicity="0..1" />
           <End Role="Courses" Type="Self.Courses" Multiplicity="*" />
@@ -322,6 +419,18 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_Exams_Courses">
+          <End Role="Courses" Type="Self.Courses" Multiplicity="1" />
+          <End Role="Exams" Type="Self.Exams" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Courses">
+              <PropertyRef Name="CourseID" />
+            </Principal>
+            <Dependent Role="Exams">
+              <PropertyRef Name="CourseID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_StudentCourses_Courses">
           <End Role="Courses" Type="Self.Courses" Multiplicity="1" />
           <End Role="StudentCourses" Type="Self.StudentCourses" Multiplicity="*" />
@@ -331,6 +440,20 @@
             </Principal>
             <Dependent Role="StudentCourses">
               <PropertyRef Name="CourseID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Passkeys_Users">
+          <End Role="Users" Type="Self.Users" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="Passkeys" Type="Self.Passkeys" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Users">
+              <PropertyRef Name="UserID" />
+            </Principal>
+            <Dependent Role="Passkeys">
+              <PropertyRef Name="UserId" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -370,9 +493,12 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <EntityContainer Name="Entities" annotation:LazyLoadingEnabled="true">
+        <EntityContainer Name="StudentManagementDBEntities" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="Classes" EntityType="Self.Classes" />
+          <EntitySet Name="ClassSessions" EntityType="Self.ClassSessions" />
           <EntitySet Name="Courses" EntityType="Self.Courses" />
+          <EntitySet Name="Exams" EntityType="Self.Exams" />
+          <EntitySet Name="Passkeys" EntityType="Self.Passkeys" />
           <EntitySet Name="StudentCourses" EntityType="Self.StudentCourses" />
           <EntitySet Name="Students" EntityType="Self.Students" />
           <EntitySet Name="Teachers" EntityType="Self.Teachers" />
@@ -381,13 +507,25 @@
             <End Role="Classes" EntitySet="Classes" />
             <End Role="Students" EntitySet="Students" />
           </AssociationSet>
+          <AssociationSet Name="FK_ClassSessions_Courses" Association="Self.FK_ClassSessions_Courses">
+            <End Role="Courses" EntitySet="Courses" />
+            <End Role="ClassSessions" EntitySet="ClassSessions" />
+          </AssociationSet>
           <AssociationSet Name="FK_Courses_Teachers" Association="Self.FK_Courses_Teachers">
             <End Role="Teachers" EntitySet="Teachers" />
             <End Role="Courses" EntitySet="Courses" />
           </AssociationSet>
+          <AssociationSet Name="FK_Exams_Courses" Association="Self.FK_Exams_Courses">
+            <End Role="Courses" EntitySet="Courses" />
+            <End Role="Exams" EntitySet="Exams" />
+          </AssociationSet>
           <AssociationSet Name="FK_StudentCourses_Courses" Association="Self.FK_StudentCourses_Courses">
             <End Role="Courses" EntitySet="Courses" />
             <End Role="StudentCourses" EntitySet="StudentCourses" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Passkeys_Users" Association="Self.FK_Passkeys_Users">
+            <End Role="Users" EntitySet="Users" />
+            <End Role="Passkeys" EntitySet="Passkeys" />
           </AssociationSet>
           <AssociationSet Name="FK_StudentCourses_Students" Association="Self.FK_StudentCourses_Students">
             <End Role="Students" EntitySet="Students" />
@@ -401,91 +539,73 @@
             <End Role="Users" EntitySet="Users" />
             <End Role="Teachers" EntitySet="Teachers" />
           </AssociationSet>
-          <EntitySet Name="ClassSessions" EntityType="StudentManagementDBModel.ClassSessions" />
-          <AssociationSet Name="FK_ClassSessions_Courses" Association="StudentManagementDBModel.FK_ClassSessions_Courses">
-            <End Role="Courses" EntitySet="Courses" />
-            <End Role="ClassSessions" EntitySet="ClassSessions" />
-          </AssociationSet>
-          <EntitySet Name="Exams" EntityType="StudentManagementDBModel.Exams" />
-          <AssociationSet Name="FK_Exams_Courses" Association="StudentManagementDBModel.FK_Exams_Courses">
-            <End Role="Courses" EntitySet="Courses" />
-            <End Role="Exams" EntitySet="Exams" />
-          </AssociationSet>
         </EntityContainer>
-        <EntityType Name="ClassSessions">
-          <Key>
-            <PropertyRef Name="SessionID" />
-          </Key>
-          <Property Name="SessionID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="CourseID" Type="Int32" Nullable="false" />
-          <Property Name="DayOfWeek" Type="Int32" Nullable="false" />
-          <Property Name="StartPeriod" Type="Int32" Nullable="false" />
-          <Property Name="EndPeriod" Type="Int32" Nullable="false" />
-          <Property Name="Classroom" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
-          <NavigationProperty Name="Courses" Relationship="StudentManagementDBModel.FK_ClassSessions_Courses" FromRole="ClassSessions" ToRole="Courses" />
-          <Property Name="StartWeek" Type="Int32" Nullable="false" />
-          <Property Name="EndWeek" Type="Int32" Nullable="false" />
-        </EntityType>
-        <Association Name="FK_ClassSessions_Courses">
-          <End Type="StudentManagementDBModel.Courses" Role="Courses" Multiplicity="1" />
-          <End Type="StudentManagementDBModel.ClassSessions" Role="ClassSessions" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="Courses">
-              <PropertyRef Name="CourseID" />
-            </Principal>
-            <Dependent Role="ClassSessions">
-              <PropertyRef Name="CourseID" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <EntityType Name="Exams">
-          <Key>
-            <PropertyRef Name="ExamID" />
-          </Key>
-          <Property Name="ExamID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="CourseID" Type="Int32" Nullable="false" />
-          <Property Name="ExamTime" Type="DateTime" Nullable="false" Precision="3" />
-          <Property Name="Location" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
-          <Property Name="Details" Type="String" MaxLength="200" FixedLength="false" Unicode="true" />
-          <NavigationProperty Name="Courses" Relationship="StudentManagementDBModel.FK_Exams_Courses" FromRole="Exams" ToRole="Courses" />
-        </EntityType>
-        <Association Name="FK_Exams_Courses">
-          <End Type="StudentManagementDBModel.Courses" Role="Courses" Multiplicity="1" />
-          <End Type="StudentManagementDBModel.Exams" Role="Exams" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="Courses">
-              <PropertyRef Name="CourseID" />
-            </Principal>
-            <Dependent Role="Exams">
-              <PropertyRef Name="CourseID" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
     <edmx:Mappings>
       <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
-        <EntityContainerMapping StorageEntityContainer="StudentManagementDBModelStoreContainer" CdmEntityContainer="Entities">
+        <EntityContainerMapping StorageEntityContainer="StudentManagementDBModelStoreContainer" CdmEntityContainer="StudentManagementDBEntities">
           <EntitySetMapping Name="Classes">
             <EntityTypeMapping TypeName="StudentManagementDBModel.Classes">
               <MappingFragment StoreEntitySet="Classes">
-                <ScalarProperty Name="ClassNumber" ColumnName="ClassNumber" />
-                <ScalarProperty Name="AcademicYear" ColumnName="AcademicYear" />
-                <ScalarProperty Name="Major" ColumnName="Major" />
                 <ScalarProperty Name="ClassID" ColumnName="ClassID" />
                 <ScalarProperty Name="ClassName" ColumnName="ClassName" />
+                <ScalarProperty Name="Major" ColumnName="Major" />
+                <ScalarProperty Name="AcademicYear" ColumnName="AcademicYear" />
+                <ScalarProperty Name="ClassNumber" ColumnName="ClassNumber" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="ClassSessions">
+            <EntityTypeMapping TypeName="StudentManagementDBModel.ClassSessions">
+              <MappingFragment StoreEntitySet="ClassSessions">
+                <ScalarProperty Name="SessionID" ColumnName="SessionID" />
+                <ScalarProperty Name="CourseID" ColumnName="CourseID" />
+                <ScalarProperty Name="DayOfWeek" ColumnName="DayOfWeek" />
+                <ScalarProperty Name="StartPeriod" ColumnName="StartPeriod" />
+                <ScalarProperty Name="EndPeriod" ColumnName="EndPeriod" />
+                <ScalarProperty Name="Classroom" ColumnName="Classroom" />
+                <ScalarProperty Name="StartWeek" ColumnName="StartWeek" />
+                <ScalarProperty Name="EndWeek" ColumnName="EndWeek" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="Courses">
             <EntityTypeMapping TypeName="StudentManagementDBModel.Courses">
               <MappingFragment StoreEntitySet="Courses">
-                <ScalarProperty Name="CourseType" ColumnName="CourseType" />
                 <ScalarProperty Name="CourseID" ColumnName="CourseID" />
                 <ScalarProperty Name="CourseName" ColumnName="CourseName" />
                 <ScalarProperty Name="Credits" ColumnName="Credits" />
                 <ScalarProperty Name="TeacherID" ColumnName="TeacherID" />
+                <ScalarProperty Name="CourseType" ColumnName="CourseType" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Exams">
+            <EntityTypeMapping TypeName="StudentManagementDBModel.Exams">
+              <MappingFragment StoreEntitySet="Exams">
+                <ScalarProperty Name="ExamID" ColumnName="ExamID" />
+                <ScalarProperty Name="CourseID" ColumnName="CourseID" />
+                <ScalarProperty Name="ExamTime" ColumnName="ExamTime" />
+                <ScalarProperty Name="Location" ColumnName="Location" />
+                <ScalarProperty Name="Details" ColumnName="Details" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Passkeys">
+            <EntityTypeMapping TypeName="StudentManagementDBModel.Passkeys">
+              <MappingFragment StoreEntitySet="Passkeys">
+                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="UserId" ColumnName="UserId" />
+                <ScalarProperty Name="CredentialId" ColumnName="CredentialId" />
+                <ScalarProperty Name="PublicKey" ColumnName="PublicKey" />
+                <ScalarProperty Name="UserHandle" ColumnName="UserHandle" />
+                <ScalarProperty Name="SignatureCounter" ColumnName="SignatureCounter" />
+                <ScalarProperty Name="CredType" ColumnName="CredType" />
+                <ScalarProperty Name="RegDate" ColumnName="RegDate" />
+                <ScalarProperty Name="AaGuid" ColumnName="AaGuid" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -527,31 +647,10 @@
                 <ScalarProperty Name="Username" ColumnName="Username" />
                 <ScalarProperty Name="Password" ColumnName="Password" />
                 <ScalarProperty Name="Role" ColumnName="Role" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="ClassSessions">
-            <EntityTypeMapping TypeName="StudentManagementDBModel.ClassSessions">
-              <MappingFragment StoreEntitySet="ClassSessions">
-                <ScalarProperty Name="EndWeek" ColumnName="EndWeek" />
-                <ScalarProperty Name="StartWeek" ColumnName="StartWeek" />
-                <ScalarProperty Name="Classroom" ColumnName="Classroom" />
-                <ScalarProperty Name="EndPeriod" ColumnName="EndPeriod" />
-                <ScalarProperty Name="StartPeriod" ColumnName="StartPeriod" />
-                <ScalarProperty Name="DayOfWeek" ColumnName="DayOfWeek" />
-                <ScalarProperty Name="CourseID" ColumnName="CourseID" />
-                <ScalarProperty Name="SessionID" ColumnName="SessionID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="Exams">
-            <EntityTypeMapping TypeName="StudentManagementDBModel.Exams">
-              <MappingFragment StoreEntitySet="Exams">
-                <ScalarProperty Name="Details" ColumnName="Details" />
-                <ScalarProperty Name="Location" ColumnName="Location" />
-                <ScalarProperty Name="ExamTime" ColumnName="ExamTime" />
-                <ScalarProperty Name="CourseID" ColumnName="CourseID" />
-                <ScalarProperty Name="ExamID" ColumnName="ExamID" />
+                <ScalarProperty Name="PasskeyCredentialId" ColumnName="PasskeyCredentialId" />
+                <ScalarProperty Name="PasskeyPublicKey" ColumnName="PasskeyPublicKey" />
+                <ScalarProperty Name="PasskeySignCount" ColumnName="PasskeySignCount" />
+                <ScalarProperty Name="PasskeyEnabled" ColumnName="PasskeyEnabled" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

@@ -12,7 +12,7 @@ namespace StudentInformationSystem.Controllers
     // 继承 BaseController, 这样所有访问AdminController的请求都会先检查是否登录
     public class AdminController : BaseController
     {
-        private Entities db = new Entities(); // 替换成你的DbContext名称
+        private StudentManagementDBEntities db = new StudentManagementDBEntities(); // 替换成你的DbContext名称
 
         // GET: Admin/Index
         public ActionResult Index()

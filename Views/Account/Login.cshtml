@@ -257,6 +257,116 @@
 
                     <button type="submit" class="login-btn">登 录</button>
 
+                    <hr class="my-4" />
+                    <div class="text-center mt-3">
+                        <button type="button" id="btnPasskeyLogin" class="btn btn-outline-success w-100 btn-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-person-badge" viewBox="0 0 16 16">
+                                <path d="M6.5 2a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1h-3zM11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
+                                <path d="M4.5 0A2.5 2.5 0 0 0 2 2.5V14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2.5A2.5 2.5 0 0 0 11.5 0h-7zM3 2.5A1.5 1.5 0 0 1 4.5 1h7A1.5 1.5 0 0 1 13 2.5v10.795a4.2 4.2 0 0 0-.776-.492C11.392 12.387 10.063 12 8 12s-3.392.387-4.224.803a4.2 4.2 0 0 0-.776.492V2.5z" />
+                            </svg>
+                            使用通行密钥 (Passkey) 登录
+                        </button>
+                    </div>
+
+                    <script>
+                        console.log("Passkey 脚本已加载，准备绑定按钮...");
+
+                        // 工具函数：Base64Url 与 ArrayBuffer 互转
+                        function base64UrlToBuffer(str) {
+                            str = str.replace(/-/g, '+').replace(/_/g, '/');
+                            let pad = str.length % 4;
+                            if (pad !== 0) { str += new Array(5 - pad).join('='); }
+                            let binary = atob(str);
+                            let bytes = new Uint8Array(binary.length);
+                            for (let i = 0; i < binary.length; i++) { bytes[i] = binary.charCodeAt(i); }
+                            return bytes.buffer;
+                        }
+
+                        function bufferToBase64Url(buffer) {
+                            let bytes = new Uint8Array(buffer);
+                            let str = '';
+                            for (let charCode of bytes) { str += String.fromCharCode(charCode); }
+                            let base64 = btoa(str);
+                            return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+                        }
+
+                        // 确保页面 HTML 加载完毕后再绑定事件
+                        document.addEventListener('DOMContentLoaded', function () {
+                            const btn = document.getElementById('btnPasskeyLogin');
+
+                            if (!btn) {
+                                console.error("出错了：没找到 id 为 btnPasskeyLogin 的按钮！");
+                                return;
+                            }
+
+                            btn.addEventListener('click', async function () {
+                                console.log("通行密钥按钮被点击了！");
+
+                                if (!window.PublicKeyCredential) {
+                                    alert("抱歉，您的浏览器或设备不支持通行密钥登录！");
+                                    return;
+                                }
+
+                                try {
+                                    // 1. 使用原生 fetch 请求 Challenge（不用担心 jQuery 没加载的问题了）
+                                    let resp = await fetch('/Passkey/GetAssertionOptions', { method: 'POST' });
+                                    let options = await resp.json();
+
+                                    if (options.status === "error") {
+                                        alert(options.errorMessage);
+                                        return;
+                                    }
+
+                                    // 转换 Challenge 和允许列表
+                                    options.challenge = base64UrlToBuffer(options.challenge);
+                                    if (options.allowCredentials) {
+                                        for (let cred of options.allowCredentials) {
+                                            cred.id = base64UrlToBuffer(cred.id);
+                                        }
+                                    }
+
+                                    console.log("参数获取成功，正在唤起指纹/FaceID...", options);
+
+                                    // 2. 核心代码：唤起系统认证弹窗
+                                    let credential = await navigator.credentials.get({ publicKey: options });
+
+                                    // 3. 组装验证数据
+                                    let assertionResponse = {
+                                        id: credential.id,
+                                        rawId: bufferToBase64Url(credential.rawId),
+                                        type: credential.type,
+                                        response: {
+                                            authenticatorData: bufferToBase64Url(credential.response.authenticatorData),
+                                            clientDataJSON: bufferToBase64Url(credential.response.clientDataJSON),
+                                            signature: bufferToBase64Url(credential.response.signature),
+                                            userHandle: credential.response.userHandle ? bufferToBase64Url(credential.response.userHandle) : null
+                                        }
+                                    };
+
+                                    // 4. 原生 fetch 发送给后端验证
+                                    let verifyResp = await fetch('/Passkey/MakeAssertion', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify(assertionResponse)
+                                    });
+                                    let verifyResult = await verifyResp.json();
+
+                                    if (verifyResult.status === 'ok') {
+                                        console.log("验证通过，准备跳转...");
+                                        window.location.href = verifyResult.redirectUrl;
+                                    } else {
+                                        alert('登录失败: ' + verifyResult.errorMessage);
+                                    }
+
+                                } catch (err) {
+                                    console.error("Passkey 登录异常或用户取消了操作:", err);
+                                }
+                            });
+
+                            console.log("通行密钥登录按钮绑定成功！");
+                        });
+                    </script>
+
                     if (ViewBag.ErrorMessage != null)
                     {
                         <div class="alert alert-danger error-message">

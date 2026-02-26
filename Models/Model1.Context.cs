@@ -13,10 +13,10 @@ namespace StudentInformationSystem.Models
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
     
-    public partial class Entities : DbContext
+    public partial class StudentManagementDBEntities : DbContext
     {
-        public Entities()
-            : base("name=Entities")
+        public StudentManagementDBEntities()
+            : base("name=StudentManagementDBEntities")
         {
         }
     
@@ -26,12 +26,13 @@ namespace StudentInformationSystem.Models
         }
     
         public virtual DbSet<Classes> Classes { get; set; }
+        public virtual DbSet<ClassSessions> ClassSessions { get; set; }
         public virtual DbSet<Courses> Courses { get; set; }
+        public virtual DbSet<Exams> Exams { get; set; }
+        public virtual DbSet<Passkeys> Passkeys { get; set; }
         public virtual DbSet<StudentCourses> StudentCourses { get; set; }
         public virtual DbSet<Students> Students { get; set; }
         public virtual DbSet<Teachers> Teachers { get; set; }
         public virtual DbSet<Users> Users { get; set; }
-        public virtual DbSet<ClassSessions> ClassSessions { get; set; }
-        public virtual DbSet<Exams> Exams { get; set; }
     }
 }

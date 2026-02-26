@@ -11,7 +11,7 @@ namespace StudentInformationSystem.Models
 {
     using System;
     using System.Collections.Generic;
-    using System.ComponentModel.DataAnnotations;
+    
     public partial class Classes
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
@@ -21,15 +21,11 @@ namespace StudentInformationSystem.Models
         }
     
         public int ClassID { get; set; }
-        [Display(Name = "班级名称")]
         public string ClassName { get; set; }
-        [Display(Name = "专业")]
         public string Major { get; set; }
-        [Display(Name = "学年")]
         public Nullable<int> AcademicYear { get; set; }
-        [Display(Name = "班号")]
         public Nullable<int> ClassNumber { get; set; }
-
+    
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Students> Students { get; set; }
     }

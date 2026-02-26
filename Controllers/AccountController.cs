@@ -11,7 +11,7 @@ namespace StudentInformationSystem.Controllers
     public class AccountController : Controller
     {
         // 实例化数据库上下文，用于操作数据库
-        private Entities db = new Entities();
+        private StudentManagementDBEntities db = new StudentManagementDBEntities();
 
         // 1. GET请求: 显示登录页面
         // 当用户直接访问 /Account/Login 时，执行此方法
