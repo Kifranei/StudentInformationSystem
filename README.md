@@ -65,11 +65,9 @@
 
 🔥 **重磅功能：Passkey (WebAuthn/FIDO2) 无密码认证**
 * 成功实现并接入了 Passkey 注册与绑定功能！系统现在支持更安全、更现代的设备凭据身份验证，正式迈入无密码时代。
-* 学生/教师/管理员在登录页面可以选择使用 Passkey 进行登录（需要密码登录后在修改密码页面创建通行密钥后才能使用，允许创建多通行密钥。）登录时系统会自动检测设备是否支持 Passkey，并提供相应的登录选项。
+* 学生/教师/管理员在登录页面可以选择使用 Passkey 进行登录（需要密码登录后在修改密码页面创建通行密钥后才能使用，允许创建多个通行密钥。）登录时系统会自动检测设备是否支持 Passkey，并提供相应的登录选项。
 
-## 🌟 特色功能：灵活课程安排系统
-
-### 主题支持
+### 🌓 主题支持
 
 当用户登录后（管理员/教师/学生）可以在页面顶部右上角 主题设置 里选择喜欢的主题色（页面的强调色会跟随改变，共6种：深蓝色、深红色、浅蓝色、浅绿色、海蓝色、浅紫色）
 
@@ -77,7 +75,7 @@
 
 ## 📱 微信小程序 API 支持 (Mini Program API Support)
 
-本项目已为配套的微信小程序 (`SIS-WxMiniProgram`) 提供完整的 RESTful API 支持。主要接口位于 `Controllers/MiniProgramApiController.cs`。
+本项目已为配套的微信小程序 (`SIS-WxMiniProgram`) 提供完整的 API 支持。主要接口位于 `Controllers/MiniProgramApiController.cs`。
 
 ### 核心功能接口
 * **用户鉴权 (Auth)**
@@ -138,20 +136,21 @@
 - **后端**: ASP.NET MVC 5, Entity Framework 6 (Database First)
 - **前端**: HTML5, CSS3, Bootstrap 3, jQuery
 - **数据库**: Microsoft SQL Server
-- **核心第三方库**: html2canvas.js (用于课表截图)
+- **核心第三方库**: html2canvas.js (用于课表截图)，FIDO2（用于通行密钥支持）
 - **开发环境**: .NET Framework 4.8.1, C# 7.3
 
 ## 如何运行
 
 #### 1\. 环境准备
 
-- Visual Studio 2017 或更高版本（推荐 Visual Studio 2022 Community）
+- Visual Studio 2017 或更高版本（推荐 Visual Studio 2026 Community）
 - Microsoft SQL Server 2012 或更高版本（推荐SQL Server 2022 Develop）
+- SQL Server Management Studio (SSMS)  22 （推荐26）
 
 #### 2\. 数据库设置
 
 1. 打开 SQL Server Management Studio (SSMS)。
-2. 创建一个新的空数据库（例如 `StudentManagementDB`）或 将项目中的 SQL 脚本文件（`/db/sql.sql`）（推荐）在新建的查询窗口中执行，以创建所有必需的数据库 表和样例数据。
+2. 将项目中的 SQL 脚本文件（`/db/sql.sql`）在新建的查询窗口中执行，以创建所有必需的数据库 表和样例数据。
 
 #### 3\. 配置连接字符串
 
@@ -162,8 +161,9 @@
 4. 修改 `data source` 的值为你自己的 SQL Server 实例名（如果是本地默认实例，通常是 `.` 或者 `localhost`）。确保 `initial catalog` 是你创建的数据库名。（使用我提供的 sql 脚本就不用改数据库名了，但需要改实例名）
 ```xml
 <connectionStrings>
-  <add name="Entities" connectionString="metadata=res://*/Models.Model1.csdl|res://*/Models.Model1.ssdl|res://*/Models.Model1.msl;provider=System.Data.SqlClient;provider connection string="data source=.;initial catalog=StudentManagementDB;integrated security=True;encrypt=False;MultipleActiveResultSets=True;App=EntityFramework"" providerName="System.Data.EntityClient" />
-</connectionStrings>
+    <add name="Entities" connectionString="metadata=res://*/Models.Model1.csdl|res://*/Models.Model1.ssdl|res://*/Models.Model1.msl;provider=System.Data.SqlClient;provider connection string=&quot;data source=.;initial catalog=StudentManagementDB;integrated security=True;encrypt=False;MultipleActiveResultSets=True;App=EntityFramework&quot;" providerName="System.Data.EntityClient" />
+    <add name="StudentManagementDBEntities" connectionString="metadata=res://*/Models.Model1.csdl|res://*/Models.Model1.ssdl|res://*/Models.Model1.msl;provider=System.Data.SqlClient;provider connection string=&quot;data source=.;initial catalog=StudentManagementDB;integrated security=True;encrypt=False;MultipleActiveResultSets=True;App=EntityFramework&quot;" providerName="System.Data.EntityClient" />
+  </connectionStrings>
 ```
 #### 4\. 启动项目
 
