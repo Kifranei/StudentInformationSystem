@@ -3,36 +3,44 @@
     ViewBag.Title = "在线选课";
 }
 
-<h2>在线选课</h2>
-<p>请根据培养计划要求，完成本学期的课程选择。</p>
+<h2>在线选课与退选</h2>
+<p class="text-muted">请根据培养计划要求，完成本学期的课程选择。</p>
 
-<div class="row">
-    <div class="col-md-6">
-        <div class="alert alert-info">
-            <strong>体育选修课要求:</strong> 需选够 3 门，您已选 @Model.SportsCoursesTaken 门。
-        </div>
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>拦截提示：</strong> @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-    <div class="col-md-6">
-        <div class="alert alert-info">
-            <strong>思政必修课要求:</strong> 需选够 4 门，您已选 @Model.PoliticsCoursesTaken 门。
-        </div>
+}
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <strong>操作成功：</strong> @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-</div>
+}
 
-<div class="timetable-tabs">
-    <button class="btn btn-primary active" data-target="#my-selected">我的已选课程 <span class="badge">@Model.EnrolledCourses.Count</span></button>
-    <button class="btn btn-default" data-target="#course-market">进入选课市场</button>
+<div class="timetable-tabs" style="margin-top: 15px;">
+    <button class="btn btn-primary active" data-target="#my-selected">我的已选课程 <span class="badge bg-light text-dark">@Model.EnrolledCourses.Count</span></button>
+    <button class="btn btn-light" data-target="#sports-market">体育选修区</button>
+    <button class="btn btn-light" data-target="#other-market">其他选修区</button>
 </div>
 <hr />
 
 <div class="tab-content" id="main-tab-content" style="padding-top: 10px;">
+
     <div class="tab-pane active" id="my-selected">
-        <h4>已选课程列表</h4>
+        <div class="alert alert-warning" style="padding: 10px; margin-bottom: 15px;">
+            <i class="glyphicon glyphicon-info-sign"></i>
+            <strong>注意：</strong> 带有 <span class="badge bg-danger">必修</span> 标记的课程为教务处统一排课，学生不可自行退选。
+        </div>
+
         @if (Model.EnrolledCourses.Any())
         {
             var courseSchedules = ViewBag.CourseSchedules as List<StudentInformationSystem.Models.ClassSessions>;
             if (courseSchedules == null) { courseSchedules = new List<StudentInformationSystem.Models.ClassSessions>(); }
-            
+
             <div class="table-responsive">
                 <table class="table table-hover">
                     <thead>
@@ -40,8 +48,8 @@
                             <th>课程名称</th>
                             <th>授课教师</th>
                             <th>学分</th>
-                            <th>上课时间</th>
-                            <th class="text-center">操作</th>
+                            <th>上课时间与地点</th>
+                            <th class="text-center" style="width: 100px;">操作</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -52,17 +60,18 @@
                                     <strong>@item.Courses.CourseName</strong>
                                     @{
                                         string courseType = "";
+                                        string badgeClass = "bg-info";
                                         switch (item.Courses.CourseType)
                                         {
-                                            case 1: courseType = "专业必修"; break;
-                                            case 2: courseType = "公共必修"; break;
-                                            case 3: courseType = "专业选修"; break;
-                                            case 4: courseType = "公共选修"; break;
-                                            case 5: courseType = "体育选修"; break;
+                                            case 1: courseType = "专业必修"; badgeClass = "bg-danger"; break;
+                                            case 2: courseType = "公共/思政必修"; badgeClass = "bg-danger"; break;
+                                            case 3: courseType = "专业选修"; badgeClass = "bg-primary"; break;
+                                            case 4: courseType = "公共选修"; badgeClass = "bg-primary"; break;
+                                            case 5: courseType = "体育选修"; badgeClass = "bg-success"; break;
                                             default: courseType = "未知"; break;
                                         }
                                     }
-                                    <br /><small><span class="label label-info" style="font-size: 9px;">@courseType</span></small>
+                                    <br /><span class="badge @badgeClass" style="font-size: 11px;">@courseType</span>
                                 </td>
                                 <td>
                                     @if (item.Courses.Teachers != null)
@@ -74,56 +83,41 @@
                                         <span class="text-muted">待分配</span>
                                     }
                                 </td>
-                                <td>@item.Courses.Credits 学分</td>
+                                <td>@item.Courses.Credits</td>
                                 <td>
                                     @{
                                         var schedules = courseSchedules.Where(cs => cs.CourseID == item.CourseID).ToList();
                                         string[] dayNames = { "", "周一", "周二", "周三", "周四", "周五", "周六", "周日" };
-                                        var holidayWeeks = StudentInformationSystem.Helpers.HolidayHelper.GetCurrentSemesterHolidayWeeks();
                                     }
                                     @if (schedules.Any())
                                     {
                                         foreach (var schedule in schedules)
                                         {
                                             var dayName = schedule.DayOfWeek >= 1 && schedule.DayOfWeek <= 7 ? dayNames[schedule.DayOfWeek] : "未知";
-                                            
-                                            // 检查是否包含假日周次
-                                            var hasHolidays = false;
-                                            for (int week = schedule.StartWeek; week <= schedule.EndWeek; week++)
-                                            {
-                                                if (holidayWeeks.Contains(week))
-                                                {
-                                                    hasHolidays = true;
-                                                    break;
-                                                }
-                                            }
-                                            
-                                            <div class="schedule-item" style="margin-bottom: 4px;">
-                                                <small>
-                                                    <span class="label label-primary" style="font-size: 9px;">第@(schedule.StartWeek)-@(schedule.EndWeek)周</span>
-                                                    <span class="label label-default" style="font-size: 9px;">@dayName</span>
-                                                    <span class="label label-default" style="font-size: 9px;">第@(schedule.StartPeriod)-@(schedule.EndPeriod)节</span>
-                                                    <span class="label label-success" style="font-size: 9px;">@schedule.Classroom</span>
-                                                    @if (hasHolidays)
-                                                    {
-                                                        <span class="label label-warning" style="font-size: 9px;" title="包含法定假日">含假日</span>
-                                                    }
-                                                </small>
+                                            <div style="margin-bottom: 4px;">
+                                                <span class="badge bg-secondary">第@(schedule.StartWeek)-@(schedule.EndWeek)周</span>
+                                                <span class="badge bg-secondary">@dayName 第@(schedule.StartPeriod)-@(schedule.EndPeriod)节</span>
+                                                <span class="badge bg-success">@schedule.Classroom</span>
                                             </div>
                                         }
                                     }
                                     else
                                     {
-                                        <small class="text-muted">
-                                            <span class="glyphicon glyphicon-time"></span> 时间待定
-                                        </small>
+                                        <small class="text-muted">时间地点待定</small>
                                     }
                                 </td>
                                 <td class="text-center">
-                                    @using (Html.BeginForm("WithdrawCourse", "Student", new { courseId = item.CourseID }, FormMethod.Post, new { @style = "display: inline;" }))
+                                    @if (item.Courses.CourseType == 1 || item.Courses.CourseType == 2)
                                     {
-                                        @Html.AntiForgeryToken()
-                                        <button type="submit" class="btn btn-warning btn-xs">退 选</button>
+                                        <button type="button" class="btn btn-secondary btn-sm" disabled title="必修课程不可退选">不可退选</button>
+                                    }
+                                    else
+                                    {
+                                        using (Html.BeginForm("WithdrawCourse", "Student", new { courseId = item.CourseID }, FormMethod.Post, new { @style = "display: inline;" }))
+                                        {
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('确定要退选【@item.Courses.CourseName】吗？');">退 选</button>
+                                        }
                                     }
                                 </td>
                             </tr>
@@ -134,111 +128,79 @@
         }
         else
         {
-            <p class="text-muted">您当前还未选择任何课程。</p>
+            <p class="text-muted text-center" style="margin-top: 20px;">您当前课表为空。</p>
         }
     </div>
 
-    <div class="tab-pane" id="course-market">
-        <h4>选择课程类别进行选课</h4>
-        <div class="btn-group" id="category-buttons">
-            @if (Model.RetakeCourses.Any())
-            {
-                <button class="btn btn-default" data-target="#retake">重修课程</button>
-            }
-            <button class="btn btn-default" data-target="#major">专业必修</button>
-            <button class="btn btn-default" data-target="#public">公共必修</button>
-            <button class="btn btn-default" data-target="#sports">体育选修</button>
-            <button class="btn btn-default" data-target="#politics">思政必修</button>
-            <button class="btn btn-default" data-target="#other">其他选修</button>
+    <div class="tab-pane" id="sports-market">
+        <div class="alert alert-success">
+            <strong>📌 选课要求:</strong> 体育选修课每人每学期限选 1 门，您当前已选 @Model.SportsCoursesTaken 门。
         </div>
-
-        <div class="tab-content" style="padding-top: 20px;">
-            @if (Model.RetakeCourses.Any())
-            {
-                <div class="tab-pane" id="retake">@Html.Partial("_CourseListPartial", Model.RetakeCourses)</div>
-            }
-            <div class="tab-pane" id="major">@Html.Partial("_CourseListPartial", Model.MajorElectives)</div>
-            <div class="tab-pane" id="public">@Html.Partial("_CourseListPartial", Model.PublicElectives)</div>
-            <div class="tab-pane" id="sports">@Html.Partial("_CourseListPartial", Model.SportsElectives)</div>
-            <div class="tab-pane" id="politics">@Html.Partial("_CourseListPartial", Model.PoliticsElectives)</div>
-            <div class="tab-pane" id="other">@Html.Partial("_CourseListPartial", Model.OtherElectives)</div>
-        </div>
+        @Html.Partial("_CourseListPartial", Model.SportsElectives)
     </div>
+
+    <div class="tab-pane" id="other-market">
+        <div class="alert alert-info">
+            <strong>📌 选课要求:</strong> 大学三年期间需选够 4 门，您当前已选 @ViewBag.OtherCoursesTaken 门。
+        </div>
+        @Html.Partial("_CourseListPartial", Model.OtherElectives)
+    </div>
+
 </div>
 
-@* --- 3.CSS 和 JavaScript 脚本 --- *@
 @section Scripts {
     <script>
         $(document).ready(function () {
+            // 自动淡出提示框
+            setTimeout(function () {
+                $(".alert-dismissible").fadeOut('slow');
+            }, 3000);
 
-            // --- 脚本1: 控制主标签页切换 ("我的已选课程" 和 "进入选课市场") ---
+            // 你喜欢的原生 JS 按钮切换逻辑
             $('.timetable-tabs .btn').on('click', function (e) {
-                e.preventDefault(); // 阻止默认行为
-
-                // 按钮样式切换
-                $('.timetable-tabs .btn').removeClass('btn-primary active').addClass('btn-default');
-                $(this).removeClass('btn-default').addClass('btn-primary active');
-
-                // 内容区切换
-                var targetPaneId = $(this).data('target');
-                $('#main-tab-content > .tab-pane').removeClass('active'); // 隐藏所有顶层tab-pane
-                $(targetPaneId).addClass('active'); // 只显示目标tab-pane
-            });
-
-            // --- 脚本2: 控制"选课市场"内的按钮和其对应的内容 ---
-            $('#category-buttons .btn').on('click', function (e) {
                 e.preventDefault();
 
-                // 按钮样式切换
-                $('#category-buttons .btn').removeClass('btn-primary active').addClass('btn-default');
-                $(this).removeClass('btn-default').addClass('btn-primary active');
+                // 按钮样式切换 (Bootstrap 5 推荐用 btn-light 替代旧的 btn-default)
+                $('.timetable-tabs .btn').removeClass('btn-primary active').addClass('btn-light');
+                $(this).removeClass('btn-light').addClass('btn-primary active');
 
                 // 内容区切换
                 var targetPaneId = $(this).data('target');
-                $('#course-market .tab-content .tab-pane').removeClass('active');
+                $('#main-tab-content > .tab-pane').removeClass('active');
                 $(targetPaneId).addClass('active');
             });
-
-            // --- 初始状态：默认激活"选课市场"里的第一个类别 ---
-            var firstCategoryButton = $('#category-buttons .btn').first();
-            if (firstCategoryButton.length > 0) {
-                firstCategoryButton.click();
-            }
         });
     </script>
 }
 
 <style>
-    /* --- 用于解决闪屏问题的CSS --- */
+    /* --- 解决闪屏并控制显示的 CSS --- */
     .tab-content > .tab-pane {
-        display: none;
+        display: none !important;
     }
 
     .tab-content > .active {
-        display: block;
+        display: block !important;
+        animation: fadeIn 0.3s;
+    }
+
+    keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
     }
 
     .timetable-tabs {
         margin-bottom: 5px;
+        display: flex;
+        gap: 10px; /* 让按钮之间有一点点缝隙，看起来更好看 */
     }
 
-    .schedule-item {
-        line-height: 1.2;
-    }
-    
-    .label {
-        margin-right: 2px;
-        padding: 2px 4px;
-        font-size: 9px !important;
-        font-weight: normal;
-    }
-    
     .table td {
-        vertical-align: middle;
+        vertical-align: middle !important;
     }
-    
+
     .table th {
-        background-color: #f5f5f5;
-        font-weight: bold;
+        background-color: #f8f9fa;
+        font-weight: 600;
     }
 </style>

@@ -136,16 +136,16 @@
 - **后端**: ASP.NET MVC 5, Entity Framework 6 (Database First)
 - **前端**: HTML5, CSS3, Bootstrap 3, jQuery
 - **数据库**: Microsoft SQL Server
-- **核心第三方库**: html2canvas.js (用于课表截图)，FIDO2（用于通行密钥支持）
+- **核心第三方库**: html2canvas.js (用于课表截图)，Fido2NetLib（用于实现现代 WebAuthn 通行密钥支持）
 - **开发环境**: .NET Framework 4.8.1, C# 7.3
 
 ## 如何运行
 
 #### 1\. 环境准备
 
-- Visual Studio 2017 或更高版本（推荐 Visual Studio 2026 Community）
-- Microsoft SQL Server 2012 或更高版本（推荐SQL Server 2022 Develop）
-- SQL Server Management Studio (SSMS)  22 （推荐26）
+- Visual Studio 2019 或更高版本（推荐 Visual Studio Community 2026）
+- Microsoft SQL Server 2019 或更高版本（推荐SQL Server 2022 Develop）
+- SQL Server Management Studio (SSMS)  19或更高版本（推荐SSMS 22）
 
 #### 2\. 数据库设置
 
@@ -154,11 +154,11 @@
 
 #### 3\. 配置连接字符串
 
-1. 打开 Visual Studio ，选择克隆存储库 ，将 `https://github.com/Kifranei/StudentInformationSystem.git` 粘贴到存储库位置的输入框中，执行克隆，随后打开项目根目录下的 `Web.config` 文件。
+1. 打开 Visual Studio ，选择克隆存储库 ，将 `https://github.com/Kifranei/StudentInformationSystem.git` 或 `https://gitlab.com/Kifranei/StudentInformationSystem.git`  粘贴到存储库位置的输入框中，执行克隆，随后打开项目根目录下的 `Web.config` 文件。
 
-3. 找到 `<connectionStrings>` 配置节。
+2. 找到 `<connectionStrings>` 配置节。
 
-4. 修改 `data source` 的值为你自己的 SQL Server 实例名（如果是本地默认实例，通常是 `.` 或者 `localhost`）。确保 `initial catalog` 是你创建的数据库名。（使用我提供的 sql 脚本就不用改数据库名了，但需要改实例名）
+3. 修改 `data source` 的值为你自己的 SQL Server 实例名（如果是本地默认实例，通常是 `.` 或者 `localhost`）。确保 `initial catalog` 是你创建的数据库名。（使用我提供的 sql 脚本就不用改数据库名了，但需要改实例名）
 ```xml
 <connectionStrings>
     <add name="StudentManagementDBEntities" connectionString="metadata=res://*/Models.Model1.csdl|res://*/Models.Model1.ssdl|res://*/Models.Model1.msl;provider=System.Data.SqlClient;provider connection string=&quot;data source=.;initial catalog=StudentManagementDB;integrated security=True;encrypt=False;MultipleActiveResultSets=True;App=EntityFramework&quot;" providerName="System.Data.EntityClient" />
@@ -167,7 +167,7 @@
 #### 4\. 启动项目
 
 1. 用 Visual Studio 打开 `.sln` 项目文件。
-2. 为避免出现 bug ，请先清理并重建解决方案（菜单栏选择 "生成" -> "清理解决方案"，然后 "生成" -> "生成解决方案"）。
+2. 为避免出现 bug ，请先清理并重建解决方案（菜单栏选择 "生成" -> "重新生成解决方案"）。
 2. 按 `F5` 或点击"IIS Express"按钮来运行项目。
 
 #### 5\. 默认登录信息
@@ -179,8 +179,8 @@
 
 ## 许可证
 
-该项目采用 [MIT许可证](https://opensource.org/licenses/MIT)。
+该项目采用 [MIT许可证](https://opensource.org/licenses/MIT)。任何人均可不受限制的分发和修改，但请保留原作者信息。
 
 ## 致谢
 
-本项目的完成离不开以下 AI 的协助：Google Gemini、Authropic Claude。帮我排除了不少 bug，以及实现了一些复杂的功能（如 Passkey 无密码认证）。
+本项目的完成离不开以下 AI 的协助：Google Gemini、Authropic Claude。帮我排除了不少 bug，以及实现了一些复杂的功能（如 WebAuthn 无密码认证体系与智能排选课拦截和节假日排课处理逻辑）。

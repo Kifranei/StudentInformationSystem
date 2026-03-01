@@ -62,54 +62,58 @@ namespace StudentInformationSystem.Controllers
             var viewModel = new CourseSelectionViewModel();
 
             // 1. 获取该生所有选课记录
-            var allEnrollments = db.StudentCourses.Include("Courses.Teachers") // 预加载课程和教师信息
-                                   .Where(sc => sc.StudentID == student.StudentID)
-                                   .ToList();
+            var allEnrollments = db.StudentCourses.Include("Courses.Teachers")
+                                    .Where(sc => sc.StudentID == student.StudentID)
+                                    .ToList();
 
-            // --- 将完整的已选课程列表存入ViewModel ---
             viewModel.EnrolledCourses = allEnrollments;
-
             viewModel.EnrolledCourseIDs = allEnrollments.Select(sc => sc.CourseID).ToList();
 
             // 2. 找出需要重修的课程
             viewModel.RetakeCourses = allEnrollments
-                                        .Where(sc => sc.Grade < 60)
-                                        .Select(sc => sc.Courses)
-                                        .ToList();
+                                         .Where(sc => sc.Grade < 60)
+                                         .Select(sc => sc.Courses)
+                                         .ToList();
 
-            // 3. 计算体育课和思政课已选门数
-            viewModel.SportsCoursesTaken = allEnrollments.Count(sc => sc.Courses.CourseType == 3);
-            viewModel.PoliticsCoursesTaken = allEnrollments.Count(sc => sc.Courses.CourseType == 4);
+            // 3. 计算体育课和其他选修课的已选门数
+            // 体育选修 (CourseType = 5)
+            viewModel.SportsCoursesTaken = allEnrollments.Count(sc => sc.Courses.CourseType == 5);
+            // 其他选修 (CourseType = 4) - 如果你的 ViewModel 没有这个属性，我们用 ViewBag 传给前端
+            ViewBag.OtherCoursesTaken = allEnrollments.Count(sc => sc.Courses.CourseType == 4);
 
             // 4. 获取所有可选课程
             var allAvailableCourses = db.Courses.Include("Teachers")
-                                        .Where(c => !viewModel.EnrolledCourseIDs.Contains(c.CourseID) &&
-                                                    !viewModel.RetakeCourses.Select(rc => rc.CourseID).Contains(c.CourseID))
-                                        .ToList();
+                                         .Where(c => !viewModel.EnrolledCourseIDs.Contains(c.CourseID) &&
+                                                     !viewModel.RetakeCourses.Select(rc => rc.CourseID).Contains(c.CourseID))
+                                         .ToList();
 
-            // 5. 按类别对可选课程进行分组
-            viewModel.MajorElectives = allAvailableCourses.Where(c => c.CourseType == 1).ToList();
-            viewModel.PublicElectives = allAvailableCourses.Where(c => c.CourseType == 2).ToList();
-            viewModel.SportsElectives = allAvailableCourses.Where(c => c.CourseType == 3).ToList();
-            viewModel.PoliticsElectives = allAvailableCourses.Where(c => c.CourseType == 4).ToList();
-            viewModel.OtherElectives = allAvailableCourses.Where(c => c.CourseType == 5).ToList();
+            // 5. 按类别对可选课程进行分组 (页面只留体育和其他选修)
+            // 将不需要学生选的必修类别直接置空，彻底切断前端渲染的可能性
+            viewModel.MajorElectives = new List<Courses>();     // 丢弃专业必修
+            viewModel.PublicElectives = new List<Courses>();    // 丢弃公共必修
+            viewModel.PoliticsElectives = new List<Courses>();  // 丢弃思政必修 (如果有这个类别的话)
 
-            // --- 获取所有课程的课程安排信息 ---
+            // 专门给前端用来展示的两个列表：
+            viewModel.SportsElectives = allAvailableCourses.Where(c => c.CourseType == 5).ToList();
+            viewModel.OtherElectives = allAvailableCourses.Where(c => c.CourseType == 4).ToList();
+
+            // 6. 获取所有课程的课程安排信息
             var allCourseIds = allAvailableCourses.Select(c => c.CourseID)
-                                .Union(viewModel.RetakeCourses.Select(rc => rc.CourseID))
-                                .Union(viewModel.EnrolledCourseIDs)
-                                .ToList();
+                                 .Union(viewModel.RetakeCourses.Select(rc => rc.CourseID))
+                                 .Union(viewModel.EnrolledCourseIDs)
+                                 .ToList();
 
             var courseSchedules = db.ClassSessions
-                                    .Where(cs => allCourseIds.Contains(cs.CourseID))
-                                    .OrderBy(cs => cs.CourseID)
-                                    .ThenBy(cs => cs.StartWeek)
-                                    .ThenBy(cs => cs.DayOfWeek)
-                                    .ThenBy(cs => cs.StartPeriod)
-                                    .ToList();
+                                     .Where(cs => allCourseIds.Contains(cs.CourseID))
+                                     .OrderBy(cs => cs.CourseID)
+                                     .ThenBy(cs => cs.StartWeek)
+                                     .ThenBy(cs => cs.DayOfWeek)
+                                     .ThenBy(cs => cs.StartPeriod)
+                                     .ToList();
 
             ViewBag.CourseSchedules = courseSchedules;
             ViewBag.EnrolledCourseIDs = viewModel.EnrolledCourseIDs;
+
             return View(viewModel);
         }
 
@@ -122,21 +126,42 @@ namespace StudentInformationSystem.Controllers
             var currentUser = Session["User"] as Users;
             var student = db.Students.FirstOrDefault(s => s.UserID == currentUser.UserID);
 
+            if (student == null) return RedirectToAction("CourseSelection");
+
+            var course = db.Courses.Find(courseId);
+            if (course == null) return RedirectToAction("CourseSelection");
+
             // 检查是否已经选过该课程，防止重复提交
             bool isEnrolled = db.StudentCourses.Any(sc => sc.StudentID == student.StudentID && sc.CourseID == courseId);
-            if (!isEnrolled)
+            if (isEnrolled)
             {
-                // 创建一条新的选课记录
-                var enrollment = new StudentCourses
-                {
-                    StudentID = student.StudentID,
-                    CourseID = courseId,
-                    Grade = null // 成绩初始为空
-                };
-                db.StudentCourses.Add(enrollment);
-                db.SaveChanges();
+                TempData["ErrorMessage"] = "您已经选过这门课了。";
+                return RedirectToAction("CourseSelection");
             }
-            // 处理完成后，重定向回选课页面
+
+            // 【核心拦截 1】：如果是体育选修(CourseType == 5)，检查是否已经选过其他的体育课了
+            if (course.CourseType == 5)
+            {
+                var hasPECourse = db.StudentCourses.Any(sc => sc.StudentID == student.StudentID && sc.Courses.CourseType == 5);
+                if (hasPECourse)
+                {
+                    // 使用 TempData 传递错误信息到前端页面
+                    TempData["ErrorMessage"] = "体育选修课每人限选一门，请先退选原体育课后再选！";
+                    return RedirectToAction("CourseSelection");
+                }
+            }
+
+            // 创建一条新的选课记录
+            var enrollment = new StudentCourses
+            {
+                StudentID = student.StudentID,
+                CourseID = courseId,
+                Grade = null // 成绩初始为空
+            };
+            db.StudentCourses.Add(enrollment);
+            db.SaveChanges();
+
+            TempData["SuccessMessage"] = "选课成功！";
             return RedirectToAction("CourseSelection");
         }
 
@@ -149,16 +174,29 @@ namespace StudentInformationSystem.Controllers
             var currentUser = Session["User"] as Users;
             var student = db.Students.FirstOrDefault(s => s.UserID == currentUser.UserID);
 
+            if (student == null) return RedirectToAction("CourseSelection");
+
+            var course = db.Courses.Find(courseId);
+            if (course == null) return RedirectToAction("CourseSelection");
+
+            // 【核心拦截 2】：如果是专业必修(1)或公共必修(2)，严禁学生自行退课！
+            if (course.CourseType == 1 || course.CourseType == 2)
+            {
+                TempData["ErrorMessage"] = "必修课程为教务处统一排课，学生不可自行退选！";
+                return RedirectToAction("CourseSelection");
+            }
+
             // 找到要删除的选课记录
             var enrollment = db.StudentCourses
-                               .FirstOrDefault(sc => sc.StudentID == student.StudentID && sc.CourseID == courseId);
+                                .FirstOrDefault(sc => sc.StudentID == student.StudentID && sc.CourseID == courseId);
 
             if (enrollment != null)
             {
                 db.StudentCourses.Remove(enrollment);
                 db.SaveChanges();
+                TempData["SuccessMessage"] = "退课成功！";
             }
-            // 处理完成后，重定向回选课页面
+
             return RedirectToAction("CourseSelection");
         }
         // GET: Student/ChangePassword
