@@ -10,7 +10,7 @@ namespace StudentInformationSystem.Controllers
     // 同样继承 BaseController 来确保登录后才能访问
     public class TeacherController : BaseController
     {
-        private StudentManagementDBEntities db = new StudentManagementDBEntities(); // 你的数据库上下文
+        private StudentManagementDBEntities db = new StudentManagementDBEntities();
 
         // GET: Teacher/Index
         // 教师登录后的主页
@@ -41,7 +41,7 @@ namespace StudentInformationSystem.Controllers
         public ActionResult GradeEntry(int courseId)
         {
             // 1. 根据 courseId 找到所有选了这门课的学生选课记录 (StudentCourses)
-            //    我们使用 .Include("Students") 来同时加载关联的学生信息，避免N+1查询
+            //    使用 .Include("Students") 来同时加载关联的学生信息，避免N+1查询
             var enrollments = db.StudentCourses.Include("Students")
                                 .Where(sc => sc.CourseID == courseId).ToList();
 
@@ -59,7 +59,7 @@ namespace StudentInformationSystem.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult GradeEntry(int courseId, string[] studentIds, float?[] grades)
         {
-            // 我们使用了两个数组来接收所有学生的ID和对应的成绩
+            // 使用了两个数组来接收所有学生的ID和对应的成绩
             if (studentIds != null && grades != null && studentIds.Length == grades.Length)
             {
                 for (int i = 0; i < studentIds.Length; i++)
@@ -285,7 +285,7 @@ namespace StudentInformationSystem.Controllers
             // 检查模型状态是否有效
             if (ModelState.IsValid)
             {
-                // 告诉 Entity Framework，这个对象已经被修改了
+                // 告诉 Entity Framework，这个对象已被修改
                 db.Entry(session).State = System.Data.Entity.EntityState.Modified;
                 // 保存更改到数据库
                 db.SaveChanges();

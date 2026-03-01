@@ -43,7 +43,6 @@
                 <td>@student.StudentName</td>
                 <td>@student.Gender</td>
                 <td>
-                    @* 添加一些快捷操作链接 *@
                     @Html.ActionLink("编辑该学生", "Edit", "Admin", new { id = student.StudentID }, null)
                 </td>
             </tr>

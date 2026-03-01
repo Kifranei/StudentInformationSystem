@@ -26,7 +26,7 @@ namespace StudentInformationSystem.Controllers
                 return Unauthorized();
             }
 
-            // --- 新增的逻辑：根据角色查询真实姓名 ---
+            // --- 根据角色查询真实姓名 ---
             string realName = user.Username; // 默认使用用户名
 
             if (user.Role == 2) // 如果是学生
@@ -207,7 +207,7 @@ namespace StudentInformationSystem.Controllers
             return Ok(stats);
         }
 
-        // 注意：Dispose方法对于释放数据库连接很重要，请确保它存在
+        // Dispose方法对于释放数据库连接很重要，请确保它存在
         protected override void Dispose(bool disposing)
         {
             if (disposing)

@@ -12,7 +12,7 @@ namespace StudentInformationSystem.Controllers
     // 继承 BaseController, 这样所有访问AdminController的请求都会先检查是否登录
     public class AdminController : BaseController
     {
-        private StudentManagementDBEntities db = new StudentManagementDBEntities(); // 替换成你的DbContext名称
+        private StudentManagementDBEntities db = new StudentManagementDBEntities();
 
         // GET: Admin/Index
         public ActionResult Index()
@@ -23,7 +23,7 @@ namespace StudentInformationSystem.Controllers
             ViewBag.CoursesCount = db.Courses.Count();
             ViewBag.EnrollmentsCount = db.StudentCourses.Count(); // 总选课人次
 
-            // --- 新增：获取服务器状态信息 ---
+            // --- 获取服务器状态信息 ---
             var currentProcess = Process.GetCurrentProcess();
             ViewBag.ServerName = Environment.MachineName;
             ViewBag.ServerSoftware = Request.ServerVariables["SERVER_SOFTWARE"];
@@ -92,7 +92,7 @@ namespace StudentInformationSystem.Controllers
                 // 添加一个新学生，需要同时在 Users 表和 Students 表中创建记录
 
                 // 1. 创建登录用户 (Users)
-                // 我们约定学号就是登录名，初始密码统一为 "Hzd@123456"
+                // 学号即为登录名，初始密码统一为 "Hzd@123456"
                 Users newUser = new Users
                 {
                     Username = student.StudentID,
@@ -101,8 +101,6 @@ namespace StudentInformationSystem.Controllers
                 };
 
                 db.Users.Add(newUser);
-                // 注意：此时我们先不调用 db.SaveChanges()
-                // EF会自动处理事务，确保两条记录要么都成功，要么都失败
 
                 // 2. 创建学生信息 (Students)
                 // 将刚刚创建的用户的UserID关联到新学生记录上
@@ -158,7 +156,7 @@ namespace StudentInformationSystem.Controllers
         {
             if (ModelState.IsValid)
             {
-                // 告诉 Entity Framework，这个对象已经被修改了
+                // 告知 Entity Framework，这个对象已被修改
                 db.Entry(student).State = System.Data.Entity.EntityState.Modified;
 
                 // 保存更改到数据库
@@ -345,12 +343,12 @@ namespace StudentInformationSystem.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteTeacherConfirmed(string id)
         {
-            // 使用 .Include() 一次性把教师和他教的课程都从数据库里查出来
+            // 使用 .Include() 一次性把教师和其教授的课程都从数据库里查出来
             Teachers teacherToDelete = db.Teachers.Include("Courses").FirstOrDefault(t => t.TeacherID == id);
 
             if (teacherToDelete != null)
             {
-                // 直接使用导航属性 teacherToDelete.Courses，不再需要额外查询
+                // 直接使用导航属性 teacherToDelete.Courses，无需额外查询
                 foreach (var course in teacherToDelete.Courses.ToList()) // 使用 .ToList() 创建副本以安全修改
                 {
                     course.TeacherID = null;
@@ -461,7 +459,7 @@ namespace StudentInformationSystem.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteCourseConfirmed(int id)
         {
-            // --- 新增：检查课程是否已被选择 ---
+            // --- 检查课程是否已被选择 ---
             bool isEnrolled = db.StudentCourses.Any(sc => sc.CourseID == id);
             if (isEnrolled)
             {
@@ -617,6 +615,7 @@ namespace StudentInformationSystem.Controllers
             return View(exam);
         }
 
+        // 编辑考试记录
         // POST: Admin/EditExam/5
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -632,6 +631,7 @@ namespace StudentInformationSystem.Controllers
             return View(exam);
         }
 
+        // 考试详情页面
         // GET: Admin/DetailsExam/5
         public ActionResult DetailsExam(int? id)
         {
@@ -647,6 +647,7 @@ namespace StudentInformationSystem.Controllers
             return View(exam);
         }
 
+        // 删除考试记录
         // GET: Admin/DeleteExam/5
         public ActionResult DeleteExam(int? id)
         {
@@ -735,7 +736,7 @@ namespace StudentInformationSystem.Controllers
         {
             if (ModelState.IsValid)
             {
-                // 同样，自动更新完整的班级名称
+                // 自动更新完整的班级名称
                 classModel.ClassName = $"{classModel.Major}{classModel.AcademicYear.Value.ToString().Substring(2, 2)}{classModel.ClassNumber.Value.ToString("D2")}班";
                 db.Entry(classModel).State = System.Data.Entity.EntityState.Modified;
                 db.SaveChanges();
@@ -759,7 +760,7 @@ namespace StudentInformationSystem.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteClassConfirmed(int id)
         {
-            // --- 新增：检查班级下是否有学生 ---
+            // --- 检查班级下是否有学生 ---
             bool hasStudents = db.Students.Any(s => s.ClassID == id);
             if (hasStudents)
             {

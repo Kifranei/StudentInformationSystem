@@ -13,7 +13,6 @@ namespace StudentInformationSystem.Controllers
     public class PasskeyController : Controller
     {
         private readonly IFido2 _lib;
-        // 这里的 StudentManagementDBEntities 请替换为你实际的 EF DbContext 名字
         private StudentManagementDBEntities db = new StudentManagementDBEntities();
 
         public PasskeyController()
@@ -21,9 +20,9 @@ namespace StudentInformationSystem.Controllers
             // 初始化 Fido2 配置
             var config = new Fido2Configuration()
             {
-                ServerDomain = "localhost", // 开发环境填 localhost
+                ServerDomain = "localhost", // 开发环境为本地 localhost
                 ServerName = "学生信息管理系统",
-                // 注意：这里的端口号 44332 是从你项目 csproj 里读取的 IIS Express SSL 端口
+                // 本地 IIS Express SSL 端口
                 Origin = "https://localhost:44332",
                 TimestampDriftTolerance = 300000
             };
@@ -34,7 +33,7 @@ namespace StudentInformationSystem.Controllers
         /// 1. 获取注册凭证的选项 (返回 Challenge 等参数给前端)
         /// </summary>
         [HttpPost]
-        public ActionResult MakeCredentialOptions() // 注意：这里从 JsonResult 改成了 ActionResult
+        public ActionResult MakeCredentialOptions()
         {
             try
             {
@@ -67,7 +66,6 @@ namespace StudentInformationSystem.Controllers
                 var options = _lib.RequestNewCredential(user, exKeys, authenticatorSelection, AttestationConveyancePreference.None);
                 Session["fido2.attestationOptions"] = options.ToJson();
 
-                // 【核心修改1】：不使用 MVC 的 Json()，直接返回 Fido2 标准格式的纯字符串！
                 return Content(options.ToJson(), "application/json");
             }
             catch (Exception e)
@@ -80,7 +78,7 @@ namespace StudentInformationSystem.Controllers
         // 1. 修改原有的 MakeCredential 方法，接收 name 参数
         // ==========================================
         [HttpPost]
-        public async Task<ActionResult> MakeCredential(string name) // <-- 这里加了 string name 参数
+        public async Task<ActionResult> MakeCredential(string name)
         {
             try
             {
@@ -130,7 +128,7 @@ namespace StudentInformationSystem.Controllers
         }
 
         // ==========================================
-        // 2. 新增：获取当前用户的通行密钥列表
+        // 2. 获取当前用户的通行密钥列表
         // ==========================================
         [HttpGet]
         public JsonResult GetUserPasskeys()
@@ -152,7 +150,7 @@ namespace StudentInformationSystem.Controllers
         }
 
         // ==========================================
-        // 3. 新增：删除指定的通行密钥
+        // 3. 删除指定的通行密钥
         // ==========================================
         [HttpPost]
         public JsonResult DeletePasskey(int id)
@@ -160,7 +158,7 @@ namespace StudentInformationSystem.Controllers
             var loggedInUser = Session["User"] as Users;
             if (loggedInUser == null) return Json(new { status = "error" });
 
-            // 加上 UserId 的条件，防止越权删除别人的密钥（管理员如果需要删除别人的，可以另写一个接口）
+            // 加上 UserId 的条件，防止越权删除别人的密钥（管理员也无权删除其他用户的密钥）
             var pk = db.Passkeys.FirstOrDefault(p => p.Id == id && p.UserId == loggedInUser.UserID);
             if (pk != null)
             {
@@ -173,7 +171,6 @@ namespace StudentInformationSystem.Controllers
 
         // ==========================================
         // 4. 获取登录用的 Challenge (AssertionOptions)
-        // 【修复1】：将方法重命名为 GetAssertionOptions，避免与 Fido2 类名冲突
         // ==========================================
         [HttpPost]
         public ActionResult GetAssertionOptions()
@@ -212,7 +209,6 @@ namespace StudentInformationSystem.Controllers
                 var assertionResponse = JsonConvert.DeserializeObject<AuthenticatorAssertionRawResponse>(json);
                 var optionsJson = Session["fido2.assertionOptions"] as string;
 
-                // 【修复1】：强制指定使用 Fido2NetLib 命名空间下的类
                 var options = Fido2NetLib.AssertionOptions.FromJson(optionsJson);
 
                 var creds = db.Passkeys.Where(p => p.CredentialId == assertionResponse.Id).ToList();
@@ -229,7 +225,6 @@ namespace StudentInformationSystem.Controllers
                     return Json(new { status = "error", errorMessage = "通行密钥关联的用户已不存在。" });
                 }
 
-                // 【修复2】：2.0.2 版本的委托没有 Delegate 后缀
                 IsUserHandleOwnerOfCredentialIdAsync callback = async (args) =>
                 {
                     var storedCreds = await Task.FromResult(db.Passkeys.Where(p => p.CredentialId == args.CredentialId).ToList());
@@ -254,7 +249,6 @@ namespace StudentInformationSystem.Controllers
 
                 System.Web.Security.FormsAuthentication.SetAuthCookie(user.Username, true);
 
-                // 【修复3】：使用你系统原生的 int 类型角色判断
                 string redirectUrl = "/Student/Index";
                 if (user.Role == 0) redirectUrl = "/Admin/Index";
                 else if (user.Role == 1) redirectUrl = "/Teacher/Index";

@@ -161,7 +161,6 @@
 4. 修改 `data source` 的值为你自己的 SQL Server 实例名（如果是本地默认实例，通常是 `.` 或者 `localhost`）。确保 `initial catalog` 是你创建的数据库名。（使用我提供的 sql 脚本就不用改数据库名了，但需要改实例名）
 ```xml
 <connectionStrings>
-    <add name="Entities" connectionString="metadata=res://*/Models.Model1.csdl|res://*/Models.Model1.ssdl|res://*/Models.Model1.msl;provider=System.Data.SqlClient;provider connection string=&quot;data source=.;initial catalog=StudentManagementDB;integrated security=True;encrypt=False;MultipleActiveResultSets=True;App=EntityFramework&quot;" providerName="System.Data.EntityClient" />
     <add name="StudentManagementDBEntities" connectionString="metadata=res://*/Models.Model1.csdl|res://*/Models.Model1.ssdl|res://*/Models.Model1.msl;provider=System.Data.SqlClient;provider connection string=&quot;data source=.;initial catalog=StudentManagementDB;integrated security=True;encrypt=False;MultipleActiveResultSets=True;App=EntityFramework&quot;" providerName="System.Data.EntityClient" />
   </connectionStrings>
 ```

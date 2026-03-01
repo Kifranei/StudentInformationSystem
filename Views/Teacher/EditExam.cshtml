@@ -22,7 +22,7 @@
         <div class="form-group">
             @Html.LabelFor(model => model.CourseID, "考试科目", htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @* 教师只能为自己所教的课程编辑考试，所以下拉列表是正确的 *@
+                @* 教师只能为自己所教的课程编辑考试，所以下拉列表只显示自己教授的课程 *@
                 @Html.DropDownList("CourseID", null, htmlAttributes: new { @class = "form-control" })
                 @Html.ValidationMessageFor(model => model.CourseID, "", new { @class = "text-danger" })
             </div>

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
-using StudentInformationSystem.Models; // 引入模型命名空间
+using StudentInformationSystem.Models;
 
 
 namespace StudentInformationSystem.Controllers

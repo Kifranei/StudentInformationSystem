@@ -9,7 +9,7 @@ namespace StudentInformationSystem.Controllers
     // 继承 BaseController 确保只有登录学生才能访问
     public class StudentController : BaseController
     {
-        private StudentManagementDBEntities db = new StudentManagementDBEntities(); // 你的数据库上下文
+        private StudentManagementDBEntities db = new StudentManagementDBEntities();
 
         // GET: Student/Index
         // 学生登录后的主页，即“我的成绩”页面
@@ -29,7 +29,7 @@ namespace StudentInformationSystem.Controllers
             };
 
             // 3. 查询今天的课程
-            // 将 .NET 的 DayOfWeek (Sunday = 0) 转换为我们约定的 (Monday = 1)
+            // 将 .NET 的 DayOfWeek (Sunday = 0) 转换为 (Monday = 1)
             int dayOfWeek = (int)DateTime.Now.DayOfWeek;
             int ourDayOfWeek = dayOfWeek == 0 ? 7 : dayOfWeek;
 
@@ -61,40 +61,40 @@ namespace StudentInformationSystem.Controllers
 
             var viewModel = new CourseSelectionViewModel();
 
-            // 1. 获取该生所有选课记录 (保持不变)
+            // 1. 获取该生所有选课记录
             var allEnrollments = db.StudentCourses.Include("Courses.Teachers") // 预加载课程和教师信息
                                    .Where(sc => sc.StudentID == student.StudentID)
                                    .ToList();
 
-            // --- 新增的逻辑：将完整的已选课程列表存入ViewModel ---
+            // --- 将完整的已选课程列表存入ViewModel ---
             viewModel.EnrolledCourses = allEnrollments;
 
             viewModel.EnrolledCourseIDs = allEnrollments.Select(sc => sc.CourseID).ToList();
 
-            // 2. 找出需要重修的课程 (保持不变)
+            // 2. 找出需要重修的课程
             viewModel.RetakeCourses = allEnrollments
                                         .Where(sc => sc.Grade < 60)
                                         .Select(sc => sc.Courses)
                                         .ToList();
 
-            // 3. 计算体育课和思政课已选门数 (保持不变)
+            // 3. 计算体育课和思政课已选门数
             viewModel.SportsCoursesTaken = allEnrollments.Count(sc => sc.Courses.CourseType == 3);
             viewModel.PoliticsCoursesTaken = allEnrollments.Count(sc => sc.Courses.CourseType == 4);
 
-            // 4. 获取所有可选课程 (保持不变)
+            // 4. 获取所有可选课程
             var allAvailableCourses = db.Courses.Include("Teachers")
                                         .Where(c => !viewModel.EnrolledCourseIDs.Contains(c.CourseID) &&
                                                     !viewModel.RetakeCourses.Select(rc => rc.CourseID).Contains(c.CourseID))
                                         .ToList();
 
-            // 5. 按类别对可选课程进行分组 (保持不变)
+            // 5. 按类别对可选课程进行分组
             viewModel.MajorElectives = allAvailableCourses.Where(c => c.CourseType == 1).ToList();
             viewModel.PublicElectives = allAvailableCourses.Where(c => c.CourseType == 2).ToList();
             viewModel.SportsElectives = allAvailableCourses.Where(c => c.CourseType == 3).ToList();
             viewModel.PoliticsElectives = allAvailableCourses.Where(c => c.CourseType == 4).ToList();
             viewModel.OtherElectives = allAvailableCourses.Where(c => c.CourseType == 5).ToList();
 
-            // --- 新增：获取所有课程的课程安排信息 ---
+            // --- 获取所有课程的课程安排信息 ---
             var allCourseIds = allAvailableCourses.Select(c => c.CourseID)
                                 .Union(viewModel.RetakeCourses.Select(rc => rc.CourseID))
                                 .Union(viewModel.EnrolledCourseIDs)
@@ -252,7 +252,6 @@ namespace StudentInformationSystem.Controllers
                 return View(new List<Exams>());
             }
 
-            // 3. 后续逻辑保持不变
             var enrolledCourseIds = db.StudentCourses
                                         .Where(sc => sc.StudentID == student.StudentID)
                                         .Select(sc => sc.CourseID).ToList();

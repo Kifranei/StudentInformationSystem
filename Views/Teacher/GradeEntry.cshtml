@@ -2,7 +2,7 @@
 @model IEnumerable<StudentInformationSystem.Models.StudentCourses>
 
 @{
-    // 从 ViewBag 获取我们之前存入的课程信息
+    // 从 ViewBag 获取之前存入的课程信息
     var course = ViewBag.Course as StudentInformationSystem.Models.Courses;
     ViewBag.Title = "成绩录入 - " + course.CourseName;
 }
