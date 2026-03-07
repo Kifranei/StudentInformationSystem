@@ -11,6 +11,8 @@ namespace StudentInformationSystem.Models
         [Display(Name = "学生姓名")]
         public string StudentName { get; set; }
         [Display(Name = "性别")]
+        [Required(ErrorMessage = "请选择性别。")]
+        [RegularExpression("^(男|女)$", ErrorMessage = "性别只能为“男”或“女”。")]
         public string Gender { get; set; }
 
     }

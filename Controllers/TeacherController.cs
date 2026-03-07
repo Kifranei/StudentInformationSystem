@@ -153,6 +153,134 @@ namespace StudentInformationSystem.Controllers
             return View(classSessions);
         }
 
+        // GET: Teacher/ManageCourseStudents
+        // 必修课学生管理页面
+        public ActionResult ManageCourseStudents(int? courseId)
+        {
+            var manageableCourses = GetManageableCompulsoryCourses();
+            var viewModel = new CourseStudentManagementViewModel
+            {
+                CourseOptions = manageableCourses.Select(c => new SelectListItem
+                {
+                    Value = c.CourseID.ToString(),
+                    Text = $"{c.CourseName}（{GetCourseTypeText(c.CourseType)}）"
+                }).ToList()
+            };
+
+            if (!manageableCourses.Any())
+            {
+                TempData["ErrorMessage"] = "当前没有可管理的必修课（仅专业必修/公共必修可管理）。";
+                return View(viewModel);
+            }
+
+            var selectedCourse = courseId.HasValue
+                ? manageableCourses.FirstOrDefault(c => c.CourseID == courseId.Value)
+                : manageableCourses.First();
+
+            if (selectedCourse == null)
+            {
+                TempData["ErrorMessage"] = "您只能管理自己教授的必修课程。";
+                return RedirectToAction("ManageCourseStudents");
+            }
+
+            viewModel.SelectedCourseId = selectedCourse.CourseID;
+            viewModel.SelectedCourse = selectedCourse;
+
+            var enrolledStudents = db.StudentCourses
+                .Include("Students.Classes")
+                .Where(sc => sc.CourseID == selectedCourse.CourseID)
+                .OrderBy(sc => sc.Students.StudentID)
+                .ToList();
+
+            var enrolledStudentIds = enrolledStudents
+                .Where(sc => sc.StudentID != null)
+                .Select(sc => sc.StudentID)
+                .ToList();
+
+            viewModel.EnrolledStudents = enrolledStudents;
+            viewModel.AvailableStudents = db.Students
+                .Include("Classes")
+                .Where(s => !enrolledStudentIds.Contains(s.StudentID))
+                .OrderBy(s => s.StudentID)
+                .ToList()
+                .Select(s => new SelectListItem
+                {
+                    Value = s.StudentID,
+                    Text = $"{s.StudentID} - {s.StudentName}" + (s.Classes != null ? $"（{s.Classes.ClassName}）" : string.Empty)
+                })
+                .ToList();
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult AddStudentToCourse(int courseId, string studentId)
+        {
+            var course = GetTeacherManageableCourse(courseId);
+            if (course == null)
+            {
+                TempData["ErrorMessage"] = "无权限操作该课程，或该课程不是必修。";
+                return RedirectToAction("ManageCourseStudents");
+            }
+
+            if (string.IsNullOrWhiteSpace(studentId))
+            {
+                TempData["ErrorMessage"] = "请选择要添加的学生。";
+                return RedirectToAction("ManageCourseStudents", new { courseId });
+            }
+
+            var student = db.Students.Find(studentId);
+            if (student == null)
+            {
+                TempData["ErrorMessage"] = "学生不存在。";
+                return RedirectToAction("ManageCourseStudents", new { courseId });
+            }
+
+            bool alreadyExists = db.StudentCourses.Any(sc => sc.CourseID == courseId && sc.StudentID == studentId);
+            if (alreadyExists)
+            {
+                TempData["ErrorMessage"] = "该学生已经在课程名单中。";
+                return RedirectToAction("ManageCourseStudents", new { courseId });
+            }
+
+            db.StudentCourses.Add(new StudentCourses
+            {
+                CourseID = courseId,
+                StudentID = studentId,
+                Grade = null
+            });
+            db.SaveChanges();
+
+            TempData["SuccessMessage"] = $"已将学生 {student.StudentName}（{student.StudentID}）加入课程名单。";
+            return RedirectToAction("ManageCourseStudents", new { courseId });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult RemoveStudentFromCourse(int courseId, string studentId)
+        {
+            var course = GetTeacherManageableCourse(courseId);
+            if (course == null)
+            {
+                TempData["ErrorMessage"] = "无权限操作该课程，或该课程不是必修。";
+                return RedirectToAction("ManageCourseStudents");
+            }
+
+            var enrollment = db.StudentCourses.FirstOrDefault(sc => sc.CourseID == courseId && sc.StudentID == studentId);
+            if (enrollment == null)
+            {
+                TempData["ErrorMessage"] = "该学生不在当前课程名单中。";
+                return RedirectToAction("ManageCourseStudents", new { courseId });
+            }
+
+            db.StudentCourses.Remove(enrollment);
+            db.SaveChanges();
+
+            TempData["SuccessMessage"] = "已从课程名单移除该学生。";
+            return RedirectToAction("ManageCourseStudents", new { courseId });
+        }
+
         // GET: Teacher/AddClassSession
         // 显示添加课程安排的表单
         public ActionResult AddClassSession()
@@ -307,6 +435,57 @@ namespace StudentInformationSystem.Controllers
             return db.Courses.Where(c => c.TeacherID == teacher.TeacherID)
                              .Select(c => c.CourseID)
                              .ToList();
+        }
+
+        private Teachers GetCurrentTeacher()
+        {
+            var currentUser = Session["User"] as Users;
+            if (currentUser == null)
+            {
+                return null;
+            }
+            return db.Teachers.FirstOrDefault(t => t.UserID == currentUser.UserID);
+        }
+
+        private List<Courses> GetManageableCompulsoryCourses()
+        {
+            var teacher = GetCurrentTeacher();
+            if (teacher == null)
+            {
+                return new List<Courses>();
+            }
+
+            return db.Courses
+                .Where(c => c.TeacherID == teacher.TeacherID && (c.CourseType == 1 || c.CourseType == 2))
+                .OrderBy(c => c.CourseName)
+                .ToList();
+        }
+
+        private Courses GetTeacherManageableCourse(int courseId)
+        {
+            var teacher = GetCurrentTeacher();
+            if (teacher == null)
+            {
+                return null;
+            }
+
+            return db.Courses.FirstOrDefault(c =>
+                c.CourseID == courseId &&
+                c.TeacherID == teacher.TeacherID &&
+                (c.CourseType == 1 || c.CourseType == 2));
+        }
+
+        private string GetCourseTypeText(int courseType)
+        {
+            switch (courseType)
+            {
+                case 1: return "专业必修";
+                case 2: return "公共必修";
+                case 3: return "专业选修";
+                case 4: return "公共选修";
+                case 5: return "体育选修";
+                default: return "未知类型";
+            }
         }
 
         // GET: Teacher/ExamList

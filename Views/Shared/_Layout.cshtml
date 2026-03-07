@@ -232,7 +232,7 @@
         /* 移除了暗色模式切换开关样式，现在使用齿轮图标菜单 */
         
         /* --- Logo 颜色反转样式 --- */
-        body:not(.dark-mode) .sidebar-logo-img {
+        html:not(.dark-mode) .sidebar-logo-img {
             filter: invert(1);
         }
         
@@ -243,12 +243,14 @@
         }
         
         /* --- 暗色模式下，修正默认按钮(btn-default)的样式 --- */
+        html.dark-mode .btn-default,
         body.dark-mode .btn-default {
             color: #ccc;
             background-color: #333;
             border-color: #555;
         }
 
+            html.dark-mode .btn-default:hover,
             body.dark-mode .btn-default:hover {
                 color: #fff;
                 background-color: #444;

@@ -74,6 +74,7 @@ namespace StudentInformationSystem.Controllers
 
             // 将下拉列表数据源存入 ViewBag
             ViewBag.ClassIDList = new SelectList(db.Classes, "ClassID", "ClassName");
+            ViewBag.GenderList = GetGenderSelectList();
 
             // 将预设好值的模型传递给视图
             return View(model);
@@ -85,6 +86,8 @@ namespace StudentInformationSystem.Controllers
         [ValidateAntiForgeryToken] // 防止跨站请求伪造攻击
         public ActionResult AddStudent(Students student)
         {
+            ValidateGender(student.Gender);
+
             // ModelState.IsValid 会检查提交的数据是否符合模型的基本验证规则
             if (ModelState.IsValid)
             {
@@ -120,7 +123,8 @@ namespace StudentInformationSystem.Controllers
             }
 
             // 如果数据验证失败，则重新加载班级下拉列表，并返回表单页面让用户修改
-            ViewBag.ClassID = new SelectList(db.Classes, "ClassID", "ClassName", student.ClassID);
+            ViewBag.ClassIDList = new SelectList(db.Classes, "ClassID", "ClassName", student.ClassID);
+            ViewBag.GenderList = GetGenderSelectList(student.Gender);
             return View(student);
         }
         // GET: Admin/Edit/S2101001
@@ -142,7 +146,8 @@ namespace StudentInformationSystem.Controllers
 
             // 和“添加”页面一样，我们需要准备一个班级下拉列表
             // 第四个参数 student.ClassID 的作用是让下拉列表默认选中该学生当前的班级
-            ViewBag.ClassID = new SelectList(db.Classes, "ClassID", "ClassName", student.ClassID);
+            ViewBag.ClassIDList = new SelectList(db.Classes, "ClassID", "ClassName", student.ClassID);
+            ViewBag.GenderList = GetGenderSelectList(student.Gender);
 
             // 将找到的学生对象传递给视图
             return View(student);
@@ -154,6 +159,8 @@ namespace StudentInformationSystem.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Edit(Students student)
         {
+            ValidateGender(student.Gender);
+
             if (ModelState.IsValid)
             {
                 // 告知 Entity Framework，这个对象已被修改
@@ -167,7 +174,8 @@ namespace StudentInformationSystem.Controllers
             }
 
             // 如果模型验证失败，则重新加载班级下拉列表并返回编辑页面
-            ViewBag.ClassID = new SelectList(db.Classes, "ClassID", "ClassName", student.ClassID);
+            ViewBag.ClassIDList = new SelectList(db.Classes, "ClassID", "ClassName", student.ClassID);
+            ViewBag.GenderList = GetGenderSelectList(student.Gender);
             return View(student);
         }
         // GET: Admin/Details/S2101001
@@ -207,26 +215,36 @@ namespace StudentInformationSystem.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(string id)
         {
-            // --- 核心逻辑开始 ---
-            // 删除学生，需要同时删除 Students 表和 Users 表中的关联记录
-
-            // 1. 找到要删除的学生记录
             Students studentToDelete = db.Students.Find(id);
+            if (studentToDelete == null)
+            {
+                TempData["ErrorMessage"] = "删除失败：学生不存在。";
+                return RedirectToAction("StudentList");
+            }
 
-            // 2. 找到与该学生关联的登录用户记录
+            var studentCourses = db.StudentCourses.Where(sc => sc.StudentID == id).ToList();
+            if (studentCourses.Any())
+            {
+                db.StudentCourses.RemoveRange(studentCourses);
+            }
+
             Users userToDelete = db.Users.Find(studentToDelete.UserID);
+            if (userToDelete != null)
+            {
+                var passkeys = db.Passkeys.Where(p => p.UserId == userToDelete.UserID).ToList();
+                if (passkeys.Any())
+                {
+                    db.Passkeys.RemoveRange(passkeys);
+                }
+            }
 
-            // 3. 从数据库中移除这两条记录
             db.Students.Remove(studentToDelete);
             if (userToDelete != null)
             {
                 db.Users.Remove(userToDelete);
             }
 
-            // 4. 保存更改
             db.SaveChanges();
-
-            // --- 核心逻辑结束 ---
 
             return RedirectToAction("StudentList");
         }
@@ -417,6 +435,7 @@ namespace StudentInformationSystem.Controllers
             // 准备教师下拉列表，并选中当前课程的教师
             ViewBag.TeacherID = new SelectList(db.Teachers, "TeacherID", "TeacherName", course.TeacherID);
             ViewBag.CourseTypeList = GetCourseTypes(course.CourseType);
+            PopulateCourseStudentManagementViewData(course);
             return View(course);
         }
 
@@ -433,6 +452,7 @@ namespace StudentInformationSystem.Controllers
             }
             ViewBag.TeacherID = new SelectList(db.Teachers, "TeacherID", "TeacherName", course.TeacherID);
             ViewBag.CourseTypeList = GetCourseTypes(course.CourseType);
+            PopulateCourseStudentManagementViewData(course);
             return View(course);
         }
 
@@ -469,10 +489,107 @@ namespace StudentInformationSystem.Controllers
             // --- 检查结束 ---
 
             Courses course = db.Courses.Find(id);
+            if (course == null)
+            {
+                TempData["ErrorMessage"] = "删除失败！课程不存在。";
+                return RedirectToAction("CourseList");
+            }
+
+            var classSessions = db.ClassSessions.Where(cs => cs.CourseID == id).ToList();
+            if (classSessions.Any())
+            {
+                db.ClassSessions.RemoveRange(classSessions);
+            }
+
+            var exams = db.Exams.Where(e => e.CourseID == id).ToList();
+            if (exams.Any())
+            {
+                db.Exams.RemoveRange(exams);
+            }
+
             db.Courses.Remove(course);
             db.SaveChanges();
-            TempData["Message"] = "课程删除成功！";
+            TempData["SuccessMessage"] = "课程删除成功！";
             return RedirectToAction("CourseList");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult AddStudentToCourse(int courseId, string studentId)
+        {
+            var course = db.Courses.Find(courseId);
+            if (course == null)
+            {
+                TempData["ErrorMessage"] = "课程不存在。";
+                return RedirectToAction("CourseList");
+            }
+
+            if (!IsRequiredCourseType(course.CourseType))
+            {
+                TempData["ErrorMessage"] = "仅专业必修和公共必修课程支持手动管理学生名单。";
+                return RedirectToAction("EditCourse", new { id = courseId });
+            }
+
+            if (string.IsNullOrWhiteSpace(studentId))
+            {
+                TempData["ErrorMessage"] = "请选择要添加的学生。";
+                return RedirectToAction("EditCourse", new { id = courseId });
+            }
+
+            var student = db.Students.Find(studentId);
+            if (student == null)
+            {
+                TempData["ErrorMessage"] = "学生不存在。";
+                return RedirectToAction("EditCourse", new { id = courseId });
+            }
+
+            bool alreadyExists = db.StudentCourses.Any(sc => sc.CourseID == courseId && sc.StudentID == studentId);
+            if (alreadyExists)
+            {
+                TempData["ErrorMessage"] = "该学生已经在本课程名单中。";
+                return RedirectToAction("EditCourse", new { id = courseId });
+            }
+
+            db.StudentCourses.Add(new StudentCourses
+            {
+                CourseID = courseId,
+                StudentID = studentId,
+                Grade = null
+            });
+            db.SaveChanges();
+
+            TempData["SuccessMessage"] = $"已将学生 {student.StudentName}（{student.StudentID}）加入课程名单。";
+            return RedirectToAction("EditCourse", new { id = courseId });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult RemoveStudentFromCourse(int courseId, string studentId)
+        {
+            var course = db.Courses.Find(courseId);
+            if (course == null)
+            {
+                TempData["ErrorMessage"] = "课程不存在。";
+                return RedirectToAction("CourseList");
+            }
+
+            if (!IsRequiredCourseType(course.CourseType))
+            {
+                TempData["ErrorMessage"] = "仅专业必修和公共必修课程支持手动管理学生名单。";
+                return RedirectToAction("EditCourse", new { id = courseId });
+            }
+
+            var enrollment = db.StudentCourses.FirstOrDefault(sc => sc.CourseID == courseId && sc.StudentID == studentId);
+            if (enrollment == null)
+            {
+                TempData["ErrorMessage"] = "该学生不在当前课程名单中。";
+                return RedirectToAction("EditCourse", new { id = courseId });
+            }
+
+            db.StudentCourses.Remove(enrollment);
+            db.SaveChanges();
+            TempData["SuccessMessage"] = "已从课程名单移除该学生。";
+            return RedirectToAction("EditCourse", new { id = courseId });
         }
         // GET: Admin/EnrollmentList
         public ActionResult EnrollmentList(string searchString)
@@ -810,6 +927,68 @@ namespace StudentInformationSystem.Controllers
                 new SelectListItem { Value = "5", Text = "体育选修" }
             };
             return new SelectList(courseTypes, "Value", "Text", selectedValue);
+        }
+
+        private SelectList GetGenderSelectList(string selectedValue = null)
+        {
+            var genders = new List<SelectListItem>
+            {
+                new SelectListItem { Value = "男", Text = "男" },
+                new SelectListItem { Value = "女", Text = "女" }
+            };
+            return new SelectList(genders, "Value", "Text", selectedValue);
+        }
+
+        private void ValidateGender(string gender)
+        {
+            if (!string.IsNullOrWhiteSpace(gender) && gender != "男" && gender != "女")
+            {
+                ModelState.AddModelError("Gender", "性别只能选择“男”或“女”。");
+            }
+        }
+
+        private bool IsRequiredCourseType(int courseType)
+        {
+            return courseType == 1 || courseType == 2;
+        }
+
+        private void PopulateCourseStudentManagementViewData(Courses course)
+        {
+            bool isRequiredCourse = course != null && IsRequiredCourseType(course.CourseType);
+            ViewBag.IsRequiredCourse = isRequiredCourse;
+            ViewBag.EnrolledStudentsForCourse = new List<StudentCourses>();
+            ViewBag.AvailableStudentsForCourse = new SelectList(Enumerable.Empty<SelectListItem>(), "Value", "Text");
+
+            if (!isRequiredCourse)
+            {
+                return;
+            }
+
+            var enrolledStudents = db.StudentCourses
+                .Include("Students.Classes")
+                .Where(sc => sc.CourseID == course.CourseID)
+                .OrderBy(sc => sc.Students.StudentID)
+                .ToList();
+
+            var enrolledStudentIds = enrolledStudents
+                .Where(sc => sc.StudentID != null)
+                .Select(sc => sc.StudentID)
+                .ToList();
+
+            var availableStudents = db.Students
+                .Include("Classes")
+                .Where(s => !enrolledStudentIds.Contains(s.StudentID))
+                .OrderBy(s => s.StudentID)
+                .ToList()
+                .Select(s => new SelectListItem
+                {
+                    Value = s.StudentID,
+                    Text = $"{s.StudentID} - {s.StudentName}" + (s.Classes != null ? $"（{s.Classes.ClassName}）" : string.Empty)
+                })
+                .ToList();
+
+            ViewBag.EnrolledStudentsForCourse = enrolledStudents;
+            ViewBag.AvailableStudentsForCourse = new SelectList(availableStudents, "Value", "Text");
         }
 
         // --- 课程安排管理 (Class Sessions Management) ---

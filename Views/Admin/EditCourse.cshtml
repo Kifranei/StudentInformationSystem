@@ -2,6 +2,9 @@
 
 @{
     ViewBag.Title = "EditCourse";
+    bool isRequiredCourse = ViewBag.IsRequiredCourse != null && (bool)ViewBag.IsRequiredCourse;
+    var enrolledStudents = ViewBag.EnrolledStudentsForCourse as List<StudentInformationSystem.Models.StudentCourses> ?? new List<StudentInformationSystem.Models.StudentCourses>();
+    var availableStudents = ViewBag.AvailableStudentsForCourse as SelectList ?? new SelectList(new string[0]);
 }
 
 <h2>编辑课程信息</h2>
@@ -54,5 +57,88 @@
                 @Html.ActionLink("返回列表", "CourseList", null, new { @class = "btn btn-default" })
             </div>
         </div>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger" style="margin-top: 15px;">@TempData["ErrorMessage"]</div>
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success" style="margin-top: 15px;">@TempData["SuccessMessage"]</div>
+}
+
+<hr />
+<h3>课程学生管理</h3>
+
+@if (isRequiredCourse)
+{
+    <p class="text-muted">当前为必修课程，可由管理员手动添加或移出学生。</p>
+
+    using (Html.BeginForm("AddStudentToCourse", "Admin", FormMethod.Post, new { @class = "form-inline", style = "margin-bottom: 15px;" }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.Hidden("courseId", Model.CourseID)
+        <div class="form-group">
+            <label for="studentId">添加学生：</label>
+            @Html.DropDownList("studentId", availableStudents, "--请选择学生--", new { @class = "form-control", style = "min-width: 320px;" })
+        </div>
+        <button type="submit" class="btn btn-primary">添加到课程</button>
+    }
+
+    if (!availableStudents.Any())
+    {
+        <p class="text-muted">没有可添加的学生了。</p>
+    }
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>学号</th>
+                    <th>姓名</th>
+                    <th>性别</th>
+                    <th>班级</th>
+                    <th style="width: 120px;">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!enrolledStudents.Any())
+                {
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">当前课程还没有学生。</td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var enrollment in enrolledStudents)
+                    {
+                        <tr>
+                            <td>@enrollment.Students.StudentID</td>
+                            <td>@enrollment.Students.StudentName</td>
+                            <td>@enrollment.Students.Gender</td>
+                            <td>@(enrollment.Students.Classes != null ? enrollment.Students.Classes.ClassName : "-")</td>
+                            <td>
+                                @using (Html.BeginForm("RemoveStudentFromCourse", "Admin", FormMethod.Post, new { style = "display:inline;" }))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    @Html.Hidden("courseId", Model.CourseID)
+                                    @Html.Hidden("studentId", enrollment.StudentID)
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('确定将该学生移出课程名单吗？');">移除</button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="alert alert-info">
+        仅“专业必修 / 公共必修”课程支持手动管理学生名单。
     </div>
 }

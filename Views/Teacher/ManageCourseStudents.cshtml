@@ -1,0 +1,154 @@
+﻿@model StudentInformationSystem.Models.CourseStudentManagementViewModel
+
+@{
+    ViewBag.Title = "课程学生管理";
+}
+
+<div class="course-student-manage">
+    <h2>课程学生管理</h2>
+    <p class="manage-page-subtitle">这里仅显示您负责的专业必修和公共必修课程。</p>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    @if (!Model.CourseOptions.Any())
+    {
+        <div class="well text-center">
+            <h4><span class="glyphicon glyphicon-info-sign text-muted"></span> 暂无可管理课程</h4>
+            <p class="text-muted">当前没有分配给您的必修课程。</p>
+            @Html.ActionLink("返回课表", "Timetable", null, new { @class = "btn btn-default" })
+        </div>
+    }
+    else
+    {
+        using (Html.BeginForm("ManageCourseStudents", "Teacher", FormMethod.Get, new { @class = "form-inline" }))
+        {
+            <div class="form-group">
+                <label for="courseId">选择课程：</label>
+                @Html.DropDownList("courseId", Model.CourseOptions, "-- 请选择课程 --", new { @class = "form-control" })
+            </div>
+            <button type="submit" class="btn btn-primary">查看名单</button>
+            @Html.ActionLink("返回课表", "Timetable", null, new { @class = "btn btn-default" })
+        }
+
+        if (Model.SelectedCourse != null)
+        {
+            <hr />
+            <h4>@Model.SelectedCourse.CourseName</h4>
+
+            using (Html.BeginForm("AddStudentToCourse", "Teacher", FormMethod.Post, new { @class = "form-inline", style = "margin: 15px 0;" }))
+            {
+                @Html.AntiForgeryToken()
+                @Html.Hidden("courseId", Model.SelectedCourse.CourseID)
+                <div class="form-group">
+                    <label for="studentId">添加学生：</label>
+                    @Html.DropDownList("studentId", Model.AvailableStudents, "-- 请选择学生 --", new { @class = "form-control", style = "min-width: 320px;" })
+                </div>
+                <button type="submit" class="btn btn-success">添加到课程</button>
+            }
+
+            if (!Model.AvailableStudents.Any())
+            {
+                <p class="text-muted">没有可添加的学生了。</p>
+            }
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>学号</th>
+                            <th>姓名</th>
+                            <th>性别</th>
+                            <th>班级</th>
+                            <th style="width: 120px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.EnrolledStudents.Any())
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">当前课程还没有学生。</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var enrollment in Model.EnrolledStudents)
+                            {
+                                <tr>
+                                    <td>@enrollment.Students.StudentID</td>
+                                    <td>@enrollment.Students.StudentName</td>
+                                    <td>@enrollment.Students.Gender</td>
+                                    <td>@(enrollment.Students.Classes != null ? enrollment.Students.Classes.ClassName : "-")</td>
+                                    <td>
+                                        @using (Html.BeginForm("RemoveStudentFromCourse", "Teacher", FormMethod.Post, new { style = "display:inline;" }))
+                                        {
+                                            @Html.AntiForgeryToken()
+                                            @Html.Hidden("courseId", Model.SelectedCourse.CourseID)
+                                            @Html.Hidden("studentId", enrollment.StudentID)
+                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('确定将该学生移出课程名单吗？');">移除</button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+</div>
+
+<style>
+    .course-student-manage .manage-page-subtitle {
+        color: #666;
+        margin-bottom: 15px;
+    }
+
+    .course-student-manage .form-inline {
+        margin-bottom: 10px;
+    }
+
+    .course-student-manage .form-inline .btn {
+        margin-left: 8px;
+    }
+
+    body.dark-mode .course-student-manage .manage-page-subtitle,
+    body.dark-mode .course-student-manage .text-muted {
+        color: #cfcfcf !important;
+    }
+
+    body.dark-mode .course-student-manage label,
+    body.dark-mode .course-student-manage h2,
+    body.dark-mode .course-student-manage h4 {
+        color: #e6e6e6;
+    }
+
+    body.dark-mode .course-student-manage .well {
+        background-color: #232323;
+        border-color: #3b3b3b;
+    }
+
+    /* 表格保持白色风格，避免暗色页面中出现局部深色表格 */
+    body.dark-mode .course-student-manage .table,
+    body.dark-mode .course-student-manage .table > thead > tr > th,
+    body.dark-mode .course-student-manage .table > tbody > tr > td {
+        background-color: #ffffff !important;
+        color: #333333 !important;
+        border-color: #dddddd;
+    }
+
+    body.dark-mode .course-student-manage .table-hover > tbody > tr:hover > td {
+        background-color: #f5f5f5 !important;
+    }
+
+    body.dark-mode .course-student-manage .table .text-muted {
+        color: #777777 !important;
+    }
+</style>
