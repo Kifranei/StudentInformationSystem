@@ -9,6 +9,18 @@
 
 <h2>为课程 “@course.CourseName” 录入成绩</h2>
 <hr />
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (!ViewData.ModelState.IsValid)
+{
+    @Html.ValidationSummary(false, "", new { @class = "alert alert-danger" })
+}
+
+<div class="form-group">
+    @Html.ActionLink("打印名单", "ClassRoster", new { courseId = course.CourseID }, new { @class = "btn btn-default", target = "_blank" })
+</div>
 
 @* 创建一个表单，提交到本控制器的 GradeEntry 方法 *@
 @using (Html.BeginForm("GradeEntry", "Teacher", FormMethod.Post))

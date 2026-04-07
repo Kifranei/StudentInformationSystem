@@ -40,6 +40,12 @@ namespace StudentInformationSystem.Controllers
         // 用于显示指定课程的学生列表和成绩输入框
         public ActionResult GradeEntry(int courseId)
         {
+            var taughtCourseIds = GetTaughtCourseIds();
+            if (!taughtCourseIds.Contains(courseId))
+            {
+                return new HttpStatusCodeResult(System.Net.HttpStatusCode.Forbidden);
+            }
+
             // 1. 根据 courseId 找到所有选了这门课的学生选课记录 (StudentCourses)
             //    使用 .Include("Students") 来同时加载关联的学生信息，避免N+1查询
             var enrollments = db.StudentCourses.Include("Students")
@@ -59,6 +65,12 @@ namespace StudentInformationSystem.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult GradeEntry(int courseId, string[] studentIds, float?[] grades)
         {
+            var taughtCourseIds = GetTaughtCourseIds();
+            if (!taughtCourseIds.Contains(courseId))
+            {
+                return new HttpStatusCodeResult(System.Net.HttpStatusCode.Forbidden);
+            }
+
             // 使用了两个数组来接收所有学生的ID和对应的成绩
             if (studentIds != null && grades != null && studentIds.Length == grades.Length)
             {
@@ -66,6 +78,12 @@ namespace StudentInformationSystem.Controllers
                 {
                     var studentId = studentIds[i];
                     var grade = grades[i];
+
+                    if (grade.HasValue && (grade.Value < 0f || grade.Value > 100f))
+                    {
+                        ModelState.AddModelError("", "成绩必须在 0-100 之间。");
+                        break;
+                    }
 
                     // 找到数据库中对应的选课记录
                     var enrollment = db.StudentCourses
@@ -77,13 +95,26 @@ namespace StudentInformationSystem.Controllers
                         enrollment.Grade = grade;
                     }
                 }
-
-                // 循环结束后，一次性将所有更改保存到数据库
-                db.SaveChanges();
+            }
+            else
+            {
+                ModelState.AddModelError("", "提交数据不完整，请刷新页面后重试。");
             }
 
-            // 处理完成后，重定向回教师的主页（我的课表页面）
-            return RedirectToAction("Index");
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Course = db.Courses.Find(courseId);
+                var enrollments = db.StudentCourses.Include("Students")
+                                    .Where(sc => sc.CourseID == courseId)
+                                    .ToList();
+                return View(enrollments);
+            }
+
+            // 循环结束后，一次性将所有更改保存到数据库
+            db.SaveChanges();
+
+            TempData["SuccessMessage"] = "成绩保存成功。";
+            return RedirectToAction("GradeEntry", new { courseId });
         }
         // GET: Teacher/ChangePassword
         public ActionResult ChangePassword()
@@ -607,14 +638,20 @@ namespace StudentInformationSystem.Controllers
         // GET: Teacher/ClassRoster?courseId=5
         public ActionResult ClassRoster(int courseId)
         {
-            // 查询这门课的所有选课记录，并加载学生信息
-            var enrollments = db.StudentCourses.Include("Students")
+            var taughtCourseIds = GetTaughtCourseIds();
+            if (!taughtCourseIds.Contains(courseId))
+            {
+                return new HttpStatusCodeResult(System.Net.HttpStatusCode.Forbidden);
+            }
+
+            var enrollments = db.StudentCourses
+                                .Include("Students.Classes")
                                 .Where(sc => sc.CourseID == courseId)
-                                .OrderBy(sc => sc.Students.StudentID) // 按学号排序
+                                .OrderBy(sc => sc.Students.StudentID)
                                 .ToList();
 
-            // 把课程信息也传递过去，用于显示标题
-            ViewBag.Course = db.Courses.Find(courseId);
+            ViewBag.Course = db.Courses.Include("Teachers")
+                                       .FirstOrDefault(c => c.CourseID == courseId);
 
             return View(enrollments);
         }

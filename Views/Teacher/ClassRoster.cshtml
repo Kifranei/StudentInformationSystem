@@ -37,7 +37,7 @@
         <div class="print-header">
             <h2>@course.CourseName</h2>
             <h4>班级学生名单</h4>
-            <p>授课教师：@course.Teachers.TeacherName</p>
+            <p>授课教师：@(course.Teachers == null ? "-" : course.Teachers.TeacherName)</p>
         </div>
 
         <button class="btn btn-primary no-print" onclick="window.print();">
@@ -52,6 +52,7 @@
                     <th>姓名</th>
                     <th>性别</th>
                     <th>班级</th>
+                    <th>成绩</th>
                 </tr>
             </thead>
             <tbody>
@@ -63,7 +64,14 @@
                         <td>@item.Students.StudentID</td>
                         <td>@item.Students.StudentName</td>
                         <td>@item.Students.Gender</td>
-                        <td>@item.Students.Classes.ClassName</td>
+                        <td>@(item.Students.Classes == null ? "-" : item.Students.Classes.ClassName)</td>
+                        <td>@(item.Grade.HasValue ? item.Grade.Value.ToString("0.##") : "未录入")</td>
+                    </tr>
+                }
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">暂无学生名单</td>
                     </tr>
                 }
             </tbody>
