@@ -162,6 +162,15 @@ namespace StudentInformationSystem.Controllers
                 }
             }
 
+            var selectionConflicts = ScheduleConflictHelper.GetStudentConflictsForCourseSelection(db, student.StudentID, courseId);
+            if (selectionConflicts.Any())
+            {
+                TempData["ErrorMessage"] = ScheduleConflictHelper.BuildStudentConflictMessage(
+                    selectionConflicts,
+                    "选课失败，当前课程与已选课程时间冲突：");
+                return RedirectToAction("CourseSelection");
+            }
+
             // 创建一条新的选课记录
             var enrollment = new StudentCourses
             {
