@@ -75,6 +75,13 @@
 - 修复删除学生、课程等操作中的外键依赖问题。
 - 学生性别输入改为下拉选项，并补充服务端校验。
 
+### 2026-04 移动端与安全性补充
+
+- 重建了 `db/sql.sql` 初始化脚本，使其与当前数据库结构和测试数据一致，并将测试账号密码改为哈希存储。
+- 小程序学生端在线选课接口已补齐，支持查看可选课程、已选课程、数量统计以及提交选课/退课。
+- 小程序教师端新增课程成绩录入接口，支持按课程拉取学生名单并批量保存成绩。
+- 小程序端补充了登录态保持与失效回退逻辑，已登录用户可自动跳过登录页，登录信息失效时会自动重新登录。
+
 ### 主题与显示模式
 
 - 系统支持暗色模式切换。
@@ -91,8 +98,14 @@
     * `GET /api/miniprogram/timetable`: 根据用户 ID 获取个性化课表（支持学生和教师视角）。
 * **学生端功能 (Student Features)**
     * `GET /api/miniprogram/grades`: 查询学生的选课及成绩信息。
+    * `GET /api/miniprogram/course-selection`: 查询在线选课列表、已选课程与数量统计。
+    * `GET /api/miniprogram/course-selection/enrolled`: 查询已选课程明细与数量统计。
+    * `POST /api/miniprogram/course-selection/select`: 学生提交选课。
+    * `POST /api/miniprogram/course-selection/withdraw`: 学生提交退课。
 * **教师端功能 (Teacher Features)**
-    * `GET /api/miniprogram/mycourses`: 查询教师教授的课程列表及学分信息。
+    * `GET /api/miniprogram/mycourses`: 查询教师教授的课程列表、课程类别与选课人数。
+    * `GET /api/miniprogram/teacher-grade-entry`: 查询指定课程的学生名单与已有成绩。
+    * `POST /api/miniprogram/teacher-grade-entry/save`: 教师批量保存课程成绩。
 * **管理员功能 (Admin Features)**
     * `GET /api/miniprogram/stats`: 获取系统运行状态统计（包括用户、学生、教师、课程、班级总数）。
 
@@ -179,10 +192,12 @@
 
 #### 5\. 默认登录信息
 
-系统预设了以下测试账号：
-- **管理员**: 用户名 `admin`，密码 `123456`
-- **学生**: 使用学号作为用户名，（例：`S2101001`）默认密码 `123456`
-- **教师**: 使用工号作为用户名，（例：`T001`）默认密码 `123456`
+系统预设了管理员、学生、教师测试账号，例如：
+- **管理员**: 用户名 `admin`
+- **学生**: 使用学号作为用户名，例如 `S2101001`
+- **教师**: 使用工号作为用户名，例如 `T001`
+
+测试账号密码请以当前 `db/sql.sql` 初始化脚本中的配置为准。初始化脚本已改为哈希密码种子，不再保留明文密码说明。
 
 ## 许可证
 

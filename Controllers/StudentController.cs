@@ -3,6 +3,7 @@ using StudentInformationSystem.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web;
 using System.Web.Mvc;
 
 namespace StudentInformationSystem.Controllers
@@ -56,6 +57,8 @@ namespace StudentInformationSystem.Controllers
         // 显示所有可选课程的列表
         public ActionResult CourseSelection()
         {
+            DisablePageCache();
+
             var currentUser = Session["User"] as Users;
             var student = db.Students.FirstOrDefault(s => s.UserID == currentUser.UserID);
             if (student == null) { return View("Error"); }
@@ -252,6 +255,8 @@ namespace StudentInformationSystem.Controllers
         // 接收一个可选的周数参数
         public ActionResult Timetable(int? selectedWeek)
         {
+            DisablePageCache();
+
             // 如果没有选择周数，默认显示第一周
             int currentWeek = selectedWeek ?? 1;
             ViewBag.CurrentWeek = currentWeek;
@@ -305,6 +310,14 @@ namespace StudentInformationSystem.Controllers
                               .Where(e => enrolledCourseIds.Contains(e.CourseID))
                               .OrderBy(e => e.ExamTime).ToList();
             return View(exams);
+        }
+
+        private void DisablePageCache()
+        {
+            Response.Cache.SetCacheability(HttpCacheability.NoCache);
+            Response.Cache.SetNoStore();
+            Response.Cache.SetExpires(DateTime.UtcNow.AddMinutes(-1));
+            Response.Cache.SetRevalidation(HttpCacheRevalidation.AllCaches);
         }
 
     }
