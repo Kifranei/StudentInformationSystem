@@ -194,6 +194,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Helpers\HolidayHelper.cs" />
+    <Compile Include="Helpers\PasswordSecurity.cs" />
     <Compile Include="Helpers\ViewHolidayHelper.cs" />
     <Compile Include="Models\ChangePasswordViewModel.cs" />
     <Compile Include="Models\ClassDetailsViewModel.cs" />

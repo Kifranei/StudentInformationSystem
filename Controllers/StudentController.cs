@@ -1,4 +1,5 @@
-﻿using StudentInformationSystem.Models;
+using StudentInformationSystem.Models;
+using StudentInformationSystem.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -78,8 +79,8 @@ namespace StudentInformationSystem.Controllers
             // 3. 计算体育课和其他选修课的已选门数
             // 体育选修 (CourseType = 5)
             viewModel.SportsCoursesTaken = allEnrollments.Count(sc => sc.Courses.CourseType == 5);
-            // 其他选修 (CourseType = 4) - 如果你的 ViewModel 没有这个属性，我们用 ViewBag 传给前端
-            ViewBag.OtherCoursesTaken = allEnrollments.Count(sc => sc.Courses.CourseType == 4);
+            // 其他选修（专业选修 + 公共选修，CourseType = 3/4）
+            ViewBag.OtherCoursesTaken = allEnrollments.Count(sc => sc.Courses.CourseType == 3 || sc.Courses.CourseType == 4);
 
             // 4. 获取所有可选课程
             var allAvailableCourses = db.Courses.Include("Teachers")
@@ -95,7 +96,7 @@ namespace StudentInformationSystem.Controllers
 
             // 专门给前端用来展示的两个列表：
             viewModel.SportsElectives = allAvailableCourses.Where(c => c.CourseType == 5).ToList();
-            viewModel.OtherElectives = allAvailableCourses.Where(c => c.CourseType == 4).ToList();
+            viewModel.OtherElectives = allAvailableCourses.Where(c => c.CourseType == 3 || c.CourseType == 4).ToList();
 
             // 6. 获取所有课程的课程安排信息
             var allCourseIds = allAvailableCourses.Select(c => c.CourseID)
@@ -130,6 +131,13 @@ namespace StudentInformationSystem.Controllers
 
             var course = db.Courses.Find(courseId);
             if (course == null) return RedirectToAction("CourseSelection");
+
+            // 服务端白名单：学生只能自主选择专业选修/公共选修/体育选修
+            if (course.CourseType != 3 && course.CourseType != 4 && course.CourseType != 5)
+            {
+                TempData["ErrorMessage"] = "该课程不允许学生自主选课。";
+                return RedirectToAction("CourseSelection");
+            }
 
             // 检查是否已经选过该课程，防止重复提交
             bool isEnrolled = db.StudentCourses.Any(sc => sc.StudentID == student.StudentID && sc.CourseID == courseId);
@@ -223,7 +231,7 @@ namespace StudentInformationSystem.Controllers
             var userInDb = db.Users.Find(currentUser.UserID);
 
             // 2. 验证旧密码是否正确
-            if (userInDb.Password != model.OldPassword)
+            if (!PasswordSecurity.VerifyPassword(model.OldPassword, userInDb.Password))
             {
                 // 向模型状态中添加一个自定义错误
                 ModelState.AddModelError("", "旧密码不正确，请重新输入。");
@@ -231,7 +239,7 @@ namespace StudentInformationSystem.Controllers
             }
 
             // 3. 更新密码
-            userInDb.Password = model.NewPassword;
+            userInDb.Password = PasswordSecurity.HashPassword(model.NewPassword);
             db.Entry(userInDb).State = System.Data.Entity.EntityState.Modified;
             db.SaveChanges();
 

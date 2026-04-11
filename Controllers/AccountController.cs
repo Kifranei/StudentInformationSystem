@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using StudentInformationSystem.Helpers;
 using StudentInformationSystem.Models;
 
 
@@ -25,12 +26,18 @@ namespace StudentInformationSystem.Controllers
         [HttpPost]
         public ActionResult Login(string username, string password)
         {
-            // 使用LINQ在Users表中查找匹配的用户名和密码
-            var user = db.Users.FirstOrDefault(u => u.Username == username && u.Password == password);
+            // 使用 LINQ 查找用户名，再统一走密码校验/升级逻辑
+            var user = db.Users.FirstOrDefault(u => u.Username == username);
 
-            // 如果找到了用户
-            if (user != null)
+            bool upgraded;
+            if (PasswordSecurity.VerifyAndUpgrade(user, password, out upgraded))
             {
+                if (upgraded)
+                {
+                    db.Entry(user).State = System.Data.Entity.EntityState.Modified;
+                    db.SaveChanges();
+                }
+
                 // 使用Session来记录用户的登录状态
                 Session["User"] = user;
 
@@ -50,13 +57,10 @@ namespace StudentInformationSystem.Controllers
                     return RedirectToAction("Index", "Student");
                 }
             }
-            else // 如果没找到用户
-            {
-                // 在页面上显示错误提示
-                ViewBag.ErrorMessage = "用户名或密码错误！";
-                // 返回登录页面，让用户重新输入
-                return View();
-            }
+            // 在页面上显示错误提示
+            ViewBag.ErrorMessage = "用户名或密码错误！";
+            // 返回登录页面，让用户重新输入
+            return View();
         }
 
         // 3. 注销功能

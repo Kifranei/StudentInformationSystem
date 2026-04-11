@@ -6,6 +6,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Hosting;
 using System.Web.Mvc;
+using StudentInformationSystem.Helpers;
 
 namespace StudentInformationSystem.Controllers
 {
@@ -96,12 +97,12 @@ namespace StudentInformationSystem.Controllers
 
                 // 1. 创建登录用户 (Users)
                 // 学号即为登录名，初始密码统一为 "Hzd@123456"
-                Users newUser = new Users
-                {
-                    Username = student.StudentID,
-                    Password = "Hzd@123456", // 修改默认密码为统一的 Hzd@123456
-                    Role = 2 // 角色为学生
-                };
+                  Users newUser = new Users
+                  {
+                      Username = student.StudentID,
+                      Password = PasswordSecurity.HashPassword("Hzd@123456"), // 修改默认密码为统一的 Hzd@123456
+                      Role = 2 // 角色为学生
+                  };
 
                 db.Users.Add(newUser);
 
@@ -277,12 +278,12 @@ namespace StudentInformationSystem.Controllers
         {
             if (ModelState.IsValid)
             {
-                Users newUser = new Users
-                {
-                    Username = teacher.TeacherID,
-                    Password = "Hzd@123456", // 修改默认密码为统一的 Hzd@123456
-                    Role = 1 // 角色为教师
-                };
+                  Users newUser = new Users
+                  {
+                      Username = teacher.TeacherID,
+                      Password = PasswordSecurity.HashPassword("Hzd@123456"), // 修改默认密码为统一的 Hzd@123456
+                      Role = 1 // 角色为教师
+                  };
                 db.Users.Add(newUser);
 
                 teacher.Users = newUser;
@@ -632,15 +633,15 @@ namespace StudentInformationSystem.Controllers
             var currentUser = Session["User"] as Users;
             var userInDb = db.Users.Find(currentUser.UserID);
 
-            if (userInDb.Password != model.OldPassword)
-            {
-                ModelState.AddModelError("", "旧密码不正确，请重新输入。");
-                return View(model);
-            }
+              if (!PasswordSecurity.VerifyPassword(model.OldPassword, userInDb.Password))
+              {
+                  ModelState.AddModelError("", "旧密码不正确，请重新输入。");
+                  return View(model);
+              }
 
-            userInDb.Password = model.NewPassword;
-            db.Entry(userInDb).State = System.Data.Entity.EntityState.Modified;
-            db.SaveChanges();
+              userInDb.Password = PasswordSecurity.HashPassword(model.NewPassword);
+              db.Entry(userInDb).State = System.Data.Entity.EntityState.Modified;
+              db.SaveChanges();
 
             ViewBag.SuccessMessage = "密码修改成功！";
 
@@ -655,12 +656,17 @@ namespace StudentInformationSystem.Controllers
             if (userToReset != null)
             {
                 // 将密码重置为默认的 "Hzd@123456"
-                userToReset.Password = "Hzd@123456";
+                  userToReset.Password = PasswordSecurity.HashPassword("Hzd@123456");
                 db.Entry(userToReset).State = System.Data.Entity.EntityState.Modified;
                 db.SaveChanges();
 
                 // 使用 TempData 存储成功消息
                 TempData["Message"] = $"用户 {userToReset.Username} 的密码已成功重置为 \"Hzd@123456\"。";
+            }
+            else
+            {
+                TempData["Message"] = "未找到要重置密码的用户。";
+                return RedirectToAction("StudentList");
             }
 
             // 判断该用户是学生还是教师，以便跳转回对应的列表页面

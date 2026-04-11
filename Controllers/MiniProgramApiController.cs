@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Web.Http;
 using System.Web.Http.Description;
+using StudentInformationSystem.Helpers;
 
 namespace StudentInformationSystem.Controllers
 {
@@ -19,11 +20,18 @@ namespace StudentInformationSystem.Controllers
         public IHttpActionResult Login(Users loginRequest)
         {
             var user = db.Users
-                         .FirstOrDefault(u => u.Username == loginRequest.Username && u.Password == loginRequest.Password);
+                         .FirstOrDefault(u => u.Username == loginRequest.Username);
 
-            if (user == null)
+            bool upgraded;
+            if (!PasswordSecurity.VerifyAndUpgrade(user, loginRequest.Password, out upgraded))
             {
                 return Unauthorized();
+            }
+
+            if (upgraded)
+            {
+                db.Entry(user).State = System.Data.Entity.EntityState.Modified;
+                db.SaveChanges();
             }
 
             // --- 根据角色查询真实姓名 ---

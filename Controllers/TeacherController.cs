@@ -1,4 +1,4 @@
-﻿using StudentInformationSystem.Models;
+using StudentInformationSystem.Models;
 using StudentInformationSystem.Helpers;
 using System;
 using System.Collections.Generic;
@@ -135,13 +135,13 @@ namespace StudentInformationSystem.Controllers
             var currentUser = Session["User"] as Users;
             var userInDb = db.Users.Find(currentUser.UserID);
 
-            if (userInDb.Password != model.OldPassword)
+            if (!PasswordSecurity.VerifyPassword(model.OldPassword, userInDb.Password))
             {
                 ModelState.AddModelError("", "旧密码不正确，请重新输入。");
                 return View(model);
             }
 
-            userInDb.Password = model.NewPassword;
+            userInDb.Password = PasswordSecurity.HashPassword(model.NewPassword);
             db.Entry(userInDb).State = System.Data.Entity.EntityState.Modified;
             db.SaveChanges();
 
@@ -393,6 +393,12 @@ namespace StudentInformationSystem.Controllers
             if (sessionToAdjust == null)
             {
                 return HttpNotFound();
+            }
+
+            var taughtCourseIds = GetTaughtCourseIds();
+            if (!taughtCourseIds.Contains(sessionToAdjust.CourseID))
+            {
+                return new HttpStatusCodeResult(System.Net.HttpStatusCode.Forbidden);
             }
             // 将这节课的信息传递给视图
             return View(sessionToAdjust);
