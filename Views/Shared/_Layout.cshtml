@@ -1,5 +1,6 @@
 ﻿@{
     var currentUser = Session["User"] as StudentInformationSystem.Models.Users;
+    var currentDisplayName = Session["DisplayName"] as string;
 }
 <!DOCTYPE html>
 <html>
@@ -357,7 +358,7 @@
                     <div class="user-info">
                         @if (currentUser != null)
                         {
-                            <a href="#"><span class="glyphicon glyphicon-user"></span> 欢迎您, @currentUser.Username</a>
+                            <a href="#"><span class="glyphicon glyphicon-user"></span> 欢迎您, @(string.IsNullOrWhiteSpace(currentDisplayName) ? currentUser.Username : currentDisplayName)</a>
                             <span style="margin: 0 10px;">|</span>
                             <a href="@Url.Action("Logout", "Account")"><span class="glyphicon glyphicon-log-out"></span> 安全退出</a>
                         }

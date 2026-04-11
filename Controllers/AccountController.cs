@@ -40,6 +40,7 @@ namespace StudentInformationSystem.Controllers
 
                 // 使用Session来记录用户的登录状态
                 Session["User"] = user;
+                Session["DisplayName"] = ResolveDisplayName(user);
 
                 // 根据角色判断跳转到哪里
                 if (user.Role == 0) // 管理员
@@ -70,6 +71,33 @@ namespace StudentInformationSystem.Controllers
             Session.Clear();
             // 跳转回登录页面
             return RedirectToAction("Login", "Account");
+        }
+
+        private string ResolveDisplayName(Users user)
+        {
+            if (user == null)
+            {
+                return string.Empty;
+            }
+
+            if (user.Role == 2)
+            {
+                var studentName = db.Students.Where(s => s.UserID == user.UserID).Select(s => s.StudentName).FirstOrDefault();
+                if (!string.IsNullOrWhiteSpace(studentName))
+                {
+                    return studentName;
+                }
+            }
+            else if (user.Role == 1)
+            {
+                var teacherName = db.Teachers.Where(t => t.UserID == user.UserID).Select(t => t.TeacherName).FirstOrDefault();
+                if (!string.IsNullOrWhiteSpace(teacherName))
+                {
+                    return teacherName;
+                }
+            }
+
+            return user.Username ?? "用户";
         }
     }
 }

@@ -81,7 +81,7 @@
         {
             var holidayInfo = holidayDescriptions.ContainsKey(currentWeek) ? holidayDescriptions[currentWeek] : "法定假日";
             <div style="margin: 10px 0;">
-                <span class="label label-danger">第@currentWeek周：@holidayInfo（无课）</span>
+                <span class="label label-danger">第@(currentWeek)周：@holidayInfo（无课）</span>
             </div>
         }
     }
