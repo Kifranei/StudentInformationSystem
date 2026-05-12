@@ -93,10 +93,12 @@ GO
 CREATE TABLE [dbo].[Exams](
     [ExamID] [int] IDENTITY(1,1) NOT NULL,
     [CourseID] [int] NOT NULL,
-    [ExamTime] [datetime] NOT NULL,
+    [StartTime] [datetime] NOT NULL,
+    [EndTime] [datetime] NOT NULL,
     [Location] [nvarchar](100) NULL,
     [Details] [nvarchar](200) NULL,
-PRIMARY KEY CLUSTERED ([ExamID] ASC)
+PRIMARY KEY CLUSTERED ([ExamID] ASC),
+CONSTRAINT [CK_Exams_TimeRange] CHECK ([EndTime] > [StartTime])
 ) ON [PRIMARY]
 GO
 
@@ -140,6 +142,7 @@ PRINT '========================================='
 PRINT '3. Inserting current seed data (passwords are PBKDF2 hashes of 123456)...'
 PRINT '========================================='
 
+-- 角色对应: 0=管理员, 1=教师, 2=学生
 INSERT INTO [dbo].[Users] ([Username], [Password], [Role], [PasskeyEnabled])
 VALUES
 ('admin', 'PBKDF2$100000$5+JzqdMMQCX9HvxOim0KsQ==$V9eH40Zzi2EpmZFmNwLgvWXks346PTc98YNEauMK3SM=', 0, 0),
@@ -171,6 +174,7 @@ VALUES
 ('S2101002', '韩梅梅', '女', 1, 8),
 ('S2102001', '刘星', '男', 2, 9);
 
+-- CourseType: 1=专业必修, 2=公共/思政必修, 3=专业选修, 4=其他公共选修, 5=体育选修
 INSERT INTO [dbo].[Courses] ([CourseName], [Credits], [TeacherID], [CourseType])
 VALUES
 ('C# 高级程序设计', 4.0, 'T001', 1),
@@ -211,11 +215,11 @@ VALUES
 ('S2102001', 3, 76.5),
 ('S2102001', 8, NULL);
 
-INSERT INTO [dbo].[Exams] ([CourseID], [ExamTime], [Location], [Details])
+INSERT INTO [dbo].[Exams] ([CourseID], [StartTime], [EndTime], [Location], [Details])
 VALUES
-(1, '2026-06-15 09:00:00', '一教-101', '期末闭卷考试，请携带学生证。'),
-(3, '2026-06-17 14:00:00', '二教-205', '上机考试。'),
-(8, '2026-06-20 10:00:00', '机房-401', 'Python大作业验收。');
+(1, '2026-06-15 09:00:00', '2026-06-15 11:00:00', '一教-101', '期末闭卷考试，请携带学生证。'),
+(3, '2026-06-17 14:00:00', '2026-06-17 16:00:00', '二教-205', '上机考试。'),
+(8, '2026-06-20 10:00:00', '2026-06-20 12:00:00', '机房-401', 'Python大作业验收。');
 
 PRINT '========================================='
 PRINT '4. Database script completed.'

@@ -1,35 +1,43 @@
 @model StudentInformationSystem.Models.ClassSessions
 
 @{
-    ViewBag.Title = "Ìí¼Ó¿Î³Ì°²ÅÅ";
+    ViewBag.Title = "æ·»åŠ è¯¾ç¨‹å®‰æ’";
+    var dayOptions = new[]
+    {
+        new { Value = "1", Text = "æ˜ŸæœŸä¸€" },
+        new { Value = "2", Text = "æ˜ŸæœŸäºŒ" },
+        new { Value = "3", Text = "æ˜ŸæœŸä¸‰" },
+        new { Value = "4", Text = "æ˜ŸæœŸå››" },
+        new { Value = "5", Text = "æ˜ŸæœŸäº”" },
+        new { Value = "6", Text = "æ˜ŸæœŸå…­" },
+        new { Value = "7", Text = "æ˜ŸæœŸæ—¥" }
+    };
+    var periodOptions = Enumerable.Range(1, 12).Select(i => new { Value = i, Text = "ç¬¬ " + i + " èŠ‚" });
 }
 
-<h2>Ìí¼Ó¿Î³Ì°²ÅÅ</h2>
+<h2>æ·»åŠ è¯¾ç¨‹å®‰æ’</h2>
 <hr />
 
 <div class="alert alert-info">
-    <h4><span class="glyphicon glyphicon-info-sign"></span> ÖÇÄÜÅÅ¿ÎÏµÍ³</h4>
-    <p>ÏÖÔÚÄú¿ÉÒÔÎªÒ»ÃÅ¿Î³Ì´´½¨¶à¸ö²»Í¬µÄÊ±¼ä°²ÅÅ£¬ÏµÍ³»á×Ô¶¯¼ì²â·¨¶¨¼ÙÈÕ£¡ÀıÈç£º</p>
+    <h4><span class="glyphicon glyphicon-info-sign"></span> åˆ†æ®µæ’è¯¾è¯´æ˜</h4>
+    <p>ä¸€é—¨è¯¾ç¨‹å¯ä»¥åˆ›å»ºå¤šä¸ªä¸åŒå‘¨æ¬¡æˆ–èŠ‚æ¬¡çš„è¯¾ç¨‹å®‰æ’ï¼Œç³»ç»Ÿä¼šè‡ªåŠ¨é¿å¼€æ³•å®šå‡æ—¥å‘¨æ¬¡ï¼Œå¹¶æ£€æµ‹æ•™å¸ˆã€æ•™å®¤å’Œå­¦ç”Ÿè¯¾è¡¨å†²çªã€‚</p>
     <ul>
-        <li><strong>Êı¾İ¿â¹ÜÀíÓëÎ¬»¤</strong> - µÚ1-4ÖÜ£¬ĞÇÆÚÎåµÚ1-4½Ú£¬ÔÚ310½ÌÊÒ</li>
-        <li><strong>Êı¾İ¿â¹ÜÀíÓëÎ¬»¤</strong> - µÚ6-8ÖÜ£¬ĞÇÆÚÈıµÚ5-8½Ú£¬ÔÚ308½ÌÊÒ</li>
-        <li><strong>×Ô¶¯Ìø¹ı¼ÙÈÕ</strong>£¨ÏµÍ³»á¸ù¾İµ±Ç°Ê±¼ä×Ô¶¯¼ì²âÇåÃ÷½Ú¡¢¶ËÎç½Ú¡¢¹úÇì½ÚµÈ·¨¶¨¼ÙÈÕÖÜ´Î£©</li>
+        <li><strong>ç¤ºä¾‹ä¸€ï¼š</strong>ç¬¬ 1-4 å‘¨ï¼Œæ˜ŸæœŸä¸‰ç¬¬ 1-4 èŠ‚ï¼Œ310 æ•™å®¤ã€‚</li>
+        <li><strong>ç¤ºä¾‹äºŒï¼š</strong>ç¬¬ 6-8 å‘¨ï¼Œæ˜ŸæœŸäº”ç¬¬ 5-8 èŠ‚ï¼Œ308 æ•™å®¤ã€‚</li>
     </ul>
-    <p class="text-warning"><strong>ÌáÊ¾£º</strong>Ò»ÃÅ¿Î³Ì¿ÉÒÔÓĞ¶à¸öÊ±¼ä°²ÅÅ£¬ÏµÍ³»á×Ô¶¯ÔÚ¿Î±íÖĞÕıÈ·ÏÔÊ¾£¬²¢ÖÇÄÜ±Ü¿ª·¨¶¨¼ÙÈÕ¡£</p>
 </div>
 
-@* ÏÔÊ¾¼ÙÈÕÖÜ´ÎĞÅÏ¢ *@
 @{
     var holidayDescriptions = StudentInformationSystem.Helpers.HolidayHelper.GetHolidayWeekDescriptions();
     if (holidayDescriptions.Any())
     {
         <div class="alert alert-warning">
-            <h5><span class="glyphicon glyphicon-calendar"></span> ±¾Ñ§ÆÚ·¨¶¨¼ÙÈÕÌáĞÑ</h5>
-            <p>ÒÔÏÂÖÜ´ÎÎª·¨¶¨¼ÙÈÕ£¬¿Î³Ì°²ÅÅ½«×Ô¶¯Ìø¹ıÕâĞ©ÖÜ´Î£º</p>
+            <h5><span class="glyphicon glyphicon-calendar"></span> æœ¬å­¦æœŸæ³•å®šå‡æ—¥å‘¨æ¬¡</h5>
+            <p>è¿™äº›å‘¨æ¬¡ä¸ºæ³•å®šå‡æ—¥ï¼Œè¯¾ç¨‹å®‰æ’ä¼šè‡ªåŠ¨è·³è¿‡ã€‚</p>
             <p>
                 @foreach (var holiday in holidayDescriptions)
                 {
-                    <span class="label label-warning" style="margin-right: 8px;">µÚ@(holiday.Key)ÖÜ£º@holiday.Value</span>
+                    <span class="label label-warning" style="margin-right: 8px;">ç¬¬@(holiday.Key)å‘¨ï¼š@holiday.Value</span>
                 }
             </p>
         </div>
@@ -44,249 +52,80 @@
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
         <div class="form-group">
-            @Html.LabelFor(model => model.CourseID, "Ñ¡Ôñ¿Î³Ì", htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.CourseID, "é€‰æ‹©è¯¾ç¨‹", htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @Html.DropDownList("CourseID", null, "-- ÇëÑ¡Ôñ¿Î³Ì --", htmlAttributes: new { @class = "form-control" })
+                @Html.DropDownList("CourseID", null, "-- è¯·é€‰æ‹©è¯¾ç¨‹ --", htmlAttributes: new { @class = "form-control" })
                 @Html.ValidationMessageFor(model => model.CourseID, "", new { @class = "text-danger" })
             </div>
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.StartWeek, "¿ªÊ¼ÖÜÊı", htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.StartWeek, "å¼€å§‹å‘¨æ¬¡", htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @Html.EditorFor(model => model.StartWeek, new { htmlAttributes = new { @class = "form-control", @placeholder = "ÀıÈç£º1", @min = "1", @max = "21" } })
+                @Html.EditorFor(model => model.StartWeek, new { htmlAttributes = new { @class = "form-control", @placeholder = "ä¾‹å¦‚ï¼š1", @min = "1", @max = "21" } })
                 @Html.ValidationMessageFor(model => model.StartWeek, "", new { @class = "text-danger" })
-                <small class="text-muted">ÊäÈëÕâ¸öÊ±¼ä°²ÅÅµÄ¿ªÊ¼ÖÜÊı£¨1-21£©</small>
+                <small class="text-muted">è¯¥æ—¶é—´å®‰æ’çš„å¼€å§‹å‘¨æ¬¡ï¼ŒèŒƒå›´ 1-21 å‘¨ã€‚</small>
             </div>
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.EndWeek, "½áÊøÖÜÊı", htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.EndWeek, "ç»“æŸå‘¨æ¬¡", htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @Html.EditorFor(model => model.EndWeek, new { htmlAttributes = new { @class = "form-control", @placeholder = "ÀıÈç£º4", @min = "1", @max = "21" } })
+                @Html.EditorFor(model => model.EndWeek, new { htmlAttributes = new { @class = "form-control", @placeholder = "ä¾‹å¦‚ï¼š4", @min = "1", @max = "21" } })
                 @Html.ValidationMessageFor(model => model.EndWeek, "", new { @class = "text-danger" })
-                <small class="text-muted">ÊäÈëÕâ¸öÊ±¼ä°²ÅÅµÄ½áÊøÖÜÊı£¨Ó¦¸Ã ¡İ ¿ªÊ¼ÖÜÊı£©</small>
+                <small class="text-muted">ç»“æŸå‘¨æ¬¡åº”å¤§äºæˆ–ç­‰äºå¼€å§‹å‘¨æ¬¡ã€‚</small>
             </div>
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.DayOfWeek, "ĞÇÆÚ¼¸", htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.DayOfWeek, "æ˜ŸæœŸå‡ ", htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @Html.DropDownListFor(model => model.DayOfWeek, new SelectList(
-                         new[]
-                         {
-                        new { Value = "1", Text = "ĞÇÆÚÒ»" },
-                        new { Value = "2", Text = "ĞÇÆÚ¶ş" },
-                        new { Value = "3", Text = "ĞÇÆÚÈı" },
-                        new { Value = "4", Text = "ĞÇÆÚËÄ" },
-                        new { Value = "5", Text = "ĞÇÆÚÎå" },
-                        new { Value = "6", Text = "ĞÇÆÚÁù" },
-                        new { Value = "7", Text = "ĞÇÆÚÈÕ" },
-                         },
-                         "Value", "Text"), "-- ÇëÑ¡ÔñĞÇÆÚ --", new { @class = "form-control" })
+                @Html.DropDownListFor(model => model.DayOfWeek, new SelectList(dayOptions, "Value", "Text"), "-- è¯·é€‰æ‹©æ˜ŸæœŸ --", new { @class = "form-control" })
                 @Html.ValidationMessageFor(model => model.DayOfWeek, "", new { @class = "text-danger" })
             </div>
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.StartPeriod, "¿ªÊ¼½Ú´Î", htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.StartPeriod, "å¼€å§‹èŠ‚æ¬¡", htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @Html.DropDownListFor(model => model.StartPeriod, new SelectList(
-                         Enumerable.Range(1, 12).Select(i => new { Value = i, Text = $"µÚ {i} ½Ú" }),
-                         "Value", "Text"), "-- ÇëÑ¡Ôñ¿ªÊ¼½Ú´Î --", new { @class = "form-control" })
+                @Html.DropDownListFor(model => model.StartPeriod, new SelectList(periodOptions, "Value", "Text"), "-- è¯·é€‰æ‹©å¼€å§‹èŠ‚æ¬¡ --", new { @class = "form-control" })
                 @Html.ValidationMessageFor(model => model.StartPeriod, "", new { @class = "text-danger" })
-                <small class="text-muted">µÚ1½Ú£º08:40-09:25£¬µÚ2½Ú£º09:30-10:15£¬ÒÀ´ËÀàÍÆ</small>
+                <small class="text-muted">ç¬¬ 1 èŠ‚ 08:40-09:25ï¼Œç¬¬ 2 èŠ‚ 09:30-10:15ï¼Œä¾æ¬¡ç±»æ¨ã€‚</small>
             </div>
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.EndPeriod, "½áÊø½Ú´Î", htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.EndPeriod, "ç»“æŸèŠ‚æ¬¡", htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @Html.DropDownListFor(model => model.EndPeriod, new SelectList(
-                         Enumerable.Range(1, 12).Select(i => new { Value = i, Text = $"µÚ {i} ½Ú" }),
-                         "Value", "Text"), "-- ÇëÑ¡Ôñ½áÊø½Ú´Î --", new { @class = "form-control" })
+                @Html.DropDownListFor(model => model.EndPeriod, new SelectList(periodOptions, "Value", "Text"), "-- è¯·é€‰æ‹©ç»“æŸèŠ‚æ¬¡ --", new { @class = "form-control" })
                 @Html.ValidationMessageFor(model => model.EndPeriod, "", new { @class = "text-danger" })
-                <small class="text-muted">½áÊø½Ú´ÎÓ¦¸Ã ¡İ ¿ªÊ¼½Ú´Î</small>
+                <small class="text-muted">ç»“æŸèŠ‚æ¬¡åº”å¤§äºæˆ–ç­‰äºå¼€å§‹èŠ‚æ¬¡ã€‚</small>
             </div>
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.Classroom, "½ÌÊÒ", htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.Classroom, "æ•™å®¤", htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @Html.EditorFor(model => model.Classroom, new { htmlAttributes = new { @class = "form-control", @placeholder = "ÀıÈç£º310¡¢308¡¢ÊµÑéÊÒAµÈ" } })
+                @Html.EditorFor(model => model.Classroom, new { htmlAttributes = new { @class = "form-control", @placeholder = "ä¾‹å¦‚ï¼š310ã€308ã€å®éªŒå®¤A" } })
                 @Html.ValidationMessageFor(model => model.Classroom, "", new { @class = "text-danger" })
             </div>
         </div>
 
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Ìí¼Ó¿Î³Ì°²ÅÅ" class="btn btn-primary" />
-                @Html.ActionLink("·µ»Ø¿Î±í", "Timetable", null, new { @class = "btn btn-default" })
+                <input type="submit" value="æ·»åŠ è¯¾ç¨‹å®‰æ’" class="btn btn-primary" />
+                @Html.ActionLink("è¿”å›è¯¾è¡¨", "Timetable", null, new { @class = "btn btn-default" })
             </div>
         </div>
     </div>
 }
 
-<div class="panel panel-info" style="margin-top: 30px;">
-    <div class="panel-heading">
-        <h4><span class="glyphicon glyphicon-lightbulb"></span> ÖÇÄÜÅÅ¿ÎÊ¾Àı</h4>
-    </div>
-    <div class="panel-body">
-        <p><strong>³¡¾°£ºÊı¾İ¿â¹ÜÀíÓëÎ¬»¤¿Î³Ì£¨º¬×Ô¶¯¼ÙÈÕ¼ì²â£©</strong></p>
-        <table class="table table-bordered table-condensed">
-            <thead>
-                <tr>
-                    <th>Ê±¼ä°²ÅÅ</th>
-                    <th>¿ªÊ¼ÖÜ</th>
-                    <th>½áÊøÖÜ</th>
-                    <th>ĞÇÆÚ¼¸</th>
-                    <th>½Ú´Î</th>
-                    <th>½ÌÊÒ</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>µÚÒ»½×¶Î</td>
-                    <td>1</td>
-                    <td>4</td>
-                    <td>ĞÇÆÚÎå</td>
-                    <td>µÚ1-4½Ú</td>
-                    <td>310</td>
-                </tr>
-                <tr class="info">
-                    <td>ÖÇÄÜ¼ÙÈÕ¼ì²â</td>
-                    <td colspan="5" class="text-center">ÏµÍ³×Ô¶¯Ìø¹ıÇåÃ÷½Ú¡¢¶ËÎç½ÚµÈ·¨¶¨¼ÙÈÕÖÜ´Î</td>
-                </tr>
-                <tr>
-                    <td>µÚ¶ş½×¶Î</td>
-                    <td>6</td>
-                    <td>8</td>
-                    <td>ĞÇÆÚÈı</td>
-                    <td>µÚ5-8½Ú</td>
-                    <td>308</td>
-                </tr>
-            </tbody>
-        </table>
-        <p class="text-info">
-            <strong>ÖÇÄÜÌØĞÔ£º</strong>ÏµÍ³»á¸ù¾İµ±Ç°Ê±¼ä×Ô¶¯¼ì²â·¨¶¨¼ÙÈÕ£¬ÎŞĞèÊÖ¶¯ÅÅ³ı¼ÙÈÕÖÜ´Î£¬ÈÃÅÅ¿Î¸üÖÇÄÜ¡¢¸üÌù½üÊµ¼Ê£¡
-        </p>
-    </div>
-</div>
-
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")
-    
-    <script>
-        $(document).ready(function() {
-            // ¼ÙÈÕÖÜ´ÎÁĞ±í£¨´Ó·şÎñÆ÷»ñÈ¡£©
-            var holidayWeeks = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(StudentInformationSystem.Helpers.HolidayHelper.GetCurrentSemesterHolidayWeeks()));
-            
-            // ¼ì²éÖÜ´Î·¶Î§ÊÇ·ñ°üº¬¼ÙÈÕµÄº¯Êı
-            function checkHolidayConflict() {
-                var startWeek = parseInt($('#StartWeek').val());
-                var endWeek = parseInt($('#EndWeek').val());
-                
-                if (startWeek && endWeek) {
-                    var conflictingWeeks = [];
-                    for (var week = startWeek; week <= endWeek; week++) {
-                        if (holidayWeeks.indexOf(week) !== -1) {
-                            conflictingWeeks.push(week);
-                        }
-                    }
-                    
-                    // ÒÆ³ıÖ®Ç°µÄÌáÊ¾
-                    $('.holiday-info').remove();
-                    
-                    if (conflictingWeeks.length > 0) {
-                        var infoHtml = '<div class="alert alert-info holiday-info" style="margin-top: 10px;">' +
-                            '<small><span class="glyphicon glyphicon-info-sign"></span> ' +
-                            'ÖÇÄÜÌáÊ¾£ºËùÑ¡ÖÜ´Î°üº¬¼ÙÈÕÖÜ´Î£¨µÚ' + conflictingWeeks.join('¡¢') + 'ÖÜ£©£¬ÏµÍ³»á×Ô¶¯Ìø¹ıÕâĞ©¼ÙÈÕÖÜ´Î£¬¿Î³Ì²»»áÔÚ¼ÙÈÕÖÜÏÔÊ¾¡£</small></div>';
-                        $('#EndWeek').parent().append(infoHtml);
-                    }
-                }
-            }
-            
-            // ¿ªÊ¼½Ú´Î¸Ä±äÊ±£¬×Ô¶¯µ÷Õû½áÊø½Ú´ÎµÄ×îĞ¡Öµ
-            $('#StartPeriod').change(function() {
-                var startPeriod = parseInt($(this).val());
-                if (startPeriod) {
-                    var endPeriodSelect = $('#EndPeriod');
-                    var currentEndPeriod = parseInt(endPeriodSelect.val());
-                    
-                    // Èç¹ûµ±Ç°½áÊø½Ú´ÎĞ¡ÓÚ¿ªÊ¼½Ú´Î£¬ÔòÖØÖÃ
-                    if (currentEndPeriod && currentEndPeriod < startPeriod) {
-                        endPeriodSelect.val(startPeriod);
-                    }
-                    
-                    // ½ûÓÃĞ¡ÓÚ¿ªÊ¼½Ú´ÎµÄÑ¡Ïî
-                    endPeriodSelect.find('option').each(function() {
-                        var optionValue = parseInt($(this).val());
-                        if (optionValue && optionValue < startPeriod) {
-                            $(this).prop('disabled', true);
-                        } else {
-                            $(this).prop('disabled', false);
-                        }
-                    });
-                }
-            });
-            
-            // ¿ªÊ¼ÖÜÊı¸Ä±äÊ±£¬×Ô¶¯µ÷Õû½áÊøÖÜÊıµÄ×îĞ¡Öµ²¢¼ì²é¼ÙÈÕ³åÍ»
-            $('#StartWeek').change(function() {
-                var startWeek = parseInt($(this).val());
-                if (startWeek) {
-                    var endWeekInput = $('#EndWeek');
-                    var currentEndWeek = parseInt(endWeekInput.val());
-                    
-                    // Èç¹ûµ±Ç°½áÊøÖÜÊıĞ¡ÓÚ¿ªÊ¼ÖÜÊı£¬ÔòÉèÖÃÎª¿ªÊ¼ÖÜÊı
-                    if (currentEndWeek && currentEndWeek < startWeek) {
-                        endWeekInput.val(startWeek);
-                    }
-                    
-                    // ÉèÖÃ×îĞ¡Öµ
-                    endWeekInput.attr('min', startWeek);
-                    
-                    // ¼ì²é¼ÙÈÕ³åÍ»
-                    checkHolidayConflict();
-                }
-            });
-            
-            // ½áÊøÖÜÊı¸Ä±äÊ±£¬¼ì²é¼ÙÈÕ³åÍ»
-            $('#EndWeek').change(function() {
-                checkHolidayConflict();
-            });
-        });
-    </script>
 }
 
 <style>
-    .panel-info {
-        border-color: #bee5eb;
-    }
-    
-    .panel-info .panel-heading {
-        background-color: #d1ecf1;
-        border-color: #bee5eb;
-        color: #0c5460;
-    }
-    
-    .form-control[disabled] {
-        background-color: #f5f5f5;
-    }
-    
-    .alert-info {
-        background-color: #d9edf7;
-        border-color: #bce8f1;
-        color: #31708f;
-    }
-
-    .alert-warning {
-        background-color: #fcf8e3;
-        border-color: #faebcc;
-        color: #8a6d3b;
-    }
-
-    .label {
-        font-size: 85%;
-        padding: 0.3em 0.6em;
-    }
+    .alert-info { background-color: #d9edf7; border-color: #bce8f1; color: #31708f; }
+    .alert-warning { background-color: #fcf8e3; border-color: #faebcc; color: #8a6d3b; }
+    .label { font-size: 85%; padding: 0.3em 0.6em; }
 </style>

@@ -1,4 +1,5 @@
 using StudentInformationSystem.Models;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -19,6 +20,36 @@ namespace StudentInformationSystem.Helpers
 
     public static class ScheduleConflictHelper
     {
+        public static List<ClassSessions> GetTeacherSessionConflicts(
+            StudentManagementDBEntities db,
+            string teacherId,
+            int dayOfWeek,
+            int startWeek,
+            int endWeek,
+            int startPeriod,
+            int endPeriod,
+            int? excludeSessionId = null)
+        {
+            if (db == null || string.IsNullOrWhiteSpace(teacherId))
+            {
+                return new List<ClassSessions>();
+            }
+
+            var query = db.ClassSessions.Include("Courses")
+                .Where(cs => cs.Courses.TeacherID == teacherId
+                    && cs.DayOfWeek == dayOfWeek
+                    && !(endWeek < cs.StartWeek || startWeek > cs.EndWeek)
+                    && !(endPeriod < cs.StartPeriod || startPeriod > cs.EndPeriod));
+
+            if (excludeSessionId.HasValue)
+            {
+                int sessionId = excludeSessionId.Value;
+                query = query.Where(cs => cs.SessionID != sessionId);
+            }
+
+            return query.ToList();
+        }
+
         public static List<StudentScheduleConflictInfo> GetStudentConflictsForCourseSelection(
             StudentManagementDBEntities db,
             string studentId,
@@ -84,6 +115,114 @@ namespace StudentInformationSystem.Helpers
             return DistinctConflicts(conflicts);
         }
 
+        public static List<StudentScheduleConflictInfo> GetStudentConflictsForCourseAssignment(
+            StudentManagementDBEntities db,
+            string studentId,
+            int courseId)
+        {
+            return GetStudentConflictsForCourseSelection(db, studentId, courseId);
+        }
+
+        public static List<StudentScheduleConflictInfo> GetConflictsForEnrolledStudentsWhenScheduling(
+            StudentManagementDBEntities db,
+            int courseId,
+            int dayOfWeek,
+            int startWeek,
+            int endWeek,
+            int startPeriod,
+            int endPeriod,
+            int? excludeSessionId = null)
+        {
+            if (db == null || courseId <= 0)
+            {
+                return new List<StudentScheduleConflictInfo>();
+            }
+
+            var enrolledStudents = db.StudentCourses.Include("Students")
+                .Where(sc => sc.CourseID == courseId && sc.StudentID != null)
+                .Select(sc => new
+                {
+                    sc.StudentID,
+                    StudentName = sc.Students == null ? sc.StudentID : sc.Students.StudentName
+                })
+                .ToList();
+
+            var studentIds = enrolledStudents.Select(s => s.StudentID).Distinct().ToList();
+            if (!studentIds.Any())
+            {
+                return new List<StudentScheduleConflictInfo>();
+            }
+
+            var relatedEnrollments = db.StudentCourses
+                .Where(sc => studentIds.Contains(sc.StudentID) && sc.CourseID != courseId)
+                .Select(sc => new { sc.StudentID, sc.CourseID })
+                .ToList();
+
+            var otherCourseIds = relatedEnrollments.Select(e => e.CourseID).Distinct().ToList();
+            if (!otherCourseIds.Any())
+            {
+                return new List<StudentScheduleConflictInfo>();
+            }
+
+            var sessionQuery = db.ClassSessions.Include("Courses")
+                .Where(cs => otherCourseIds.Contains(cs.CourseID)
+                    && cs.DayOfWeek == dayOfWeek
+                    && !(endWeek < cs.StartWeek || startWeek > cs.EndWeek)
+                    && !(endPeriod < cs.StartPeriod || startPeriod > cs.EndPeriod));
+
+            if (excludeSessionId.HasValue)
+            {
+                int sessionId = excludeSessionId.Value;
+                sessionQuery = sessionQuery.Where(cs => cs.SessionID != sessionId);
+            }
+
+            var otherSessions = sessionQuery.ToList();
+            if (!otherSessions.Any())
+            {
+                return new List<StudentScheduleConflictInfo>();
+            }
+
+            var conflicts = new List<StudentScheduleConflictInfo>();
+            foreach (var student in enrolledStudents)
+            {
+                var conflictCourseIds = relatedEnrollments
+                    .Where(e => e.StudentID == student.StudentID)
+                    .Select(e => e.CourseID)
+                    .Distinct()
+                    .ToList();
+
+                foreach (var session in otherSessions.Where(s => conflictCourseIds.Contains(s.CourseID)))
+                {
+                    conflicts.Add(new StudentScheduleConflictInfo
+                    {
+                        StudentID = student.StudentID,
+                        StudentName = student.StudentName,
+                        CourseName = session.Courses == null ? "未知课程" : session.Courses.CourseName,
+                        DayOfWeek = session.DayOfWeek,
+                        StartWeek = session.StartWeek,
+                        EndWeek = session.EndWeek,
+                        StartPeriod = session.StartPeriod,
+                        EndPeriod = session.EndPeriod
+                    });
+                }
+            }
+
+            return DistinctConflicts(conflicts);
+        }
+
+        public static string BuildTeacherConflictMessage(IEnumerable<ClassSessions> conflicts, string prefix)
+        {
+            var conflictList = conflicts == null ? new List<ClassSessions>() : conflicts.ToList();
+            if (!conflictList.Any())
+            {
+                return string.Empty;
+            }
+
+            string description = string.Join("；", conflictList.Select(cs =>
+                $"{(cs.Courses == null ? "课程" : cs.Courses.CourseName)}(第{cs.StartWeek}-{cs.EndWeek}周, 第{cs.StartPeriod}-{cs.EndPeriod}节)"));
+            return prefix + description;
+        }
+
         public static string BuildStudentConflictMessage(IEnumerable<StudentScheduleConflictInfo> conflicts, string prefix)
         {
             var conflictList = conflicts == null ? new List<StudentScheduleConflictInfo>() : conflicts.ToList();
@@ -94,18 +233,11 @@ namespace StudentInformationSystem.Helpers
 
             string description = string.Join("；", conflictList
                 .Take(5)
-                .Select(c => string.Format("{0} 与 {1}(周{2} 第{3}-{4}节, 第{5}-{6}周)",
-                    string.IsNullOrWhiteSpace(c.StudentName) ? c.StudentID : c.StudentName,
-                    c.CourseName,
-                    c.DayOfWeek,
-                    c.StartPeriod,
-                    c.EndPeriod,
-                    c.StartWeek,
-                    c.EndWeek)));
+                .Select(c => $"{(string.IsNullOrWhiteSpace(c.StudentName) ? c.StudentID : c.StudentName)} 与 {c.CourseName}(周{c.DayOfWeek} 第{c.StartPeriod}-{c.EndPeriod}节, 第{c.StartWeek}-{c.EndWeek}周)"));
 
             if (conflictList.Count > 5)
             {
-                description += string.Format("；另有 {0} 条冲突未展开", conflictList.Count - 5);
+                description += $"；另有 {conflictList.Count - 5} 条冲突未展开";
             }
 
             return prefix + description;

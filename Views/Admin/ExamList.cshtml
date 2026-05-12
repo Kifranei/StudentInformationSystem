@@ -1,57 +1,45 @@
-@model IEnumerable<StudentInformationSystem.Models.Exams>
+锘緻model IEnumerable<StudentInformationSystem.Models.Exams>
 
 @{
-    ViewBag.Title = "ExamList";
+    ViewBag.Title = "鑰冭瘯瀹夋帓鍒楄〃";
 }
 
-<h2>考试安排列表</h2>
+<h2>鑰冭瘯瀹夋帓鍒楄〃</h2>
 
-@* --- 搜索表单 --- *@
 @using (Html.BeginForm("ExamList", "Admin", FormMethod.Get, new { @class = "form-inline" }))
 {
     <div class="form-group">
-        <label>查找考试:</label>
-        <input type="text" name="searchString" value="@ViewBag.CurrentFilter" class="form-control" placeholder="输入课程名或考试地点" />
+        <label>鏌ユ壘鑰冭瘯:</label>
+        <input type="text" name="searchString" value="@ViewBag.CurrentFilter" class="form-control" placeholder="杈撳叆璇剧▼鍚嶆垨鑰冭瘯鍦扮偣" />
     </div>
-    <input type="submit" value="搜 索" class="btn btn-default" />
+    <input type="submit" value="鎼滅储" class="btn btn-default" />
 }
+
 <br />
 
 <p>
-    @Html.ActionLink("添加新考试", "AddExam", null, new { @class = "btn btn-primary" })
+    @Html.ActionLink("鏂板鑰冭瘯", "AddExam", null, new { @class = "btn btn-primary" })
 </p>
+
 <table class="table">
     <tr>
-        <th>
-            课程名称
-        </th>
-        <th>
-            考试时间
-        </th>
-        <th>
-            考试地点
-        </th>
+        <th>璇剧▼鍚嶇О</th>
+        <th>鑰冭瘯鏃堕棿</th>
+        <th>鑰冭瘯鍦扮偣</th>
         <th></th>
     </tr>
 
     @foreach (var item in Model)
     {
         <tr>
+            <td>@Html.DisplayFor(modelItem => item.Courses.CourseName)</td>
+            <td>@item.StartTime.ToString("yyyy-MM-dd HH:mm") - @item.EndTime.ToString("HH:mm")</td>
+            <td>@Html.DisplayFor(modelItem => item.Location)</td>
             <td>
-                @Html.DisplayFor(modelItem => item.Courses.CourseName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ExamTime)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Location)
-            </td>
-            <td>
-                @Html.ActionLink("编辑", "EditExam", new { id = item.ExamID }) |
-                @Html.ActionLink("详情", "DetailsExam", new { id = item.ExamID }) |
-                @Html.ActionLink("删除", "DeleteExam", new { id = item.ExamID })
+                @Html.ActionLink("缂栬緫", "EditExam", new { id = item.ExamID }) |
+                @Html.ActionLink("璇︽儏", "DetailsExam", new { id = item.ExamID }) |
+                @Html.ActionLink("鍒犻櫎", "DeleteExam", new { id = item.ExamID })
             </td>
         </tr>
     }
-
 </table>

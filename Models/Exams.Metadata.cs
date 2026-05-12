@@ -5,8 +5,10 @@ namespace StudentInformationSystem.Models
 {
     public class ExamsMetadata
     {
-        [Display(Name = "考试时间")]
-        public System.DateTime ExamTime { get; set; }
+        [Display(Name = "考试开始时间")]
+        public System.DateTime StartTime { get; set; }
+        [Display(Name = "考试结束时间")]
+        public System.DateTime EndTime { get; set; }
         [Display(Name = "考试地点")]
         public string Location { get; set; }
         [Display(Name = "备注")]

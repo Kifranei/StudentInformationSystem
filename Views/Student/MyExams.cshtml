@@ -1,43 +1,26 @@
-@model IEnumerable<StudentInformationSystem.Models.Exams>
+锘緻model IEnumerable<StudentInformationSystem.Models.Exams>
 
 @{
-    ViewBag.Title = "我的考试安排";
+    ViewBag.Title = "鎴戠殑鑰冭瘯瀹夋帓";
 }
 
 <h2>@ViewBag.Title</h2>
 
 <table class="table">
     <tr>
-        <th>
-            课程名称
-        </th>
-        <th>
-            考试时间
-        </th>
-        <th>
-            考试地点
-        </th>
-        <th>
-            备注
-        </th>
+        <th>璇剧▼鍚嶇О</th>
+        <th>鑰冭瘯鏃堕棿</th>
+        <th>鑰冭瘯鍦扮偣</th>
+        <th>澶囨敞</th>
     </tr>
 
     @foreach (var item in Model)
     {
         <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Courses.CourseName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ExamTime)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Location)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Details)
-            </td>
+            <td>@Html.DisplayFor(modelItem => item.Courses.CourseName)</td>
+            <td>@item.StartTime.ToString("yyyy-MM-dd HH:mm") - @item.EndTime.ToString("HH:mm")</td>
+            <td>@Html.DisplayFor(modelItem => item.Location)</td>
+            <td>@Html.DisplayFor(modelItem => item.Details)</td>
         </tr>
     }
-
 </table>

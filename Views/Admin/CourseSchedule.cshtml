@@ -1,58 +1,60 @@
 @model List<StudentInformationSystem.Models.ClassSessions>
 
 @{
-    ViewBag.Title = "¿Î³Ì°²ÅÅ¹ÜÀí";
+    ViewBag.Title = "è¯¾ç¨‹å®‰æ’ç®¡ç†";
     var course = ViewBag.Course as StudentInformationSystem.Models.Courses;
 }
 
 @if (TempData["SuccessMessage"] != null)
 {
     <div class="alert alert-success">
-        <strong><span class="glyphicon glyphicon-ok-circle"></span> ³É¹¦£¡</strong> @TempData["SuccessMessage"]
+        <strong><span class="glyphicon glyphicon-ok-circle"></span> æˆåŠŸï¼š</strong> @TempData["SuccessMessage"]
     </div>
 }
 
 <div style="display: flex; justify-content: space-between; align-items: center;">
-    <h2>¿Î³Ì°²ÅÅ¹ÜÀí</h2>
+    <h2>è¯¾ç¨‹å®‰æ’ç®¡ç†</h2>
     <div>
-        @Html.ActionLink("Ìí¼ÓĞÂ°²ÅÅ", "AddCourseSchedule", new { courseId = course.CourseID }, new { @class = "btn btn-primary" })
-        @Html.ActionLink("·µ»Ø¿Î³ÌÁĞ±í", "CourseList", null, new { @class = "btn btn-default" })
+        @Html.ActionLink("æ·»åŠ æ–°å®‰æ’", "AddCourseSchedule", new { courseId = course.CourseID }, new { @class = "btn btn-primary" })
+        @Html.ActionLink("è¿”å›è¯¾ç¨‹åˆ—è¡¨", "CourseList", null, new { @class = "btn btn-default" })
     </div>
 </div>
 <hr />
 
 <div class="panel panel-info">
     <div class="panel-heading">
-        <h4><span class="glyphicon glyphicon-info-sign"></span> ¿Î³ÌĞÅÏ¢</h4>
+        <h4><span class="glyphicon glyphicon-info-sign"></span> è¯¾ç¨‹ä¿¡æ¯</h4>
     </div>
     <div class="panel-body">
         <div class="row">
             <div class="col-md-6">
-                <p><strong>¿Î³ÌÃû³Æ£º</strong>@course.CourseName</p>
-                <p><strong>Ñ§·Ö£º</strong>@course.Credits Ñ§·Ö</p>
+                <p><strong>è¯¾ç¨‹åç§°ï¼š</strong>@course.CourseName</p>
+                <p><strong>å­¦åˆ†ï¼š</strong>@course.Credits å­¦åˆ†</p>
             </div>
             <div class="col-md-6">
-                <p><strong>ÈÎ¿Î½ÌÊ¦£º</strong>
+                <p>
+                    <strong>ä»»è¯¾æ•™å¸ˆï¼š</strong>
                     @if (course.Teachers != null)
                     {
                         @course.Teachers.TeacherName
                     }
                     else
                     {
-                        <span class="text-danger">Î´·ÖÅä½ÌÊ¦</span>
+                        <span class="text-danger">æœªåˆ†é…æ•™å¸ˆ</span>
                     }
                 </p>
-                <p><strong>¿Î³ÌÀàĞÍ£º</strong>
+                <p>
+                    <strong>è¯¾ç¨‹ç±»å‹ï¼š</strong>
                     @{
                         string courseType = "";
                         switch (course.CourseType)
                         {
-                            case 1: courseType = "×¨Òµ±ØĞŞ"; break;
-                            case 2: courseType = "¹«¹²±ØĞŞ"; break;
-                            case 3: courseType = "×¨ÒµÑ¡ĞŞ"; break;
-                            case 4: courseType = "¹«¹²Ñ¡ĞŞ"; break;
-                            case 5: courseType = "ÌåÓıÑ¡ĞŞ"; break;
-                            default: courseType = "Î´ÖªÀàĞÍ"; break;
+                            case 1: courseType = "ä¸“ä¸šå¿…ä¿®"; break;
+                            case 2: courseType = "å…¬å…±å¿…ä¿®"; break;
+                            case 3: courseType = "ä¸“ä¸šé€‰ä¿®"; break;
+                            case 4: courseType = "å…¬å…±é€‰ä¿®"; break;
+                            case 5: courseType = "é€šè¯†é€‰ä¿®"; break;
+                            default: courseType = "æœªçŸ¥ç±»å‹"; break;
                         }
                     }
                     <span class="label label-info">@courseType</span>
@@ -62,18 +64,17 @@
     </div>
 </div>
 
-@* ÏÔÊ¾¼ÙÈÕÖÜ´ÎĞÅÏ¢ *@
 @{
     var holidayDescriptions = StudentInformationSystem.Helpers.HolidayHelper.GetHolidayWeekDescriptions();
     if (holidayDescriptions.Any())
     {
         <div class="alert alert-info">
-            <h5><span class="glyphicon glyphicon-calendar"></span> ±¾Ñ§ÆÚ·¨¶¨¼ÙÈÕÌáĞÑ</h5>
-            <p>ÒÔÏÂÖÜ´ÎÎª·¨¶¨¼ÙÈÕ£¬ÏàÓ¦µÄ¿Î³Ì°²ÅÅ²»»áÔÚ¿Î±íÖĞÏÔÊ¾£º</p>
+            <h5><span class="glyphicon glyphicon-calendar"></span> æœ¬å­¦æœŸæ³•å®šå‡æ—¥å‘¨æ¬¡</h5>
+            <p>è¿™äº›å‘¨æ¬¡ä¸ºæ³•å®šå‡æ—¥ï¼Œå¯¹åº”è¯¾ç¨‹å®‰æ’ä¸ä¼šåœ¨è¯¾è¡¨ä¸­æ˜¾ç¤ºã€‚</p>
             <p>
                 @foreach (var holiday in holidayDescriptions)
                 {
-                    <span class="label label-warning" style="margin-right: 8px;">µÚ@(holiday.Key)ÖÜ£º@holiday.Value</span>
+                    <span class="label label-warning" style="margin-right: 8px;">ç¬¬@(holiday.Key)å‘¨ï¼š@holiday.Value</span>
                 }
             </p>
         </div>
@@ -86,70 +87,59 @@
         <table class="table table-striped table-hover">
             <thead>
                 <tr>
-                    <th>ÖÜ´Î·¶Î§</th>
-                    <th>ÉÏ¿ÎÊ±¼ä</th>
-                    <th>½ÌÊÒ</th>
-                    <th>¼ÙÈÕ×´Ì¬</th>
-                    <th>²Ù×÷</th>
+                    <th>å‘¨æ¬¡èŒƒå›´</th>
+                    <th>ä¸Šè¯¾æ—¶é—´</th>
+                    <th>æ•™å®¤</th>
+                    <th>å‡æ—¥çŠ¶æ€</th>
+                    <th>æ“ä½œ</th>
                 </tr>
             </thead>
             <tbody>
                 @{
-                    string[] dayNames = { "", "ĞÇÆÚÒ»", "ĞÇÆÚ¶ş", "ĞÇÆÚÈı", "ĞÇÆÚËÄ", "ĞÇÆÚÎå", "ĞÇÆÚÁù", "ĞÇÆÚÈÕ" };
+                    string[] dayNames = { "", "æ˜ŸæœŸä¸€", "æ˜ŸæœŸäºŒ", "æ˜ŸæœŸä¸‰", "æ˜ŸæœŸå››", "æ˜ŸæœŸäº”", "æ˜ŸæœŸå…­", "æ˜ŸæœŸæ—¥" };
+                    string[] periodTimes = { "08:40-09:25", "09:30-10:15", "10:35-11:20", "11:25-12:10", "13:20-14:05", "14:10-14:55", "15:15-16:00", "16:05-16:50", "17:30-18:15", "18:20-19:05", "19:10-19:55", "20:00-20:45" };
                     var holidayWeeks = StudentInformationSystem.Helpers.HolidayHelper.GetCurrentSemesterHolidayWeeks();
                 }
                 @foreach (var session in Model)
                 {
+                    var dayName = session.DayOfWeek >= 1 && session.DayOfWeek <= 7 ? dayNames[session.DayOfWeek] : "æœªçŸ¥";
+                    var startTime = session.StartPeriod >= 1 && session.StartPeriod <= 12 ? periodTimes[session.StartPeriod - 1].Split('-')[0] : "";
+                    var endTime = session.EndPeriod >= 1 && session.EndPeriod <= 12 ? periodTimes[session.EndPeriod - 1].Split('-')[1] : "";
+                    var conflictingHolidayWeeks = new List<int>();
+                    for (int week = session.StartWeek; week <= session.EndWeek; week++)
+                    {
+                        if (holidayWeeks.Contains(week))
+                        {
+                            conflictingHolidayWeeks.Add(week);
+                        }
+                    }
+
                     <tr>
+                        <td><span class="label label-info">ç¬¬ @session.StartWeek - @session.EndWeek å‘¨</span></td>
                         <td>
-                            <span class="label label-info">µÚ @session.StartWeek - @session.EndWeek ÖÜ</span>
-                        </td>
-                        <td>
-                            @{
-                                var dayName = session.DayOfWeek >= 1 && session.DayOfWeek <= 7 ? dayNames[session.DayOfWeek] : "Î´Öª";
-                            }
-                            @dayName µÚ @session.StartPeriod - @session.EndPeriod ½Ú
+                            @dayName ç¬¬ @session.StartPeriod - @session.EndPeriod èŠ‚
                             <br />
-                            <small class="text-muted">
-                                @{
-                                    string[] periodTimes = { "08:40-09:25", "09:30-10:15", "10:35-11:20", "11:25-12:10", "13:20-14:05", "14:10-14:55", "15:15-16:00", "16:05-16:50", "17:30-18:15", "18:20-19:05", "19:10-19:55", "20:00-20:45" };
-                                    var startTime = session.StartPeriod >= 1 && session.StartPeriod <= 12 ? periodTimes[session.StartPeriod - 1].Split('-')[0] : "";
-                                    var endTime = session.EndPeriod >= 1 && session.EndPeriod <= 12 ? periodTimes[session.EndPeriod - 1].Split('-')[1] : "";
-                                }
-                                @startTime - @endTime
-                            </small>
+                            <small class="text-muted">@startTime - @endTime</small>
                         </td>
+                        <td><span class="label label-default">@session.Classroom</span></td>
                         <td>
-                            <span class="label label-default">@session.Classroom</span>
-                        </td>
-                        <td>
-                            @{
-                                var conflictingHolidayWeeks = new List<int>();
-                                for (int week = session.StartWeek; week <= session.EndWeek; week++)
-                                {
-                                    if (holidayWeeks.Contains(week))
-                                    {
-                                        conflictingHolidayWeeks.Add(week);
-                                    }
-                                }
-                            }
                             @if (conflictingHolidayWeeks.Any())
                             {
-                                <span class="label label-warning" title="°üº¬¼ÙÈÕÖÜ´Î£ºµÚ@(string.Join("¡¢", conflictingHolidayWeeks))ÖÜ">
-                                    <span class="glyphicon glyphicon-calendar"></span> º¬¼ÙÈÕ
+                                <span class="label label-warning" title="å‡æ—¥å‘¨æ¬¡ï¼šç¬¬@(string.Join("ã€", conflictingHolidayWeeks))å‘¨">
+                                    <span class="glyphicon glyphicon-calendar"></span> è·³è¿‡å‡æ—¥
                                 </span>
                             }
                             else
                             {
                                 <span class="label label-success">
-                                    <span class="glyphicon glyphicon-ok"></span> Õı³£
+                                    <span class="glyphicon glyphicon-ok"></span> æ­£å¸¸
                                 </span>
                             }
                         </td>
                         <td>
                             <div class="btn-group btn-group-sm">
-                                @Html.ActionLink("±à¼­", "EditCourseSchedule", new { sessionId = session.SessionID }, new { @class = "btn btn-warning", @title = "±à¼­Õâ¸ö¿Î³Ì°²ÅÅ" })
-                                @Html.ActionLink("É¾³ı", "DeleteCourseSchedule", new { sessionId = session.SessionID }, new { @class = "btn btn-danger", @title = "É¾³ıÕâ¸ö¿Î³Ì°²ÅÅ" })
+                                @Html.ActionLink("ç¼–è¾‘", "EditCourseSchedule", new { sessionId = session.SessionID }, new { @class = "btn btn-warning", @title = "ç¼–è¾‘è¯¥è¯¾ç¨‹å®‰æ’" })
+                                @Html.ActionLink("åˆ é™¤", "DeleteCourseSchedule", new { sessionId = session.SessionID }, new { @class = "btn btn-danger", @title = "åˆ é™¤è¯¥è¯¾ç¨‹å®‰æ’" })
                             </div>
                         </td>
                     </tr>
@@ -161,48 +151,45 @@
     <div class="well well-sm">
         <p class="text-muted">
             <span class="glyphicon glyphicon-info-sign"></span>
-            <strong>Í³¼ÆĞÅÏ¢£º</strong>¸Ã¿Î³Ì×Ü¹²ÓĞ <strong>@Model.Count</strong> ¸öÊ±¼ä°²ÅÅ¡£
-            ¹ÜÀíÔ±¿ÉÒÔÎª¿Î³Ì´´½¨¶à¸ö²»Í¬Ê±¼ä¶ÎµÄ°²ÅÅ£¬ÒÔÓ¦¶Ô¸´ÔÓµÄ½ÌÑ§°²ÅÅĞèÇó¡£
-            ÏµÍ³»á×Ô¶¯¼ì²â²¢Ìø¹ı·¨¶¨¼ÙÈÕÖÜ´Î¡£
+            <strong>ç»Ÿè®¡ä¿¡æ¯ï¼š</strong>è¯¥è¯¾ç¨‹å…±æœ‰ <strong>@Model.Count</strong> ä¸ªæ—¶é—´å®‰æ’ã€‚ç³»ç»Ÿä¼šè‡ªåŠ¨æ£€æµ‹æ•™å¸ˆã€æ•™å®¤å’Œå·²é€‰å­¦ç”Ÿçš„æ—¶é—´å†²çªï¼Œå¹¶è·³è¿‡æ³•å®šå‡æ—¥å‘¨æ¬¡ã€‚
         </p>
     </div>
 }
 else
 {
     <div class="well text-center">
-        <h4><span class="glyphicon glyphicon-info-sign text-muted"></span> ÔİÎŞ¿Î³Ì°²ÅÅ</h4>
+        <h4><span class="glyphicon glyphicon-info-sign text-muted"></span> æš‚æ— è¯¾ç¨‹å®‰æ’</h4>
         @if (course.Teachers == null)
         {
-            <p class="text-danger">¸Ã¿Î³ÌÉĞÎ´·ÖÅä½ÌÊ¦£¬ÎŞ·¨Ìí¼Ó¿Î³Ì°²ÅÅ¡£ÇëÏÈÎª¿Î³Ì·ÖÅä½ÌÊ¦¡£</p>
-            @Html.ActionLink("±à¼­¿Î³Ì", "EditCourse", new { id = course.CourseID }, new { @class = "btn btn-warning btn-lg" })
+            <p class="text-danger">è¯¥è¯¾ç¨‹å°šæœªåˆ†é…æ•™å¸ˆï¼Œæ— æ³•æ·»åŠ è¯¾ç¨‹å®‰æ’ã€‚è¯·å…ˆä¸ºè¯¾ç¨‹åˆ†é…æ•™å¸ˆã€‚</p>
+            @Html.ActionLink("ç¼–è¾‘è¯¾ç¨‹", "EditCourse", new { id = course.CourseID }, new { @class = "btn btn-warning btn-lg" })
         }
         else
         {
-            <p class="text-muted">¸Ã¿Î³Ì»¹Ã»ÓĞÌí¼ÓÈÎºÎÊ±¼ä°²ÅÅ¡£ÏÖÔÚ¾Í¿ªÊ¼´´½¨µÚÒ»¸ö¿Î³Ì°²ÅÅ°É£¡</p>
-            @Html.ActionLink("Á¢¼´Ìí¼Ó", "AddCourseSchedule", new { courseId = course.CourseID }, new { @class = "btn btn-primary btn-lg" })
+            <p class="text-muted">è¯¥è¯¾ç¨‹è¿˜æ²¡æœ‰ä»»ä½•æ—¶é—´å®‰æ’ï¼Œå¯ä»¥ç°åœ¨åˆ›å»ºç¬¬ä¸€æ¡è¯¾ç¨‹å®‰æ’ã€‚</p>
+            @Html.ActionLink("ç«‹å³æ·»åŠ ", "AddCourseSchedule", new { courseId = course.CourseID }, new { @class = "btn btn-primary btn-lg" })
         }
     </div>
 }
 
 <div class="panel panel-default" style="margin-top: 30px;">
     <div class="panel-heading">
-        <h4><span class="glyphicon glyphicon-question-sign"></span> ÖÇÄÜÅÅ¿ÎËµÃ÷</h4>
+        <h4><span class="glyphicon glyphicon-question-sign"></span> ç®¡ç†å‘˜æ’è¯¾è¯´æ˜</h4>
     </div>
     <div class="panel-body">
-        <p><strong>¹ÜÀíÔ±¿ÉÒÔ£º</strong></p>
         <div class="row">
             <div class="col-md-6">
                 <ul>
-                    <li><strong>Áé»î°²ÅÅ</strong>£ºÎªÍ¬Ò»ÃÅ¿Î³Ì´´½¨¶à¸öÊ±¼ä¶Î</li>
-                    <li><strong>Ê±¼ä³åÍ»¼ì²â</strong>£º×Ô¶¯¼ì²é½ÌÊ¦Ê±¼ä³åÍ»</li>
-                    <li><strong>¼ÙÈÕÖÇÄÜÌø¹ı</strong>£ºÏµÍ³×Ô¶¯Ê¶±ğ·¨¶¨¼ÙÈÕ</li>
+                    <li><strong>çµæ´»å®‰æ’ï¼š</strong>å¯ä»¥ä¸ºåŒä¸€é—¨è¯¾ç¨‹åˆ›å»ºå¤šä¸ªæ—¶é—´æ®µã€‚</li>
+                    <li><strong>æ—¶é—´å†²çªï¼š</strong>ç³»ç»Ÿä¼šæ£€æµ‹æ•™å¸ˆã€æ•™å®¤å’Œå­¦ç”Ÿè¯¾è¡¨å†²çªã€‚</li>
+                    <li><strong>å‡æ—¥å¤„ç†ï¼š</strong>æ³•å®šå‡æ—¥å‘¨æ¬¡ä¸ä¼šåœ¨è¯¾è¡¨ä¸­æ˜¾ç¤ºã€‚</li>
                 </ul>
             </div>
             <div class="col-md-6">
                 <ul>
-                    <li><strong>Í³Ò»¹ÜÀí</strong>£º¼¯ÖĞ¹ÜÀíËùÓĞ¿Î³ÌµÄÊ±¼ä°²ÅÅ</li>
-                    <li><strong>ÏêÏ¸Í³¼Æ</strong>£º²é¿´Ã¿¸ö°²ÅÅµÄ¼ÙÈÕ×´Ì¬</li>
-                    <li><strong>°²È«²Ù×÷</strong>£ºÉ¾³ıÇ°»áÓĞÈ·ÈÏÌáÊ¾</li>
+                    <li><strong>ç»Ÿä¸€ç®¡ç†ï¼š</strong>ç®¡ç†å‘˜å¯ä»¥ç®¡ç†æ‰€æœ‰è¯¾ç¨‹çš„æ—¶é—´å®‰æ’ã€‚</li>
+                    <li><strong>å®‰å…¨æ“ä½œï¼š</strong>åˆ é™¤å‰ä¼šè¿›å…¥ç¡®è®¤é¡µé¢ã€‚</li>
+                    <li><strong>å®æ—¶ç”Ÿæ•ˆï¼š</strong>ä¿å­˜åä¼šå½±å“æ•™å¸ˆå’Œå­¦ç”Ÿè¯¾è¡¨ã€‚</li>
                 </ul>
             </div>
         </div>
@@ -210,41 +197,12 @@ else
 </div>
 
 <style>
-    .label {
-        font-size: 85%;
-        padding: 0.3em 0.6em;
-    }
-    
-    .btn-group-sm > .btn {
-        padding: 5px 10px;
-        font-size: 12px;
-    }
-    
-    .table > tbody > tr:hover {
-        background-color: #f5f5f5;
-    }
-    
-    .well-sm {
-        padding: 9px;
-        border-radius: 3px;
-    }
-    
-    .panel-default .panel-heading {
-        background-color: #f5f5f5;
-        border-color: #ddd;
-    }
-
-    .alert-info {
-        background-color: #d9edf7;
-        border-color: #bce8f1;
-        color: #31708f;
-    }
-
-    .label-warning {
-        background-color: #f0ad4e;
-    }
-
-    .label-success {
-        background-color: #5cb85c;
-    }
+    .label { font-size: 85%; padding: 0.3em 0.6em; }
+    .btn-group-sm > .btn { padding: 5px 10px; font-size: 12px; }
+    .table > tbody > tr:hover { background-color: #f5f5f5; }
+    .well-sm { padding: 9px; border-radius: 3px; }
+    .panel-default .panel-heading { background-color: #f5f5f5; border-color: #ddd; }
+    .alert-info { background-color: #d9edf7; border-color: #bce8f1; color: #31708f; }
+    .label-warning { background-color: #f0ad4e; }
+    .label-success { background-color: #5cb85c; }
 </style>

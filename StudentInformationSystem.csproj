@@ -196,6 +196,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Helpers\HolidayHelper.cs" />
+    <Compile Include="Helpers\ExamConflictHelper.cs" />
     <Compile Include="Helpers\PasswordSecurity.cs" />
     <Compile Include="Helpers\ScheduleConflictHelper.cs" />
     <Compile Include="Helpers\ViewHolidayHelper.cs" />

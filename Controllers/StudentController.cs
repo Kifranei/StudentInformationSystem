@@ -1,17 +1,64 @@
 using StudentInformationSystem.Models;
-using StudentInformationSystem.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Web.Mvc;
+using StudentInformationSystem.Helpers;
 
 namespace StudentInformationSystem.Controllers
 {
     // 继承 BaseController 确保只有登录学生才能访问
     public class StudentController : BaseController
     {
-        private StudentManagementDBEntities db = new StudentManagementDBEntities();
+                private StudentManagementDBEntities db = new StudentManagementDBEntities();
+
+        protected override void OnActionExecuting(ActionExecutingContext filterContext)
+        {
+            base.OnActionExecuting(filterContext);
+            if (filterContext.Result != null)
+            {
+                return;
+            }
+
+            var useWebFormsObj = Session["UseWebForms"];
+            var useWebForms = false;
+            if (useWebFormsObj is bool b)
+            {
+                useWebForms = b;
+            }
+            else if (useWebFormsObj is string s)
+            {
+                useWebForms = s.Equals("true", StringComparison.OrdinalIgnoreCase) || s == "1";
+            }
+
+            if (!useWebForms)
+            {
+                return;
+            }
+
+            if (!string.Equals(Request.HttpMethod, "GET", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            var actionName = filterContext.ActionDescriptor.ActionName;
+            var supportedActions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "Index",
+                "Timetable",
+                "CourseSelection",
+                "MyExams",
+                "ChangePassword"
+            };
+
+            if (!supportedActions.Contains(actionName))
+            {
+                return;
+            }
+
+            var query = Request?.Url?.Query ?? string.Empty;
+            filterContext.Result = new RedirectResult($"~/Student/{actionName}.aspx{query}");
+        }
 
         // GET: Student/Index
         // 学生登录后的主页，即“我的成绩”页面
@@ -57,8 +104,6 @@ namespace StudentInformationSystem.Controllers
         // 显示所有可选课程的列表
         public ActionResult CourseSelection()
         {
-            DisablePageCache();
-
             var currentUser = Session["User"] as Users;
             var student = db.Students.FirstOrDefault(s => s.UserID == currentUser.UserID);
             if (student == null) { return View("Error"); }
@@ -254,6 +299,7 @@ namespace StudentInformationSystem.Controllers
             userInDb.Password = PasswordSecurity.HashPassword(model.NewPassword);
             db.Entry(userInDb).State = System.Data.Entity.EntityState.Modified;
             db.SaveChanges();
+            currentUser.Password = userInDb.Password;
 
             // 4. 显示成功消息
             ViewBag.SuccessMessage = "密码修改成功！";
@@ -264,8 +310,6 @@ namespace StudentInformationSystem.Controllers
         // 接收一个可选的周数参数
         public ActionResult Timetable(int? selectedWeek)
         {
-            DisablePageCache();
-
             // 如果没有选择周数，默认显示第一周
             int currentWeek = selectedWeek ?? 1;
             ViewBag.CurrentWeek = currentWeek;
@@ -301,7 +345,7 @@ namespace StudentInformationSystem.Controllers
             var currentUser = Session["User"] as Users;
             if (currentUser == null)
             {
-                return RedirectToAction("Login", "Account");
+                return Redirect("~/Login.aspx");
             }
 
             // 2. 根据 Session 中的用户信息，找到对应的学生 (Student)
@@ -317,16 +361,8 @@ namespace StudentInformationSystem.Controllers
                                         .Select(sc => sc.CourseID).ToList();
             var exams = db.Exams.Include("Courses")
                               .Where(e => enrolledCourseIds.Contains(e.CourseID))
-                              .OrderBy(e => e.ExamTime).ToList();
+                              .OrderBy(e => e.StartTime).ToList();
             return View(exams);
-        }
-
-        private void DisablePageCache()
-        {
-            Response.Cache.SetCacheability(HttpCacheability.NoCache);
-            Response.Cache.SetNoStore();
-            Response.Cache.SetExpires(DateTime.UtcNow.AddMinutes(-1));
-            Response.Cache.SetRevalidation(HttpCacheRevalidation.AllCaches);
         }
 
     }

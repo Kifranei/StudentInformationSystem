@@ -12,6 +12,64 @@ namespace StudentInformationSystem.Controllers
     {
         private StudentManagementDBEntities db = new StudentManagementDBEntities();
 
+        protected override void OnActionExecuting(ActionExecutingContext filterContext)
+        {
+            base.OnActionExecuting(filterContext);
+            if (filterContext.Result != null)
+            {
+                return;
+            }
+
+            var useWebFormsObj = Session["UseWebForms"];
+            var useWebForms = false;
+            if (useWebFormsObj is bool b)
+            {
+                useWebForms = b;
+            }
+            else if (useWebFormsObj is string s)
+            {
+                useWebForms = s.Equals("true", StringComparison.OrdinalIgnoreCase) || s == "1";
+            }
+
+            if (!useWebForms)
+            {
+                return;
+            }
+
+            if (!string.Equals(Request.HttpMethod, "GET", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            var actionName = filterContext.ActionDescriptor.ActionName;
+            var supportedActions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "Index",
+                "Timetable",
+                "AddClassSession",
+                "AdjustClass",
+                "ManageClassSessions",
+                "DeleteClassSession",
+                "CourseList",
+                "ClassRoster",
+                "GradeEntry",
+                "ExamList",
+                "AddExam",
+                "EditExam",
+                "DeleteExam",
+                "DetailsExam",
+                "ChangePassword"
+            };
+
+            if (!supportedActions.Contains(actionName))
+            {
+                return;
+            }
+
+            var query = Request?.Url?.Query ?? string.Empty;
+            filterContext.Result = new RedirectResult($"~/Teacher/{actionName}.aspx{query}");
+        }
+
         // GET: Teacher/Index
         // 教师登录后的主页
         public ActionResult Index()
@@ -144,6 +202,7 @@ namespace StudentInformationSystem.Controllers
             userInDb.Password = PasswordSecurity.HashPassword(model.NewPassword);
             db.Entry(userInDb).State = System.Data.Entity.EntityState.Modified;
             db.SaveChanges();
+            currentUser.Password = userInDb.Password;
 
             ViewBag.SuccessMessage = "密码修改成功！";
 
@@ -275,6 +334,15 @@ namespace StudentInformationSystem.Controllers
                 return RedirectToAction("ManageCourseStudents", new { courseId });
             }
 
+            var assignmentConflicts = ScheduleConflictHelper.GetStudentConflictsForCourseAssignment(db, studentId, courseId);
+            if (assignmentConflicts.Any())
+            {
+                TempData["ErrorMessage"] = ScheduleConflictHelper.BuildStudentConflictMessage(
+                    assignmentConflicts,
+                    "无法加入课程名单，学生课表存在冲突：");
+                return RedirectToAction("ManageCourseStudents", new { courseId });
+            }
+
             db.StudentCourses.Add(new StudentCourses
             {
                 CourseID = courseId,
@@ -348,19 +416,36 @@ namespace StudentInformationSystem.Controllers
                 ModelState.AddModelError("EndPeriod", "结束节次不能小于开始节次。");
             }
 
-            // 检查时间冲突 - 在相同的周次范围内，是否有同一教师在相同时间的其他安排
-            var conflictingSessions = db.ClassSessions.Include("Courses")
-                .Where(cs => taughtCourseIds.Contains(cs.CourseID) && // 同一教师的课程
-                           cs.DayOfWeek == session.DayOfWeek && // 同一天
-                           !(session.EndWeek < cs.StartWeek || session.StartWeek > cs.EndWeek) && // 周次有重叠
-                           !(session.EndPeriod < cs.StartPeriod || session.StartPeriod > cs.EndPeriod)) // 节次有重叠
-                .ToList();
+            var course = db.Courses.Find(session.CourseID);
+            var conflictingSessions = ScheduleConflictHelper.GetTeacherSessionConflicts(
+                db,
+                course == null ? null : course.TeacherID,
+                session.DayOfWeek,
+                session.StartWeek,
+                session.EndWeek,
+                session.StartPeriod,
+                session.EndPeriod);
 
             if (conflictingSessions.Any())
             {
-                var conflictDescription = string.Join("; ", conflictingSessions.Select(cs => 
-                    $"{cs.Courses.CourseName}(第{cs.StartWeek}-{cs.EndWeek}周, 第{cs.StartPeriod}-{cs.EndPeriod}节)"));
-                ModelState.AddModelError("", $"时间冲突！您在该时间段已有以下课程安排：{conflictDescription}");
+                ModelState.AddModelError("", ScheduleConflictHelper.BuildTeacherConflictMessage(
+                    conflictingSessions,
+                    "时间冲突！您在该时间段已有以下课程安排："));
+            }
+
+            var studentConflicts = ScheduleConflictHelper.GetConflictsForEnrolledStudentsWhenScheduling(
+                db,
+                session.CourseID,
+                session.DayOfWeek,
+                session.StartWeek,
+                session.EndWeek,
+                session.StartPeriod,
+                session.EndPeriod);
+            if (studentConflicts.Any())
+            {
+                ModelState.AddModelError("", ScheduleConflictHelper.BuildStudentConflictMessage(
+                    studentConflicts,
+                    "该安排会与已选学生的现有课表冲突："));
             }
 
             if (ModelState.IsValid)
@@ -368,7 +453,7 @@ namespace StudentInformationSystem.Controllers
                 db.ClassSessions.Add(session);
                 db.SaveChanges();
                 
-                TempData["SuccessMessage"] = $"课程安排添加成功！{db.Courses.Find(session.CourseID).CourseName} - 第{session.StartWeek}-{session.EndWeek}周，星期{GetDayName(session.DayOfWeek)}第{session.StartPeriod}-{session.EndPeriod}节，{session.Classroom}教室。";
+                TempData["SuccessMessage"] = $"课程安排添加成功！{course.CourseName} - 第{session.StartWeek}-{session.EndWeek}周，星期{GetDayName(session.DayOfWeek)}第{session.StartPeriod}-{session.EndPeriod}节，{session.Classroom}教室。";
                 return RedirectToAction("Timetable");
             }
 
@@ -431,20 +516,38 @@ namespace StudentInformationSystem.Controllers
                 ModelState.AddModelError("EndPeriod", "结束节次不能小于开始节次。");
             }
 
-            // 检查时间冲突 - 排除当前正在编辑的这个安排
-            var conflictingSessions = db.ClassSessions.Include("Courses")
-                .Where(cs => cs.SessionID != session.SessionID && // 排除当前编辑的安排
-                           taughtCourseIds.Contains(cs.CourseID) && // 同一教师的课程
-                           cs.DayOfWeek == session.DayOfWeek && // 同一天
-                           !(session.EndWeek < cs.StartWeek || session.StartWeek > cs.EndWeek) && // 周次有重叠
-                           !(session.EndPeriod < cs.StartPeriod || session.StartPeriod > cs.EndPeriod)) // 节次有重叠
-                .ToList();
+            var course = db.Courses.Find(session.CourseID);
+            var conflictingSessions = ScheduleConflictHelper.GetTeacherSessionConflicts(
+                db,
+                course == null ? null : course.TeacherID,
+                session.DayOfWeek,
+                session.StartWeek,
+                session.EndWeek,
+                session.StartPeriod,
+                session.EndPeriod,
+                session.SessionID);
 
             if (conflictingSessions.Any())
             {
-                var conflictDescription = string.Join("; ", conflictingSessions.Select(cs => 
-                    $"{cs.Courses.CourseName}(第{cs.StartWeek}-{cs.EndWeek}周, 第{cs.StartPeriod}-{cs.EndPeriod}节)"));
-                ModelState.AddModelError("", $"时间冲突！您在该时间段已有以下课程安排：{conflictDescription}");
+                ModelState.AddModelError("", ScheduleConflictHelper.BuildTeacherConflictMessage(
+                    conflictingSessions,
+                    "时间冲突！您在该时间段已有以下课程安排："));
+            }
+
+            var studentConflicts = ScheduleConflictHelper.GetConflictsForEnrolledStudentsWhenScheduling(
+                db,
+                session.CourseID,
+                session.DayOfWeek,
+                session.StartWeek,
+                session.EndWeek,
+                session.StartPeriod,
+                session.EndPeriod,
+                session.SessionID);
+            if (studentConflicts.Any())
+            {
+                ModelState.AddModelError("", ScheduleConflictHelper.BuildStudentConflictMessage(
+                    studentConflicts,
+                    "该调整会与已选学生的现有课表冲突："));
             }
 
             // 检查模型状态是否有效
@@ -455,7 +558,7 @@ namespace StudentInformationSystem.Controllers
                 // 保存更改到数据库
                 db.SaveChanges();
                 
-                TempData["SuccessMessage"] = $"课程调整成功！{db.Courses.Find(session.CourseID).CourseName} 已调整为：第{session.StartWeek}-{session.EndWeek}周，星期{GetDayName(session.DayOfWeek)}第{session.StartPeriod}-{session.EndPeriod}节，{session.Classroom}教室。";
+                TempData["SuccessMessage"] = $"课程调整成功！{course.CourseName} 已调整为：第{session.StartWeek}-{session.EndWeek}周，星期{GetDayName(session.DayOfWeek)}第{session.StartPeriod}-{session.EndPeriod}节，{session.Classroom}教室。";
                 // 调课成功后，重定向回教师的课表页面
                 return RedirectToAction("Timetable");
             }
@@ -551,8 +654,54 @@ namespace StudentInformationSystem.Controllers
         public ActionResult AddExam(Exams exam)
         {
             var taughtCourseIds = GetTaughtCourseIds();
-            // 安全检查：确保提交的课程ID是该教师的
-            if (ModelState.IsValid && taughtCourseIds.Contains(exam.CourseID))
+            ValidateExamTimeRange(exam);
+
+            if (!taughtCourseIds.Contains(exam.CourseID))
+            {
+                ModelState.AddModelError("CourseID", "您只能为自己教授的课程安排考试。");
+            }
+
+            if (ModelState.IsValid)
+            {
+                var course = db.Courses.Find(exam.CourseID);
+                var teacherConflicts = ExamConflictHelper.GetTeacherExamConflicts(
+                    db,
+                    course == null ? null : course.TeacherID,
+                    exam.StartTime,
+                    exam.EndTime);
+                if (teacherConflicts.Any())
+                {
+                    ModelState.AddModelError("", ExamConflictHelper.BuildTeacherExamConflictMessage(
+                        teacherConflicts,
+                        "考试时间冲突！您在该时段已有以下考试安排："));
+                }
+
+                var locationConflicts = ExamConflictHelper.GetLocationExamConflicts(
+                    db,
+                    exam.Location,
+                    exam.StartTime,
+                    exam.EndTime);
+                if (locationConflicts.Any())
+                {
+                    ModelState.AddModelError("Location", ExamConflictHelper.BuildLocationExamConflictMessage(
+                        locationConflicts,
+                        "考场占用冲突！该考场在该时段已有以下考试安排："));
+                }
+
+                var studentConflicts = ExamConflictHelper.GetStudentExamConflictsForCourse(
+                    db,
+                    exam.CourseID,
+                    exam.StartTime,
+                    exam.EndTime);
+                if (studentConflicts.Any())
+                {
+                    ModelState.AddModelError("", ExamConflictHelper.BuildStudentExamConflictMessage(
+                        studentConflicts,
+                        "考试时间冲突！以下学生在该时段已有其他考试："));
+                }
+            }
+
+            if (ModelState.IsValid)
             {
                 db.Exams.Add(exam);
                 db.SaveChanges();
@@ -587,7 +736,57 @@ namespace StudentInformationSystem.Controllers
         public ActionResult EditExam(Exams exam)
         {
             var taughtCourseIds = GetTaughtCourseIds();
-            if (ModelState.IsValid && taughtCourseIds.Contains(exam.CourseID))
+            ValidateExamTimeRange(exam);
+
+            if (!taughtCourseIds.Contains(exam.CourseID))
+            {
+                ModelState.AddModelError("CourseID", "您只能调整自己教授课程的考试。");
+            }
+
+            if (ModelState.IsValid)
+            {
+                var course = db.Courses.Find(exam.CourseID);
+                var teacherConflicts = ExamConflictHelper.GetTeacherExamConflicts(
+                    db,
+                    course == null ? null : course.TeacherID,
+                    exam.StartTime,
+                    exam.EndTime,
+                    exam.ExamID);
+                if (teacherConflicts.Any())
+                {
+                    ModelState.AddModelError("", ExamConflictHelper.BuildTeacherExamConflictMessage(
+                        teacherConflicts,
+                        "考试时间冲突！您在该时段已有以下考试安排："));
+                }
+
+                var locationConflicts = ExamConflictHelper.GetLocationExamConflicts(
+                    db,
+                    exam.Location,
+                    exam.StartTime,
+                    exam.EndTime,
+                    exam.ExamID);
+                if (locationConflicts.Any())
+                {
+                    ModelState.AddModelError("Location", ExamConflictHelper.BuildLocationExamConflictMessage(
+                        locationConflicts,
+                        "考场占用冲突！该考场在该时段已有以下考试安排："));
+                }
+
+                var studentConflicts = ExamConflictHelper.GetStudentExamConflictsForCourse(
+                    db,
+                    exam.CourseID,
+                    exam.StartTime,
+                    exam.EndTime,
+                    exam.ExamID);
+                if (studentConflicts.Any())
+                {
+                    ModelState.AddModelError("", ExamConflictHelper.BuildStudentExamConflictMessage(
+                        studentConflicts,
+                        "考试时间冲突！以下学生在该时段已有其他考试："));
+                }
+            }
+
+            if (ModelState.IsValid)
             {
                 db.Entry(exam).State = System.Data.Entity.EntityState.Modified;
                 db.SaveChanges();
@@ -595,6 +794,14 @@ namespace StudentInformationSystem.Controllers
             }
             ViewBag.CourseID = new SelectList(db.Courses.Where(c => taughtCourseIds.Contains(c.CourseID)), "CourseID", "CourseName", exam.CourseID);
             return View(exam);
+        }
+
+        private void ValidateExamTimeRange(Exams exam)
+        {
+            if (exam != null && exam.EndTime <= exam.StartTime)
+            {
+                ModelState.AddModelError("EndTime", "考试结束时间必须晚于开始时间。");
+            }
         }
 
         // GET: Teacher/DeleteExam/5

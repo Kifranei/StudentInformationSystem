@@ -1,51 +1,47 @@
 @model StudentInformationSystem.Models.ClassSessions
 
 @{
-    ViewBag.Title = "É¾³ı¿Î³Ì°²ÅÅ";
+    ViewBag.Title = "åˆ é™¤è¯¾ç¨‹å®‰æ’";
 }
 
-<h2>É¾³ı¿Î³Ì°²ÅÅ</h2>
+<h2>åˆ é™¤è¯¾ç¨‹å®‰æ’</h2>
 <hr />
 
 <div class="alert alert-danger">
-    <h4><span class="glyphicon glyphicon-warning-sign"></span> È·ÈÏÉ¾³ı</h4>
-    <p>ÄúÈ·¶¨ÒªÉ¾³ıÒÔÏÂ¿Î³Ì°²ÅÅÂğ£¿´Ë²Ù×÷ÎŞ·¨³·Ïú¡£</p>
+    <h4><span class="glyphicon glyphicon-warning-sign"></span> ç¡®è®¤åˆ é™¤</h4>
+    <p>ç¡®å®šè¦åˆ é™¤ä»¥ä¸‹è¯¾ç¨‹å®‰æ’å—ï¼Ÿæ­¤æ“ä½œæ— æ³•æ’¤é”€ï¼Œå¹¶ä¼šå½±å“ç›¸å…³å­¦ç”Ÿçš„è¯¾è¡¨æ˜¾ç¤ºã€‚</p>
 </div>
 
 <div class="panel panel-default">
     <div class="panel-heading">
-        <h3 class="panel-title">¿Î³Ì°²ÅÅÏêÇé</h3>
+        <h3 class="panel-title">è¯¾ç¨‹å®‰æ’è¯¦æƒ…</h3>
     </div>
     <div class="panel-body">
         <dl class="dl-horizontal">
-            <dt>¿Î³ÌÃû³Æ£º</dt>
+            <dt>è¯¾ç¨‹åç§°ï¼š</dt>
             <dd><strong>@Model.Courses.CourseName</strong></dd>
 
-            <dt>ÖÜ´Î·¶Î§£º</dt>
-            <dd>µÚ @Model.StartWeek - @Model.EndWeek ÖÜ</dd>
+            <dt>å‘¨æ¬¡èŒƒå›´ï¼š</dt>
+            <dd>ç¬¬ @Model.StartWeek - @Model.EndWeek å‘¨</dd>
 
-            <dt>ÉÏ¿ÎÊ±¼ä£º</dt>
+            <dt>ä¸Šè¯¾æ—¶é—´ï¼š</dt>
             <dd>
                 @{
-                    string[] dayNames = { "", "ĞÇÆÚÒ»", "ĞÇÆÚ¶ş", "ĞÇÆÚÈı", "ĞÇÆÚËÄ", "ĞÇÆÚÎå", "ĞÇÆÚÁù", "ĞÇÆÚÈÕ" };
-                    var dayName = Model.DayOfWeek >= 1 && Model.DayOfWeek <= 7 ? dayNames[Model.DayOfWeek] : "Î´Öª";
+                    string[] dayNames = { "", "æ˜ŸæœŸä¸€", "æ˜ŸæœŸäºŒ", "æ˜ŸæœŸä¸‰", "æ˜ŸæœŸå››", "æ˜ŸæœŸäº”", "æ˜ŸæœŸå…­", "æ˜ŸæœŸæ—¥" };
+                    var dayName = Model.DayOfWeek >= 1 && Model.DayOfWeek <= 7 ? dayNames[Model.DayOfWeek] : "æœªçŸ¥";
+                    string[] periodTimes = { "08:40-09:25", "09:30-10:15", "10:35-11:20", "11:25-12:10", "13:20-14:05", "14:10-14:55", "15:15-16:00", "16:05-16:50", "17:30-18:15", "18:20-19:05", "19:10-19:55", "20:00-20:45" };
+                    var startTime = Model.StartPeriod >= 1 && Model.StartPeriod <= 12 ? periodTimes[Model.StartPeriod - 1].Split('-')[0] : "";
+                    var endTime = Model.EndPeriod >= 1 && Model.EndPeriod <= 12 ? periodTimes[Model.EndPeriod - 1].Split('-')[1] : "";
                 }
-                @dayName µÚ @Model.StartPeriod - @Model.EndPeriod ½Ú
+                @dayName ç¬¬ @Model.StartPeriod - @Model.EndPeriod èŠ‚
                 <br />
-                <small class="text-muted">
-                    @{
-                        string[] periodTimes = { "08:40-09:25", "09:30-10:15", "10:35-11:20", "11:25-12:10", "13:20-14:05", "14:10-14:55", "15:15-16:00", "16:05-16:50", "17:30-18:15", "18:20-19:05", "19:10-19:55", "20:00-20:45" };
-                        var startTime = Model.StartPeriod >= 1 && Model.StartPeriod <= 12 ? periodTimes[Model.StartPeriod - 1].Split('-')[0] : "";
-                        var endTime = Model.EndPeriod >= 1 && Model.EndPeriod <= 12 ? periodTimes[Model.EndPeriod - 1].Split('-')[1] : "";
-                    }
-                    (@startTime - @endTime)
-                </small>
+                <small class="text-muted">(@startTime - @endTime)</small>
             </dd>
 
-            <dt>½ÌÊÒ£º</dt>
+            <dt>æ•™å®¤ï¼š</dt>
             <dd>@Model.Classroom</dd>
 
-            <dt>¼ÙÈÕ×´Ì¬£º</dt>
+            <dt>å‡æ—¥çŠ¶æ€ï¼š</dt>
             <dd>
                 @{
                     var holidayWeeks = StudentInformationSystem.Helpers.HolidayHelper.GetCurrentSemesterHolidayWeeks();
@@ -60,80 +56,52 @@
                 }
                 @if (conflictingHolidayWeeks.Any())
                 {
-                    <span class="label label-warning">°üº¬¼ÙÈÕÖÜ´Î</span>
+                    <span class="label label-warning">åŒ…å«å‡æ—¥å‘¨æ¬¡</span>
                     <br />
-                    <small class="text-muted">µÚ@(string.Join("¡¢", conflictingHolidayWeeks))ÖÜÎª·¨¶¨¼ÙÈÕ£¬¿Î³Ì²»»áÔÚÕâĞ©ÖÜ´ÎÏÔÊ¾</small>
+                    <small class="text-muted">ç¬¬@(string.Join("ã€", conflictingHolidayWeeks))å‘¨ä¸ºæ³•å®šå‡æ—¥ï¼Œè¯¾ç¨‹ä¸ä¼šåœ¨è¿™äº›å‘¨æ¬¡æ˜¾ç¤ºã€‚</small>
                 }
                 else
                 {
-                    <span class="label label-success">ÎŞ¼ÙÈÕ³åÍ»</span>
+                    <span class="label label-success">æ— å‡æ—¥å†²çª</span>
                     <br />
-                    <small class="text-muted">ËùÓĞÖÜ´Î¾ùÎªÕı³£ÉÏ¿ÎÖÜ</small>
+                    <small class="text-muted">æ‰€æœ‰å‘¨æ¬¡å‡ä¸ºæ­£å¸¸ä¸Šè¯¾å‘¨ã€‚</small>
                 }
             </dd>
         </dl>
     </div>
 </div>
 
-@using (Html.BeginForm()) {
+@using (Html.BeginForm())
+{
     @Html.AntiForgeryToken()
 
     <div class="form-actions">
-        <input type="submit" value="È·ÈÏÉ¾³ı" class="btn btn-danger" onclick="return confirm('ÄúÈ·¶¨ÒªÉ¾³ıÕâ¸ö¿Î³Ì°²ÅÅÂğ£¿´Ë²Ù×÷ÎŞ·¨³·Ïú£¡');" />
-        @Html.ActionLink("È¡Ïû", "ManageClassSessions", null, new { @class = "btn btn-default" })
+        <input type="submit" value="ç¡®è®¤åˆ é™¤" class="btn btn-danger" onclick="return confirm('ç¡®å®šè¦åˆ é™¤è¿™æ¡è¯¾ç¨‹å®‰æ’å—ï¼Ÿæ­¤æ“ä½œæ— æ³•æ’¤é”€ã€‚');" />
+        @Html.ActionLink("å–æ¶ˆ", "ManageClassSessions", null, new { @class = "btn btn-default" })
     </div>
 }
 
 <div class="panel panel-info" style="margin-top: 30px;">
     <div class="panel-heading">
-        <h4><span class="glyphicon glyphicon-info-sign"></span> É¾³ıËµÃ÷</h4>
+        <h4><span class="glyphicon glyphicon-info-sign"></span> åˆ é™¤è¯´æ˜</h4>
     </div>
     <div class="panel-body">
         <ul>
-            <li><strong>Ó°Ïì·¶Î§£º</strong>É¾³ı´Ë¿Î³Ì°²ÅÅºó£¬Ëü½«´ÓÄúµÄ¿Î±íÖĞÍêÈ«ÒÆ³ı¡£</li>
-            <li><strong>ÖÇÄÜ¼ì²â£º</strong>ÏµÍ³ÒÑ×Ô¶¯¼ì²â¸Ã°²ÅÅÊÇ·ñ°üº¬·¨¶¨¼ÙÈÕÖÜ´Î¡£</li>
-            <li><strong>Ñ§ÉúÑ¡¿Î£º</strong>Èç¹ûÑ§ÉúÒÑ¾­Ñ¡ÁËÕâÃÅ¿Î³Ì£¬É¾³ı°²ÅÅ²»»áÓ°ÏìËûÃÇµÄÑ¡¿Î¼ÇÂ¼£¬µ«»áÓ°Ïì¿Î±íÏÔÊ¾¡£</li>
-            <li><strong>Ìæ´ú·½°¸£º</strong>Èç¹ûÄúÖ»ÊÇÏëµ÷ÕûÊ±¼ä£¬½¨ÒéÊ¹ÓÃ"µ÷Õû"¹¦ÄÜ¶ø²»ÊÇÉ¾³ı¡£</li>
-            <li><strong>ÖØĞÂ´´½¨£º</strong>É¾³ıºó£¬Äú¿ÉÒÔËæÊ±ÖØĞÂ´´½¨ĞÂµÄ¿Î³Ì°²ÅÅ¡£</li>
+            <li><strong>å½±å“èŒƒå›´ï¼š</strong>åˆ é™¤åï¼Œè¯¥è¯¾ç¨‹å®‰æ’ä¼šä»æ‚¨çš„è¯¾è¡¨å’Œç›¸å…³å­¦ç”Ÿè¯¾è¡¨ä¸­ç§»é™¤ã€‚</li>
+            <li><strong>é€‰è¯¾è®°å½•ï¼š</strong>åˆ é™¤å®‰æ’ä¸ä¼šåˆ é™¤å­¦ç”Ÿçš„é€‰è¯¾è®°å½•ï¼Œåªä¼šå½±å“è¯¾è¡¨æ˜¾ç¤ºã€‚</li>
+            <li><strong>ä»…æ”¹æ—¶é—´ï¼š</strong>å¦‚æœåªæ˜¯è°ƒæ•´å‘¨æ¬¡ã€èŠ‚æ¬¡æˆ–æ•™å®¤ï¼Œè¯·ä½¿ç”¨è°ƒæ•´åŠŸèƒ½ã€‚</li>
+            <li><strong>é‡æ–°åˆ›å»ºï¼š</strong>åˆ é™¤åå¦‚éœ€æ¢å¤ï¼Œéœ€è¦é‡æ–°æ·»åŠ æ–°çš„è¯¾ç¨‹å®‰æ’ã€‚</li>
         </ul>
     </div>
 </div>
 
 <style>
-    .dl-horizontal dt {
-        text-align: left;
-        width: 100px;
-    }
-    
-    .dl-horizontal dd {
-        margin-left: 120px;
-    }
-    
-    .form-actions {
-        padding-top: 20px;
-        border-top: 1px solid #e5e5e5;
-    }
-    
-    .panel-info {
-        border-color: #bee5eb;
-    }
-    
-    .panel-info .panel-heading {
-        background-color: #d1ecf1;
-        border-color: #bee5eb;
-        color: #0c5460;
-    }
-
-    .label {
-        font-size: 85%;
-        padding: 0.3em 0.6em;
-    }
-
-    .label-warning {
-        background-color: #f0ad4e;
-    }
-
-    .label-success {
-        background-color: #5cb85c;
-    }
+    .dl-horizontal dt { text-align: left; width: 100px; }
+    .dl-horizontal dd { margin-left: 120px; }
+    .form-actions { padding-top: 20px; border-top: 1px solid #e5e5e5; }
+    .panel-info { border-color: #bee5eb; }
+    .panel-info .panel-heading { background-color: #d1ecf1; border-color: #bee5eb; color: #0c5460; }
+    .label { font-size: 85%; padding: 0.3em 0.6em; }
+    .label-warning { background-color: #f0ad4e; }
+    .label-success { background-color: #5cb85c; }
 </style>

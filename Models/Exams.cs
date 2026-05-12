@@ -16,7 +16,8 @@ namespace StudentInformationSystem.Models
     {
         public int ExamID { get; set; }
         public int CourseID { get; set; }
-        public System.DateTime ExamTime { get; set; }
+        public System.DateTime StartTime { get; set; }
+        public System.DateTime EndTime { get; set; }
         public string Location { get; set; }
         public string Details { get; set; }
     

@@ -1,50 +1,30 @@
-@model StudentInformationSystem.Models.Exams
+锘緻model StudentInformationSystem.Models.Exams
 
 @{
-    ViewBag.Title = "DetailsExam";
+    ViewBag.Title = "鑰冭瘯璇︽儏";
 }
 
-<h2>考试详情</h2>
+<h2>鑰冭瘯璇︽儏</h2>
 
 <div>
-    <h4>@Model.Courses.CourseName</h4>
+    <h4>@(Model.Courses == null ? "鑰冭瘯淇℃伅" : Model.Courses.CourseName)</h4>
     <hr />
     <dl class="dl-horizontal">
-        <dt>
-            课程名称
-        </dt>
+        <dt>璇剧▼鍚嶇О</dt>
+        <dd>@Html.DisplayFor(model => model.Courses.CourseName)</dd>
 
-        <dd>
-            @Html.DisplayFor(model => model.Courses.CourseName)
-        </dd>
+        <dt>鑰冭瘯鏃堕棿</dt>
+        <dd>@Model.StartTime.ToString("yyyy-MM-dd HH:mm") - @Model.EndTime.ToString("HH:mm")</dd>
 
-        <dt>
-            考试时间
-        </dt>
+        <dt>鑰冭瘯鍦扮偣</dt>
+        <dd>@Html.DisplayFor(model => model.Location)</dd>
 
-        <dd>
-            @Html.DisplayFor(model => model.ExamTime)
-        </dd>
-
-        <dt>
-            考试地点
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Location)
-        </dd>
-
-        <dt>
-            备注
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Details)
-        </dd>
-
+        <dt>澶囨敞</dt>
+        <dd>@Html.DisplayFor(model => model.Details)</dd>
     </dl>
 </div>
+
 <p>
-    @Html.ActionLink("编辑", "EditExam", new { id = Model.ExamID }, new { @class = "btn btn-primary" }) |
-    @Html.ActionLink("返回列表", "ExamList", null, new { @class = "btn btn-default" })
+    @Html.ActionLink("缂栬緫", "EditExam", new { id = Model.ExamID }, new { @class = "btn btn-primary" }) |
+    @Html.ActionLink("杩斿洖鍒楄〃", "ExamList", null, new { @class = "btn btn-default" })
 </p>
